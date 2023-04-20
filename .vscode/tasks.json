@@ -1,0 +1,42 @@
+***REMOVED***
+  // For more information, visit: https://go.microsoft.com/fwlink/?LinkId=733558
+  "version": "2.0.0",
+  "tasks": [
+    ***REMOVED***
+      "type": "npm",
+      "script": "start",
+      "isBackground": true,
+      "problemMatcher": ***REMOVED***
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": ***REMOVED***
+          "activeOnStart": true,
+          "beginsPattern": ***REMOVED***
+            "regexp": "(.*?)"
+      ***REMOVED***,
+          "endsPattern": ***REMOVED***
+            "regexp": "bundle generation complete"
+      ***REMOVED***
+    ***REMOVED***
+  ***REMOVED***
+***REMOVED***,
+    ***REMOVED***
+      "type": "npm",
+      "script": "test",
+      "isBackground": true,
+      "problemMatcher": ***REMOVED***
+        "owner": "typescript",
+        "pattern": "$tsc",
+        "background": ***REMOVED***
+          "activeOnStart": true,
+          "beginsPattern": ***REMOVED***
+            "regexp": "(.*?)"
+      ***REMOVED***,
+          "endsPattern": ***REMOVED***
+            "regexp": "bundle generation complete"
+      ***REMOVED***
+    ***REMOVED***
+  ***REMOVED***
+***REMOVED***
+  ]
+***REMOVED***
