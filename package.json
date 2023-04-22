@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "deploy": "ng deploy --base-href=/gym-tracker-excel/ ",
     "update-data": "cd scripts && npx tsc && node get-data-from-sheet.js",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -34,6 +35,7 @@
     "@angular/compiler-cli": "^15.2.0",
     "@angular/localize": "^15.2.0",
     "@types/jasmine": "~4.3.0",
+    "angular-cli-ghpages": "^1.0.5",
     "googleapis": "^118.0.0",
     "jasmine-core": "~4.5.0",
     "karma": "~6.4.0",

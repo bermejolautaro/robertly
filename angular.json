@@ -97,6 +97,9 @@
             ],
             "scripts": []
       ***REMOVED***
+    ***REMOVED***,
+        "deploy": ***REMOVED***
+          "builder": "angular-cli-ghpages:deploy"
     ***REMOVED***
   ***REMOVED***
 ***REMOVED***

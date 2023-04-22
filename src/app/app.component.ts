@@ -4,7 +4,7 @@ import * as R from 'remeda';
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 import ***REMOVED*** BehaviorSubject, Observable, combineLatest, forkJoin ***REMOVED*** from 'rxjs';
-import ***REMOVED*** distinctUntilChanged, map, pairwise, startWith, tap ***REMOVED*** from 'rxjs/operators'
+import ***REMOVED*** map, pairwise, startWith, tap ***REMOVED*** from 'rxjs/operators'
 import ***REMOVED*** AsyncPipe, NgClass, NgFor, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** NgbModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
@@ -147,12 +147,15 @@ export class AppComponent implements OnInit ***REMOVED***
 ***REMOVED***
 
   public ngOnInit(): void ***REMOVED***
-    forkJoin([
-      this.http.get<string[][]>('assets/lautaro.json'),
-      this.http.get<string[][]>('assets/roberto.json'),
-    ]).subscribe(([lautaroData, robertoData]) => ***REMOVED***
-      const parsedLautaroData: ExcerciseLog[] = this.processData(lautaroData).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***));
-      const parsedRobertoData: ExcerciseLog[] = this.processData(robertoData).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***));
+    // forkJoin([
+    //   this.http.get<string[][]>('assets/lautaro.json'),
+    //   this.http.get<string[][]>('assets/roberto.json'),
+    // ])
+    
+    this.http.get<***REMOVED*** lautaro: string[][], roberto: string[][]***REMOVED***>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
+    .subscribe(data => ***REMOVED***
+      const parsedLautaroData: ExcerciseLog[] = this.processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***));
+      const parsedRobertoData: ExcerciseLog[] = this.processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***));
 
       this.excerciseLogs = parsedLautaroData.concat(parsedRobertoData);
 
