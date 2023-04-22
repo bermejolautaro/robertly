@@ -4,7 +4,7 @@ import * as R from 'remeda';
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 import { BehaviorSubject, Observable, combineLatest, forkJoin } from 'rxjs';
-import { distinctUntilChanged, map, pairwise, startWith, tap } from 'rxjs/operators'
+import { map, pairwise, startWith, tap } from 'rxjs/operators'
 import { AsyncPipe, NgClass, NgFor, TitleCasePipe } from '@angular/common';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -147,12 +147,15 @@ export class AppComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    forkJoin([
-      this.http.get<string[][]>('assets/lautaro.json'),
-      this.http.get<string[][]>('assets/roberto.json'),
-    ]).subscribe(([lautaroData, robertoData]) => {
-      const parsedLautaroData: ExcerciseLog[] = this.processData(lautaroData).map(x => ({ ...x, user: 'lautaro' }));
-      const parsedRobertoData: ExcerciseLog[] = this.processData(robertoData).map(x => ({ ...x, user: 'roberto' }));
+    // forkJoin([
+    //   this.http.get<string[][]>('assets/lautaro.json'),
+    //   this.http.get<string[][]>('assets/roberto.json'),
+    // ])
+    
+    this.http.get<{ lautaro: string[][], roberto: string[][]}>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
+    .subscribe(data => {
+      const parsedLautaroData: ExcerciseLog[] = this.processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' }));
+      const parsedRobertoData: ExcerciseLog[] = this.processData(data.roberto).map(x => ({ ...x, user: 'roberto' }));
 
       this.excerciseLogs = parsedLautaroData.concat(parsedRobertoData);
 
