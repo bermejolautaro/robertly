@@ -1,0 +1,21 @@
+***REMOVED***
+  "name": "gym-angular-excel",
+  "short_name": "gym-angular-excel",
+  "theme_color": "#000",
+  "background_color": "#fafafa",
+  "display": "standalone",
+  "scope": "./",
+  "start_url": "./",
+  "icons": [
+    ***REMOVED***
+      "src": "assets/icons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+***REMOVED***,
+    ***REMOVED***
+      "src": "assets/icons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+***REMOVED***
+  ]
+***REMOVED***
