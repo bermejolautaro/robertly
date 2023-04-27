@@ -37,9 +37,7 @@ interface ExcerciseRow {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss'],
-  standalone: true,
-  imports: [HttpClientModule, AsyncPipe, NgFor, NgbModule, NgClass, TitleCasePipe]
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
   public excerciseLogs: ExcerciseLog[] = [];
@@ -147,80 +145,75 @@ export class AppComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    // forkJoin([
-    //   this.http.get<string[][]>('assets/lautaro.json'),
-    //   this.http.get<string[][]>('assets/roberto.json'),
-    // ])
-    
-    this.http.get<{ lautaro: string[][], roberto: string[][]}>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
-    .subscribe(data => {
-      const parsedLautaroData: ExcerciseLog[] = this.processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' }));
-      const parsedRobertoData: ExcerciseLog[] = this.processData(data.roberto).map(x => ({ ...x, user: 'roberto' }));
+    this.http.get<{ lautaro: string[][], roberto: string[][] }>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
+      .subscribe(data => {
+        const parsedLautaroData: ExcerciseLog[] = this.processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' }));
+        const parsedRobertoData: ExcerciseLog[] = this.processData(data.roberto).map(x => ({ ...x, user: 'roberto' }));
 
-      this.excerciseLogs = parsedLautaroData.concat(parsedRobertoData);
+        this.excerciseLogs = parsedLautaroData.concat(parsedRobertoData);
 
-      this.parsedData = R.pipe(
-        this.excerciseLogs,
-        R.groupBy((item) => item.type),
-        R.mapValues(x => R.pipe(
-          x,
-          R.groupBy(y => y.name),
-          R.mapValues(y => R.groupBy(y, z => z.serie))
-        ))
-      )
+        this.parsedData = R.pipe(
+          this.excerciseLogs,
+          R.groupBy((item) => item.type),
+          R.mapValues(x => R.pipe(
+            x,
+            R.groupBy(y => y.name),
+            R.mapValues(y => R.groupBy(y, z => z.serie))
+          ))
+        )
 
-      const result: ExcerciseRow[] = R.pipe(
-        this.excerciseLogs,
-        R.groupBy(x => x.date),
-        R.mapValues(x => R.pipe(
-          x,
-          R.groupBy(y => y.user),
-          R.mapValues(y => R.pipe(
-            y,
-            R.groupBy(z => z.name),
+        const result: ExcerciseRow[] = R.pipe(
+          this.excerciseLogs,
+          R.groupBy(x => x.date),
+          R.mapValues(x => R.pipe(
+            x,
+            R.groupBy(y => y.user),
+            R.mapValues(y => R.pipe(
+              y,
+              R.groupBy(z => z.name),
+              R.toPairs
+            )),
             R.toPairs
           )),
-          R.toPairs
-        )),
-        R.toPairs,
-        R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, vvv]) => ({
-          date,
-          username: name,
-          excerciseName: excercise,
-          type: vvv[0].type,
-          series: vvv,
-          highlighted: vvv.every(x => x.weightKg === vvv[0].weightKg) && vvv.every(x => x.reps >= 12)
-        })))),
-        R.flatMap(x => R.flatMap(x, y => y)),
-        R.map(x => ({ ...x, date: dayjs(x.date, 'DD-MM-YYYY') })),
-        R.sort((a, b) => a.date.isBefore(b.date) ? 1 : -1),
-        R.map(x => ({ ...x, date: x.date.format('DD/MM/YYYY') }))
-      );
+          R.toPairs,
+          R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, vvv]) => ({
+            date,
+            username: name,
+            excerciseName: excercise,
+            type: vvv[0].type,
+            series: vvv,
+            highlighted: vvv.every(x => x.weightKg === vvv[0].weightKg) && vvv.every(x => x.reps >= 12)
+          })))),
+          R.flatMap(x => R.flatMap(x, y => y)),
+          R.map(x => ({ ...x, date: dayjs(x.date, 'DD-MM-YYYY') })),
+          R.sort((a, b) => a.date.isBefore(b.date) ? 1 : -1),
+          R.map(x => ({ ...x, date: x.date.format('DD/MM/YYYY') }))
+        );
 
-      this.excerciseRows = result;
-      this.excerciseRowsSubject.next(result);
+        this.excerciseRows = result;
+        this.excerciseRowsSubject.next(result);
 
-      this.types = R.pipe(
-        this.excerciseLogs,
-        R.map(x => x.type),
-        R.uniq()
-      );
+        this.types = R.pipe(
+          this.excerciseLogs,
+          R.map(x => x.type),
+          R.uniq()
+        );
 
-      this.usernames = R.pipe(
-        this.excerciseLogs,
-        R.map(x => x.user),
-        R.uniq()
-      );
+        this.usernames = R.pipe(
+          this.excerciseLogs,
+          R.map(x => x.user),
+          R.uniq()
+        );
 
-      const excercises = R.pipe(
-        this.excerciseLogs,
-        R.map(x => ({ name: x.name, type: x.type })),
-        R.uniqBy(x => x.name)
-      );
+        const excercises = R.pipe(
+          this.excerciseLogs,
+          R.map(x => ({ name: x.name, type: x.type })),
+          R.uniqBy(x => x.name)
+        );
 
-      this.excercisesSubject.next(excercises);
-      this.excerciseLogsSubject.next(this.excerciseLogs);
-    })
+        this.excercisesSubject.next(excercises);
+        this.excerciseLogsSubject.next(this.excerciseLogs);
+      })
   }
 
   public processData(data: string[][]): ExcerciseLog[] {
