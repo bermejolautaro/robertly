@@ -81,10 +81,15 @@
               <ng-template>
                 <table class="table table-striped" style="margin: 0">
                   <tbody>
-                    <tr *ngFor="let serie of excerciseRow.series">
-                      <td class="fw-bold">***REMOVED******REMOVED*** serie.serie ***REMOVED******REMOVED***</td>
-                      <td>***REMOVED******REMOVED*** serie.reps ***REMOVED******REMOVED***</td>
-                      <td>***REMOVED******REMOVED*** serie.weightKg ***REMOVED******REMOVED***kg</td>
+                    <tr class="row" *ngFor="let serie of excerciseRow.series">
+                      <td class="fw-bold col">Serie ***REMOVED******REMOVED*** serie.serie ***REMOVED******REMOVED***</td>
+                      <td class="col text-center">***REMOVED******REMOVED*** serie.reps ***REMOVED******REMOVED*** reps</td>
+                      <td class="col text-center">***REMOVED******REMOVED*** serie.weightKg ***REMOVED******REMOVED***kg</td>
+                    </tr>
+                    <tr class="row" *ngIf="excerciseRow.total">
+                      <td class="fw-bold col">Total</td>
+                      <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.total ***REMOVED******REMOVED*** reps</td>
+                      <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0].weightKg ***REMOVED******REMOVED***kg</td>
                     </tr>
                   </tbody>
                 </table>
@@ -96,16 +101,3 @@
     </div>
   </div>
 </div>
-
-<!-- <div class="container">
-  <div class="card" *ngFor="let groupedByType of parsedData | keyvalue">
-    <div class="card-body">
-      <h5 class="card-title">***REMOVED******REMOVED*** groupedByType.key ***REMOVED******REMOVED***</h5>
-      <h6 class="card-subtitle mb-2 text-muted">***REMOVED******REMOVED*** groupedByType.value | json ***REMOVED******REMOVED***</h6>
-      <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's
-        content.</p>
-      <a href="#" class="card-link">Card link</a>
-      <a href="#" class="card-link">Another link</a>
-    </div>
-  </div>
-</div> -->

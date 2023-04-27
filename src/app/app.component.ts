@@ -30,8 +30,9 @@ interface ExcerciseRow ***REMOVED***
   excerciseName: string;
   type: string;
   username: string;
-  series: ExcerciseLog[],
-  highlighted: boolean
+  series: ExcerciseLog[];
+  highlighted: boolean;
+  total: number | null;
 ***REMOVED***
 
 @Component(***REMOVED***
@@ -182,7 +183,8 @@ export class AppComponent implements OnInit ***REMOVED***
             excerciseName: excercise,
             type: vvv[0].type,
             series: vvv,
-            highlighted: vvv.every(x => x.weightKg === vvv[0].weightKg) && vvv.every(x => x.reps >= 12)
+            highlighted: vvv.every(x => x.weightKg === R.first(vvv).weightKg) && vvv.every(x => x.reps >= 12),
+            total: vvv.every(x => x.weightKg === R.first(vvv).weightKg) ? R.sumBy(vvv, x =>x.reps) : null
       ***REMOVED***)))),
           R.flatMap(x => R.flatMap(x, y => y)),
           R.map(x => (***REMOVED*** ...x, date: dayjs(x.date, 'DD-MM-YYYY') ***REMOVED***)),
@@ -268,9 +270,18 @@ export class AppComponent implements OnInit ***REMOVED***
         const repsString = data[element.row][i];
         const series = repsString?.split('|') ?? '';
 
+        if (!series) ***REMOVED***
+          continue;
+    ***REMOVED***
+
         for (let j = 0; j < series.length; j++) ***REMOVED***
           const serie = series[j];
           const [kg, reps] = serie.split('-');
+
+          if (!kg || !reps) ***REMOVED***
+            continue;
+      ***REMOVED***
+
           result3.push(***REMOVED***
             type: element.type.toLowerCase(),
             name: element.value.toLowerCase(),
