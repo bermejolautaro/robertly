@@ -81,10 +81,15 @@
               <ng-template>
                 <table class="table table-striped" style="margin: 0">
                   <tbody>
-                    <tr *ngFor="let serie of excerciseRow.series">
-                      <td class="fw-bold">{{ serie.serie }}</td>
-                      <td>{{ serie.reps }}</td>
-                      <td>{{ serie.weightKg }}kg</td>
+                    <tr class="row" *ngFor="let serie of excerciseRow.series">
+                      <td class="fw-bold col">Serie {{ serie.serie }}</td>
+                      <td class="col text-center">{{ serie.reps }} reps</td>
+                      <td class="col text-center">{{ serie.weightKg }}kg</td>
+                    </tr>
+                    <tr class="row" *ngIf="excerciseRow.total">
+                      <td class="fw-bold col">Total</td>
+                      <td class="col text-center">{{ excerciseRow.total }} reps</td>
+                      <td class="col text-center">{{ excerciseRow.series[0].weightKg }}kg</td>
                     </tr>
                   </tbody>
                 </table>
@@ -96,16 +101,3 @@
     </div>
   </div>
 </div>
-
-<!-- <div class="container">
-  <div class="card" *ngFor="let groupedByType of parsedData | keyvalue">
-    <div class="card-body">
-      <h5 class="card-title">{{ groupedByType.key }}</h5>
-      <h6 class="card-subtitle mb-2 text-muted">{{ groupedByType.value | json }}</h6>
-      <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's
-        content.</p>
-      <a href="#" class="card-link">Card link</a>
-      <a href="#" class="card-link">Another link</a>
-    </div>
-  </div>
-</div> -->
