@@ -10,3 +10,10 @@
   --bs-accordion-active-bg: hsl(120deg 72.55% 80%);
   --bs-accordion-border-color: hsl(120deg 72.55% 70%);
 }
+
+.form-switch {
+  input[type="checkbox"] {
+    width: 2.5rem;
+    height: 1.4rem;
+  }
+}

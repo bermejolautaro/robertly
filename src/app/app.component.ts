@@ -7,7 +7,7 @@ import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { filter, map, pairwise, startWith, tap } from 'rxjs/operators'
+import { filter, map, pairwise, startWith, take, tap } from 'rxjs/operators'
 
 import { ExcerciseLog } from '@models/excercise-log.model';
 import { ExcerciseLogApiService } from './services/excercise-log-api.service';
@@ -15,7 +15,7 @@ import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
 dayjs.extend(customParseFormat)
 
-type GroupedLog = readonly [string, Array<readonly [string, Array<[string, [ExcerciseLog, ...Array<ExcerciseLog>]]>]>];
+type GroupedLog = readonly [string, Array<readonly [string, Array<readonly [string, Array<ExcerciseLog>]>]>];
 
 interface Excercise {
   name: string;
@@ -63,17 +63,24 @@ export class AppComponent implements OnInit {
     private readonly excerciseLogApiService: ExcerciseLogApiService,
     private readonly serviceWorkerUpdates: SwUpdate) {
 
-      this.serviceWorkerUpdates.versionUpdates.pipe(
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
-      ).subscribe(() => {
-        document.location.reload();
-      });
+    this.serviceWorkerUpdates.versionUpdates.pipe(
+      filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
+      take(1)
+    ).subscribe(() => {
+      document.location.reload();
+    });
 
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
       pairwise(),
       tap(([oldValue, currentValue]) => {
-        if (oldValue !== currentValue) {
+        if (oldValue === currentValue || !currentValue) {
+          return;
+        }
+        const selectedExcercise = this.selectedExcerciseSubject.value;
+        const selectedExcerciseType = this.excerciseRowsSubject.value.find(x => x.excerciseName === selectedExcercise)?.type
+
+        if (currentValue != selectedExcerciseType) {
           this.selectedExcerciseSubject.next(null);
         }
       }),
@@ -126,38 +133,42 @@ export class AppComponent implements OnInit {
       this.selectedTypeSubject,
       this.selectedUsernameSubject
     ]).pipe(
-      map(([groups, selectedExcercise, selectedTypeSubject, selectedUsername]) => {
+      map(([groups, selectedExcercise, selectedType, selectedUsername]) => {
         const result = R.pipe(
           groups,
-          R.map(([date, v]) => {
-            let x = v.filter(([username]) => {
-              let result = true;
+          R.map(([date, valuesByDate]) => {
+            const filteredValuesByDate = R.pipe(
+              valuesByDate,
+              R.filter(([username]) => filterValuesByUsername(selectedUsername, username)),
+              R.map(([username, valuesByUsername]) => {
+                const filteredValuesByUsername = R.pipe(
+                  valuesByUsername,
+                  R.map(([excercise, valuesByExcercise]) => {
+                    const filteredValuesByExcercise = R.pipe(
+                      valuesByExcercise,
+                      R.filter(x => {
+                        if (selectedType) {
+                          return selectedType === x.type
+                        } else {
+                          return true;
+                        }
+                      })
+                    )
 
-              if (selectedUsername) {
-                result &&= username === selectedUsername
-              }
+                    return [excercise, filteredValuesByExcercise] as const;
+                  }),
+                  R.filter(([excercise]) => filterValuesByExcercise(selectedExcercise, excercise)),
+                  R.filter(([_, x]) => x.length > 0)
+                )
 
-              return result;
-            }).map(([username, vv]) => {
-              let y = vv.filter(([excercise]) => {
-                let result = true;
+                return [username, filteredValuesByUsername] as const;
+              }),
+              R.filter(([_, x]) => x.length > 0));
 
-                if (selectedExcercise) {
-                  result &&= excercise === selectedExcercise;
-                }
-
-                return result;
-              })
-
-              return [username, y] as const;
-            })
-
-            return [date, x] as const;
+            return [date, filteredValuesByDate] as const;
           }),
-          R.filter(([_, v]) => v.length > 0)
+          R.filter(([_, x]) => x.length > 0)
         )
-
-        console.log(result);
 
         return result;
       }))
@@ -226,4 +237,24 @@ export class AppComponent implements OnInit {
         this.excercisesSubject.next(excercises);
       })
   }
+}
+
+function filterValuesByExcercise(selectedExcercise: string | null, excercise: string): boolean {
+  let result = true;
+
+  if (selectedExcercise) {
+    result &&= excercise === selectedExcercise;
+  }
+
+  return result;
+}
+
+function filterValuesByUsername(selectedUsername: string | null, username: string): boolean {
+  let result = true;
+
+  if (selectedUsername) {
+    result &&= username === selectedUsername
+  }
+
+  return result;
 }
