@@ -1,24 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient, HttpClientModule } from '@angular/common/http'
+import { HttpClient } from '@angular/common/http'
+
 import * as R from 'remeda';
+
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
-import { BehaviorSubject, Observable, combineLatest, forkJoin } from 'rxjs';
+
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { map, pairwise, startWith, tap } from 'rxjs/operators'
-import { AsyncPipe, NgClass, NgFor, TitleCasePipe } from '@angular/common';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+
+import { ExcerciseLog } from '@models/excercise-log.model';
+import { ExcerciseLogApiService } from './services/excercise-log-api.service';
 
 dayjs.extend(customParseFormat)
 
-interface ExcerciseLog {
-  date: string;
-  weightKg: number;
-  name: string;
-  reps: number;
-  serie: number;
-  type: string;
-  user: string;
-}
+type GroupedLog = readonly [string, Array<readonly [string, Array<[string, [ExcerciseLog, ...Array<ExcerciseLog>]]>]>];
 
 interface Excercise {
   name: string;
@@ -41,34 +37,28 @@ interface ExcerciseRow {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
-  public excerciseLogs: ExcerciseLog[] = [];
-
-  public excerciseRows: ExcerciseRow[] = [];
   public excerciseRowsSubject: BehaviorSubject<ExcerciseRow[]> = new BehaviorSubject<ExcerciseRow[]>([]);
   public excerciseRows$: Observable<ExcerciseRow[]>;
 
-  public excerciseLogsSubject: BehaviorSubject<ExcerciseLog[]> = new BehaviorSubject<ExcerciseLog[]>([]);
-  public excerciseLogs$: Observable<ExcerciseLog[]> = this.excerciseLogsSubject.asObservable();
-
+  public types: string[] = [];
   public selectedTypeSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
   public selectedType$: Observable<string>;
 
-  public selectedExcerciseSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
-  public selectedExcercise$: Observable<string>;
-
   public excercisesSubject: BehaviorSubject<Excercise[]> = new BehaviorSubject<Excercise[]>([]);
   public excercises$: Observable<string[]>;
+  public selectedExcerciseSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  public selectedExcercise$: Observable<string>;
 
   public usernames: string[] = [];
   public selectedUsernameSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
   public selectedUsername$: Observable<string>;
 
-  public types: string[] = [];
+  public groupedLogsSubject: BehaviorSubject<GroupedLog[]> = new BehaviorSubject<GroupedLog[]>([]);
+  public groupedLogs$: Observable<GroupedLog[]>;
 
+  public isGrouped: boolean = false;
 
-  public parsedData: Record<PropertyKey, Record<PropertyKey, Record<PropertyKey, [ExcerciseLog, ...ExcerciseLog[]]>>> = {};
-
-  public constructor(private readonly http: HttpClient) {
+  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService) {
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
       pairwise(),
@@ -96,30 +86,6 @@ export class AppComponent implements OnInit {
       map(x => x.map(x => x.name)),
     )
 
-    this.excerciseLogs$ = combineLatest([
-      this.excerciseLogsSubject,
-      this.selectedExcerciseSubject,
-      this.selectedTypeSubject,
-      this.selectedUsernameSubject
-    ]).pipe(
-      map(([logs, selectedExcercise, selectedTypeSubject, selectedUsername]) => {
-        let result = logs;
-
-        if (selectedTypeSubject) {
-          result = R.filter(result, x => x.type === selectedTypeSubject);
-        }
-
-        if (selectedExcercise) {
-          result = R.filter(result, x => x.name === selectedExcercise);
-        }
-
-        if (selectedUsername) {
-          result = R.filter(result, x => x.user === selectedUsername)
-        }
-
-        return result;
-      }))
-
     this.excerciseRows$ = combineLatest([
       this.excerciseRowsSubject,
       this.selectedExcerciseSubject,
@@ -143,28 +109,56 @@ export class AppComponent implements OnInit {
 
         return result;
       }))
+
+    this.groupedLogs$ = combineLatest([
+      this.groupedLogsSubject,
+      this.selectedExcerciseSubject,
+      this.selectedTypeSubject,
+      this.selectedUsernameSubject
+    ]).pipe(
+      map(([groups, selectedExcercise, selectedTypeSubject, selectedUsername]) => {
+        const result = R.pipe(
+          groups,
+          R.map(([date, v]) => {
+            let x = v.filter(([username]) => {
+              let result = true;
+
+              if (selectedUsername) {
+                result &&= username === selectedUsername
+              }
+
+              return result;
+            }).map(([username, vv]) => {
+              let y = vv.filter(([excercise]) => {
+                let result = true;
+
+                if (selectedExcercise) {
+                  result &&= excercise === selectedExcercise;
+                }
+
+                return result;
+              })
+
+              return [username, y] as const;
+            })
+
+            return [date, x] as const;
+          }),
+          R.filter(([_, v]) => v.length > 0)
+        )
+
+        console.log(result);
+
+        return result;
+      }))
   }
 
   public ngOnInit(): void {
-    this.http.get<{ lautaro: string[][], roberto: string[][] }>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
-      .subscribe(data => {
-        const parsedLautaroData: ExcerciseLog[] = this.processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' }));
-        const parsedRobertoData: ExcerciseLog[] = this.processData(data.roberto).map(x => ({ ...x, user: 'roberto' }));
+    this.excerciseLogApiService.getExcerciseLogs()
+      .subscribe(excerciseLogs => {
 
-        this.excerciseLogs = parsedLautaroData.concat(parsedRobertoData);
-
-        this.parsedData = R.pipe(
-          this.excerciseLogs,
-          R.groupBy((item) => item.type),
-          R.mapValues(x => R.pipe(
-            x,
-            R.groupBy(y => y.name),
-            R.mapValues(y => R.groupBy(y, z => z.serie))
-          ))
-        )
-
-        const result: ExcerciseRow[] = R.pipe(
-          this.excerciseLogs,
+        const groupedLogs = R.pipe(
+          excerciseLogs,
           R.groupBy(x => x.date),
           R.mapValues(x => R.pipe(
             x,
@@ -177,14 +171,21 @@ export class AppComponent implements OnInit {
             R.toPairs
           )),
           R.toPairs,
-          R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, vvv]) => ({
+          R.sort(([dateA], [dateB]) => dayjs(dateA, 'DD-MM-YYYY').isBefore(dayjs(dateB, 'DD-MM-YYYY')) ? 1 : -1)
+        );
+
+        this.groupedLogsSubject.next(groupedLogs)
+
+        const excerciseRows = R.pipe(
+          groupedLogs,
+          R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, log]) => ({
             date,
             username: name,
             excerciseName: excercise,
-            type: vvv[0].type,
-            series: vvv,
-            highlighted: vvv.every(x => x.weightKg === R.first(vvv).weightKg) && vvv.every(x => x.reps >= 12),
-            total: vvv.every(x => x.weightKg === R.first(vvv).weightKg) ? R.sumBy(vvv, x =>x.reps) : null
+            type: R.first(log).type,
+            series: log,
+            highlighted: log.every(x => x.weightKg === R.first(log).weightKg) && log.every(x => x.reps >= 12),
+            total: log.every(x => x.weightKg === R.first(log).weightKg) ? R.sumBy(log, x => x.reps) : null
           })))),
           R.flatMap(x => R.flatMap(x, y => y)),
           R.map(x => ({ ...x, date: dayjs(x.date, 'DD-MM-YYYY') })),
@@ -192,110 +193,27 @@ export class AppComponent implements OnInit {
           R.map(x => ({ ...x, date: x.date.format('DD/MM/YYYY') }))
         );
 
-        this.excerciseRows = result;
-        this.excerciseRowsSubject.next(result);
+        this.excerciseRowsSubject.next(excerciseRows);
 
         this.types = R.pipe(
-          this.excerciseLogs,
+          excerciseLogs,
           R.map(x => x.type),
           R.uniq()
         );
 
         this.usernames = R.pipe(
-          this.excerciseLogs,
+          excerciseLogs,
           R.map(x => x.user),
           R.uniq()
         );
 
         const excercises = R.pipe(
-          this.excerciseLogs,
+          excerciseLogs,
           R.map(x => ({ name: x.name, type: x.type })),
           R.uniqBy(x => x.name)
         );
 
         this.excercisesSubject.next(excercises);
-        this.excerciseLogsSubject.next(this.excerciseLogs);
       })
-  }
-
-  public processData(data: string[][]): ExcerciseLog[] {
-    const result = [];
-
-    for (let i = 0; i < data.length; i++) {
-      const prevRow = data[i - 1];
-      const row = data[i];
-      const nextRow = data[i + 1];
-
-      for (let j = 0; j < row.length; j++) {
-        const element = row[j]
-
-        const isHeader = j === 0 && (i === 0 || ((prevRow.length === 0 || prevRow[0] === '') && (nextRow.length === 0 || nextRow[0] === '')));
-        const isExerciseName = j === 0 && !isHeader && !!element
-
-        if (isHeader) {
-          result.push({ header: true, value: element, row: i, col: j });
-        } else if (isExerciseName) {
-          result.push({ header: false, value: element, row: i, col: j });
-        }
-      }
-    }
-
-    const result2 = [];
-
-    const dateRowIndexByType: Record<string, number> = {};
-
-    let lastHeader = '';
-
-    for (const element of result) {
-
-      if (element.header) {
-        dateRowIndexByType[element.value] = element.row + 1;
-        lastHeader = element.value;
-      } else {
-        result2.push({
-          value: element.value,
-          row: element.row,
-          col: element.col,
-          type: lastHeader
-        })
-      }
-    }
-
-    const result3 = [];
-
-    for (const element of result2) {
-      const dateRowIndex = dateRowIndexByType[element.type]
-
-      for (let i = 1; i < data[dateRowIndex].length; i++) {
-        const repsString = data[element.row][i];
-        const series = repsString?.split('|') ?? '';
-
-        if (!series) {
-          continue;
-        }
-
-        for (let j = 0; j < series.length; j++) {
-          const serie = series[j];
-          const [kg, reps] = serie.split('-');
-
-          if (!kg || !reps) {
-            continue;
-          }
-
-          result3.push({
-            type: element.type.toLowerCase(),
-            name: element.value.toLowerCase(),
-            date: data[dateRowIndex][i],
-            serie: j + 1,
-            weightKg: Number(kg.replace(',', '.')),
-            reps: Number(reps),
-            user: ''
-          })
-        }
-
-      }
-    }
-
-    return result3;
   }
 }
