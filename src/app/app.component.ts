@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http'
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
 import * as R from 'remeda';
 
@@ -7,29 +7,20 @@ import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { filter, map, pairwise, startWith, take, tap } from 'rxjs/operators'
+import { filter, finalize, map, pairwise, startWith, take, tap } from 'rxjs/operators'
 
-import { ExcerciseLog } from '@models/excercise-log.model';
-import { ExcerciseLogApiService } from './services/excercise-log-api.service';
-import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { ExcerciseRow } from '@models/excercise-row.model';
+import { GroupedLog } from '@models/grouped-log.model';
+import { ExcerciseLogApiService } from '@services/excercise-log-api.service';
+
+
 
 dayjs.extend(customParseFormat)
 
-type GroupedLog = readonly [string, Array<readonly [string, Array<readonly [string, Array<ExcerciseLog>]>]>];
 
 interface Excercise {
   name: string;
   type: string;
-}
-
-interface ExcerciseRow {
-  date: string;
-  excerciseName: string;
-  type: string;
-  username: string;
-  series: ExcerciseLog[];
-  highlighted: boolean;
-  total: number | null;
 }
 
 @Component({
@@ -58,6 +49,7 @@ export class AppComponent implements OnInit {
   public groupedLogs$: Observable<GroupedLog[]>;
 
   public isGrouped: boolean = false;
+  public isLoading: boolean = true;
 
   public constructor(
     private readonly excerciseLogApiService: ExcerciseLogApiService,
@@ -175,67 +167,69 @@ export class AppComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.excerciseLogApiService.getExcerciseLogs()
-      .subscribe(excerciseLogs => {
+    this.isLoading = true;
+    this.excerciseLogApiService.getExcerciseLogs().pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe(excerciseLogs => {
 
-        const groupedLogs = R.pipe(
-          excerciseLogs,
-          R.groupBy(x => x.date),
-          R.mapValues(x => R.pipe(
-            x,
-            R.groupBy(y => y.user),
-            R.mapValues(y => R.pipe(
-              y,
-              R.groupBy(z => z.name),
-              R.toPairs
-            )),
+      const groupedLogs = R.pipe(
+        excerciseLogs,
+        R.groupBy(x => x.date),
+        R.mapValues(x => R.pipe(
+          x,
+          R.groupBy(y => y.user),
+          R.mapValues(y => R.pipe(
+            y,
+            R.groupBy(z => z.name),
             R.toPairs
           )),
-          R.toPairs,
-          R.sort(([dateA], [dateB]) => dayjs(dateA, 'DD-MM-YYYY').isBefore(dayjs(dateB, 'DD-MM-YYYY')) ? 1 : -1)
-        );
+          R.toPairs
+        )),
+        R.toPairs,
+        R.sort(([dateA], [dateB]) => dayjs(dateA, 'DD-MM-YYYY').isBefore(dayjs(dateB, 'DD-MM-YYYY')) ? 1 : -1)
+      );
 
-        this.groupedLogsSubject.next(groupedLogs)
+      this.groupedLogsSubject.next(groupedLogs)
 
-        const excerciseRows = R.pipe(
-          groupedLogs,
-          R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, log]) => ({
-            date,
-            username: name,
-            excerciseName: excercise,
-            type: R.first(log).type,
-            series: log,
-            highlighted: log.every(x => x.weightKg === R.first(log).weightKg) && log.every(x => x.reps >= 12),
-            total: log.every(x => x.weightKg === R.first(log).weightKg) ? R.sumBy(log, x => x.reps) : null
-          })))),
-          R.flatMap(x => R.flatMap(x, y => y)),
-          R.map(x => ({ ...x, date: dayjs(x.date, 'DD-MM-YYYY') })),
-          R.sort((a, b) => a.date.isBefore(b.date) ? 1 : -1),
-          R.map(x => ({ ...x, date: x.date.format('DD/MM/YYYY') }))
-        );
+      const excerciseRows = R.pipe(
+        groupedLogs,
+        R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, log]) => ({
+          date,
+          username: name,
+          excerciseName: excercise,
+          type: R.first(log).type,
+          series: log,
+          highlighted: log.every(x => x.weightKg === R.first(log).weightKg) && log.every(x => x.reps >= 12),
+          total: log.every(x => x.weightKg === R.first(log).weightKg) ? R.sumBy(log, x => x.reps) : null
+        })))),
+        R.flatMap(x => R.flatMap(x, y => y)),
+        R.map(x => ({ ...x, date: dayjs(x.date, 'DD-MM-YYYY') })),
+        R.sort((a, b) => a.date.isBefore(b.date) ? 1 : -1),
+        R.map(x => ({ ...x, date: x.date.format('DD/MM/YYYY') }))
+      );
 
-        this.excerciseRowsSubject.next(excerciseRows);
+      this.excerciseRowsSubject.next(excerciseRows);
 
-        this.types = R.pipe(
-          excerciseLogs,
-          R.map(x => x.type),
-          R.uniq()
-        );
+      this.types = R.pipe(
+        excerciseLogs,
+        R.map(x => x.type),
+        R.uniq()
+      );
 
-        this.usernames = R.pipe(
-          excerciseLogs,
-          R.map(x => x.user),
-          R.uniq()
-        );
+      this.usernames = R.pipe(
+        excerciseLogs,
+        R.map(x => x.user),
+        R.uniq()
+      );
 
-        const excercises = R.pipe(
-          excerciseLogs,
-          R.map(x => ({ name: x.name, type: x.type })),
-          R.uniqBy(x => x.name)
-        );
+      const excercises = R.pipe(
+        excerciseLogs,
+        R.map(x => ({ name: x.name, type: x.type })),
+        R.uniqBy(x => x.name)
+      );
 
-        this.excercisesSubject.next(excercises);
-      })
+      this.excercisesSubject.next(excercises);
+    })
   }
 }
 

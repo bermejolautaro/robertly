@@ -6,7 +6,9 @@
       "@app/*": ["src/app/*"],
       "@helpers/*": ["src/app/helpers/*"],
       "@services/*": ["src/app/services/*"],
-      "@models/*": ["src/app/models/*"]
+      "@models/*": ["src/app/models/*"],
+      "@components/*": ["src/app/components/*"],
+      "@pipes/*": ["src/app/pipes/*"]
     },
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
