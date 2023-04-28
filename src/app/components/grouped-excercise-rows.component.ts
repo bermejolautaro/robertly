@@ -2,6 +2,7 @@ import ***REMOVED*** NgFor, TitleCasePipe ***REMOVED*** from "@angular/common";
 import ***REMOVED*** Component, Input ***REMOVED*** from "@angular/core";
 
 import ***REMOVED*** GroupedLog ***REMOVED*** from "@app/models/grouped-log.model";
+import ***REMOVED*** NgbAccordionModule, NgbModule ***REMOVED*** from "@ng-bootstrap/ng-bootstrap";
 
 @Component(***REMOVED***
   selector: 'app-grouped-excercise-rows',
@@ -79,7 +80,7 @@ import ***REMOVED*** GroupedLog ***REMOVED*** from "@app/models/grouped-log.mode
   `,
   styles: [``],
   standalone: true,
-  imports: [NgFor, TitleCasePipe]
+  imports: [NgFor, NgbAccordionModule, TitleCasePipe]
 ***REMOVED***)
 export class GroupedExcerciseRowsComponent ***REMOVED***
   @Input() public groupedExcerciseLogs: GroupedLog[] = [];

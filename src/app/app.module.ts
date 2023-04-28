@@ -1,7 +1,7 @@
 import ***REMOVED*** NgModule, isDevMode ***REMOVED*** from '@angular/core';
 
 import ***REMOVED*** HttpClientModule ***REMOVED*** from '@angular/common/http';
-import ***REMOVED*** NgbModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import ***REMOVED*** NgbDropdownModule, NgbModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 import ***REMOVED*** CommonModule ***REMOVED*** from '@angular/common';
 import ***REMOVED*** BrowserModule ***REMOVED*** from '@angular/platform-browser';
 import ***REMOVED*** ServiceWorkerModule ***REMOVED*** from '@angular/service-worker';
@@ -17,7 +17,7 @@ import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-emp
   declarations: [AppComponent],
   imports: [
     HttpClientModule,
-    NgbModule,
+    NgbDropdownModule,
     CommonModule,
     BrowserModule,
     FormsModule,

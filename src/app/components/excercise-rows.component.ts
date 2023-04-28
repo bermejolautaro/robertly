@@ -1,7 +1,7 @@
 import ***REMOVED*** NgClass, NgFor, NgIf, TitleCasePipe ***REMOVED*** from "@angular/common";
 import ***REMOVED*** Component, Input ***REMOVED*** from "@angular/core";
 
-import ***REMOVED*** NgbModule ***REMOVED*** from "@ng-bootstrap/ng-bootstrap";
+import ***REMOVED*** NgbAccordionModule ***REMOVED*** from "@ng-bootstrap/ng-bootstrap";
 
 import ***REMOVED*** ExcerciseRow ***REMOVED*** from "@app/models/excercise-row.model";
 
@@ -56,7 +56,7 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from "@app/models/excercise-row.
   `,
   styles: [``],
   standalone: true,
-  imports: [NgFor, NgIf, TitleCasePipe, NgClass, NgbModule]
+  imports: [NgFor, NgIf, TitleCasePipe, NgClass, NgbAccordionModule]
 ***REMOVED***)
 export class ExcerciseRowsComponent ***REMOVED***
   @Input() public excerciseRows: ExcerciseRow[] = [];
