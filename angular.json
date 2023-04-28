@@ -43,6 +43,13 @@
       ***REMOVED***,
           "configurations": ***REMOVED***
             "production": ***REMOVED***
+              "optimization": ***REMOVED***
+                "scripts": true,
+                "styles": ***REMOVED***
+                  "minify": true,
+                  "inlineCritical": false
+            ***REMOVED***
+          ***REMOVED***,
               "budgets": [
                 ***REMOVED***
                   "type": "initial",
