@@ -2,6 +2,12 @@
 ***REMOVED***
   "compileOnSave": false,
   "compilerOptions": ***REMOVED***
+    "paths": ***REMOVED***
+      "@app/*": ["src/app/*"],
+      "@helpers/*": ["src/app/helpers/*"],
+      "@services/*": ["src/app/services/*"],
+      "@models/*": ["src/app/models/*"]
+***REMOVED***,
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,

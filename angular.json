@@ -17,6 +17,10 @@
         "build": ***REMOVED***
           "builder": "@angular-devkit/build-angular:browser",
           "options": ***REMOVED***
+            "allowedCommonJsDependencies": [
+              "dayjs",
+              "dayjs/plugin/customParseFormat"
+            ],
             "outputPath": "dist/gym-angular-excel",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -42,7 +46,7 @@
               "budgets": [
                 ***REMOVED***
                   "type": "initial",
-                  "maximumWarning": "500kb",
+                  "maximumWarning": "700kb",
                   "maximumError": "1mb"
             ***REMOVED***,
                 ***REMOVED***

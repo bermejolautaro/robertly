@@ -6,6 +6,7 @@ import ***REMOVED*** NgbModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 import ***REMOVED*** CommonModule ***REMOVED*** from '@angular/common';
 import ***REMOVED*** BrowserModule ***REMOVED*** from '@angular/platform-browser';
 import ***REMOVED*** ServiceWorkerModule ***REMOVED*** from '@angular/service-worker';
+import ***REMOVED*** FormsModule, ReactiveFormsModule ***REMOVED*** from '@angular/forms';
 
 @NgModule(***REMOVED***
   declarations: [AppComponent],
@@ -14,6 +15,8 @@ import ***REMOVED*** ServiceWorkerModule ***REMOVED*** from '@angular/service-wo
     NgbModule,
     CommonModule,
     BrowserModule,
+    FormsModule,
+    ReactiveFormsModule,
     ServiceWorkerModule.register('ngsw-worker.js', ***REMOVED***
       enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
