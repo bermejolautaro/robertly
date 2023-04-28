@@ -7,10 +7,11 @@ import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import ***REMOVED*** BehaviorSubject, Observable, combineLatest ***REMOVED*** from 'rxjs';
-import ***REMOVED*** map, pairwise, startWith, tap ***REMOVED*** from 'rxjs/operators'
+import ***REMOVED*** filter, map, pairwise, startWith, tap ***REMOVED*** from 'rxjs/operators'
 
 import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
 import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from './services/excercise-log-api.service';
+import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
 
 dayjs.extend(customParseFormat)
 
@@ -58,7 +59,16 @@ export class AppComponent implements OnInit ***REMOVED***
 
   public isGrouped: boolean = false;
 
-  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService) ***REMOVED***
+  public constructor(
+    private readonly excerciseLogApiService: ExcerciseLogApiService,
+    private readonly serviceWorkerUpdates: SwUpdate) ***REMOVED***
+
+      this.serviceWorkerUpdates.versionUpdates.pipe(
+        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
+      ).subscribe(() => ***REMOVED***
+        document.location.reload();
+  ***REMOVED***);
+
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
       pairwise(),
