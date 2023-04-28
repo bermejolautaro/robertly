@@ -1,12 +1,17 @@
 import ***REMOVED*** NgModule, isDevMode ***REMOVED*** from '@angular/core';
 
-import ***REMOVED*** AppComponent ***REMOVED*** from './app.component';
 import ***REMOVED*** HttpClientModule ***REMOVED*** from '@angular/common/http';
 import ***REMOVED*** NgbModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 import ***REMOVED*** CommonModule ***REMOVED*** from '@angular/common';
 import ***REMOVED*** BrowserModule ***REMOVED*** from '@angular/platform-browser';
 import ***REMOVED*** ServiceWorkerModule ***REMOVED*** from '@angular/service-worker';
 import ***REMOVED*** FormsModule, ReactiveFormsModule ***REMOVED*** from '@angular/forms';
+
+import ***REMOVED*** AppComponent ***REMOVED*** from '@app/app.component';
+
+import ***REMOVED*** ExcerciseRowsComponent ***REMOVED*** from '@components/excercise-rows.component';
+import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@components/grouped-excercise-rows.component';
+import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-empty-array.pipe';
 
 @NgModule(***REMOVED***
   declarations: [AppComponent],
@@ -22,7 +27,10 @@ import ***REMOVED*** FormsModule, ReactiveFormsModule ***REMOVED*** from '@angul
       // Register the ServiceWorker as soon as the application is stable
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
-***REMOVED***)
+***REMOVED***),
+    ExcerciseRowsComponent,
+    GroupedExcerciseRowsComponent,
+    IfNullEmptyArrayPipe
   ],
   providers: [],
   bootstrap: [AppComponent]

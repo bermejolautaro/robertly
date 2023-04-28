@@ -1,5 +1,5 @@
 import ***REMOVED*** Component, OnInit ***REMOVED*** from '@angular/core';
-import ***REMOVED*** HttpClient ***REMOVED*** from '@angular/common/http'
+import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
 
 import * as R from 'remeda';
 
@@ -7,29 +7,20 @@ import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import ***REMOVED*** BehaviorSubject, Observable, combineLatest ***REMOVED*** from 'rxjs';
-import ***REMOVED*** filter, map, pairwise, startWith, take, tap ***REMOVED*** from 'rxjs/operators'
+import ***REMOVED*** filter, finalize, map, pairwise, startWith, take, tap ***REMOVED*** from 'rxjs/operators'
 
-import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
-import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from './services/excercise-log-api.service';
-import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
+import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** GroupedLog ***REMOVED*** from '@models/grouped-log.model';
+import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
+
+
 
 dayjs.extend(customParseFormat)
 
-type GroupedLog = readonly [string, Array<readonly [string, Array<readonly [string, Array<ExcerciseLog>]>]>];
 
 interface Excercise ***REMOVED***
   name: string;
   type: string;
-***REMOVED***
-
-interface ExcerciseRow ***REMOVED***
-  date: string;
-  excerciseName: string;
-  type: string;
-  username: string;
-  series: ExcerciseLog[];
-  highlighted: boolean;
-  total: number | null;
 ***REMOVED***
 
 @Component(***REMOVED***
@@ -58,6 +49,7 @@ export class AppComponent implements OnInit ***REMOVED***
   public groupedLogs$: Observable<GroupedLog[]>;
 
   public isGrouped: boolean = false;
+  public isLoading: boolean = true;
 
   public constructor(
     private readonly excerciseLogApiService: ExcerciseLogApiService,
@@ -175,67 +167,69 @@ export class AppComponent implements OnInit ***REMOVED***
 ***REMOVED***
 
   public ngOnInit(): void ***REMOVED***
-    this.excerciseLogApiService.getExcerciseLogs()
-      .subscribe(excerciseLogs => ***REMOVED***
+    this.isLoading = true;
+    this.excerciseLogApiService.getExcerciseLogs().pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe(excerciseLogs => ***REMOVED***
 
-        const groupedLogs = R.pipe(
-          excerciseLogs,
-          R.groupBy(x => x.date),
-          R.mapValues(x => R.pipe(
-            x,
-            R.groupBy(y => y.user),
-            R.mapValues(y => R.pipe(
-              y,
-              R.groupBy(z => z.name),
-              R.toPairs
-            )),
+      const groupedLogs = R.pipe(
+        excerciseLogs,
+        R.groupBy(x => x.date),
+        R.mapValues(x => R.pipe(
+          x,
+          R.groupBy(y => y.user),
+          R.mapValues(y => R.pipe(
+            y,
+            R.groupBy(z => z.name),
             R.toPairs
           )),
-          R.toPairs,
-          R.sort(([dateA], [dateB]) => dayjs(dateA, 'DD-MM-YYYY').isBefore(dayjs(dateB, 'DD-MM-YYYY')) ? 1 : -1)
-        );
+          R.toPairs
+        )),
+        R.toPairs,
+        R.sort(([dateA], [dateB]) => dayjs(dateA, 'DD-MM-YYYY').isBefore(dayjs(dateB, 'DD-MM-YYYY')) ? 1 : -1)
+      );
 
-        this.groupedLogsSubject.next(groupedLogs)
+      this.groupedLogsSubject.next(groupedLogs)
 
-        const excerciseRows = R.pipe(
-          groupedLogs,
-          R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, log]) => (***REMOVED***
-            date,
-            username: name,
-            excerciseName: excercise,
-            type: R.first(log).type,
-            series: log,
-            highlighted: log.every(x => x.weightKg === R.first(log).weightKg) && log.every(x => x.reps >= 12),
-            total: log.every(x => x.weightKg === R.first(log).weightKg) ? R.sumBy(log, x => x.reps) : null
-      ***REMOVED***)))),
-          R.flatMap(x => R.flatMap(x, y => y)),
-          R.map(x => (***REMOVED*** ...x, date: dayjs(x.date, 'DD-MM-YYYY') ***REMOVED***)),
-          R.sort((a, b) => a.date.isBefore(b.date) ? 1 : -1),
-          R.map(x => (***REMOVED*** ...x, date: x.date.format('DD/MM/YYYY') ***REMOVED***))
-        );
+      const excerciseRows = R.pipe(
+        groupedLogs,
+        R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, log]) => (***REMOVED***
+          date,
+          username: name,
+          excerciseName: excercise,
+          type: R.first(log).type,
+          series: log,
+          highlighted: log.every(x => x.weightKg === R.first(log).weightKg) && log.every(x => x.reps >= 12),
+          total: log.every(x => x.weightKg === R.first(log).weightKg) ? R.sumBy(log, x => x.reps) : null
+    ***REMOVED***)))),
+        R.flatMap(x => R.flatMap(x, y => y)),
+        R.map(x => (***REMOVED*** ...x, date: dayjs(x.date, 'DD-MM-YYYY') ***REMOVED***)),
+        R.sort((a, b) => a.date.isBefore(b.date) ? 1 : -1),
+        R.map(x => (***REMOVED*** ...x, date: x.date.format('DD/MM/YYYY') ***REMOVED***))
+      );
 
-        this.excerciseRowsSubject.next(excerciseRows);
+      this.excerciseRowsSubject.next(excerciseRows);
 
-        this.types = R.pipe(
-          excerciseLogs,
-          R.map(x => x.type),
-          R.uniq()
-        );
+      this.types = R.pipe(
+        excerciseLogs,
+        R.map(x => x.type),
+        R.uniq()
+      );
 
-        this.usernames = R.pipe(
-          excerciseLogs,
-          R.map(x => x.user),
-          R.uniq()
-        );
+      this.usernames = R.pipe(
+        excerciseLogs,
+        R.map(x => x.user),
+        R.uniq()
+      );
 
-        const excercises = R.pipe(
-          excerciseLogs,
-          R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
-          R.uniqBy(x => x.name)
-        );
+      const excercises = R.pipe(
+        excerciseLogs,
+        R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
+        R.uniqBy(x => x.name)
+      );
 
-        this.excercisesSubject.next(excercises);
-  ***REMOVED***)
+      this.excercisesSubject.next(excercises);
+***REMOVED***)
 ***REMOVED***
 ***REMOVED***
 
