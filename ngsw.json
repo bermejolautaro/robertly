@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1682695645397,
+  "timestamp": 1682699835340,
   "index": "/gym-tracker-excel/index.html",
   "assetGroups": [
     {
@@ -13,11 +13,11 @@
       "urls": [
         "/gym-tracker-excel/favicon.ico",
         "/gym-tracker-excel/index.html",
-        "/gym-tracker-excel/main.dc9958b5463a261a.js",
+        "/gym-tracker-excel/main.96f50b72036e9a77.js",
         "/gym-tracker-excel/manifest.webmanifest",
         "/gym-tracker-excel/polyfills.fa299dd04a586707.js",
         "/gym-tracker-excel/runtime.6cb69b4d37d287ea.js",
-        "/gym-tracker-excel/styles.72bb3d9d4718aea9.css"
+        "/gym-tracker-excel/styles.376b3c5fde99deeb.css"
       ],
       "patterns": []
     },
@@ -46,12 +46,12 @@
     "/gym-tracker-excel/assets/icons/favicon-16x16.png": "1f98d03c4e43df6ace155d6aee14b3a3aded23a8",
     "/gym-tracker-excel/assets/icons/favicon-32x32.png": "08bfeb096acfb43dd330af0fd5715d6095343ec2",
     "/gym-tracker-excel/favicon.ico": "0612a0d81b1313c6da6056e10fd3fd401bd771dc",
-    "/gym-tracker-excel/index.html": "6aa67828f32f36d8d9fb22080dc64335b092d5a7",
-    "/gym-tracker-excel/main.dc9958b5463a261a.js": "3a10abef721ff6ec0b5faef5cbf23c84e3e8a745",
+    "/gym-tracker-excel/index.html": "6757faaa33624efa56e0116c2d2473643fe17444",
+    "/gym-tracker-excel/main.96f50b72036e9a77.js": "2fbae2534ecc27c193fc277d7143a4629a2e562c",
     "/gym-tracker-excel/manifest.webmanifest": "9de2038d8797196314fd830ce9264e9de6fc7d19",
     "/gym-tracker-excel/polyfills.fa299dd04a586707.js": "853043d98bf8d7fb21cf960b14d3ce1480834c0f",
     "/gym-tracker-excel/runtime.6cb69b4d37d287ea.js": "4ff0cf4307f0bcf0b8eb92260106396c2f859779",
-    "/gym-tracker-excel/styles.72bb3d9d4718aea9.css": "b44ee597060344895741e77cbde5cdc7067525ea"
+    "/gym-tracker-excel/styles.376b3c5fde99deeb.css": "bfb7c77d326f2db9b457264b880b1c1e1a9dee6a"
   },
   "navigationUrls": [
     {
