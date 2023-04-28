@@ -1,7 +1,7 @@
 import { NgModule, isDevMode } from '@angular/core';
 
 import { HttpClientModule } from '@angular/common/http';
-import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { ServiceWorkerModule } from '@angular/service-worker';
@@ -17,7 +17,7 @@ import { IfNullEmptyArrayPipe } from '@pipes/if-null-empty-array.pipe';
   declarations: [AppComponent],
   imports: [
     HttpClientModule,
-    NgbModule,
+    NgbDropdownModule,
     CommonModule,
     BrowserModule,
     FormsModule,

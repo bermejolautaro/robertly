@@ -1,7 +1,7 @@
 import { NgClass, NgFor, NgIf, TitleCasePipe } from "@angular/common";
 import { Component, Input } from "@angular/core";
 
-import { NgbModule } from "@ng-bootstrap/ng-bootstrap";
+import { NgbAccordionModule } from "@ng-bootstrap/ng-bootstrap";
 
 import { ExcerciseRow } from "@app/models/excercise-row.model";
 
@@ -56,7 +56,7 @@ import { ExcerciseRow } from "@app/models/excercise-row.model";
   `,
   styles: [``],
   standalone: true,
-  imports: [NgFor, NgIf, TitleCasePipe, NgClass, NgbModule]
+  imports: [NgFor, NgIf, TitleCasePipe, NgClass, NgbAccordionModule]
 })
 export class ExcerciseRowsComponent {
   @Input() public excerciseRows: ExcerciseRow[] = [];
