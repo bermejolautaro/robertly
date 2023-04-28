@@ -7,7 +7,7 @@ import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import ***REMOVED*** BehaviorSubject, Observable, combineLatest ***REMOVED*** from 'rxjs';
-import ***REMOVED*** filter, map, pairwise, startWith, tap ***REMOVED*** from 'rxjs/operators'
+import ***REMOVED*** filter, map, pairwise, startWith, take, tap ***REMOVED*** from 'rxjs/operators'
 
 import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
 import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from './services/excercise-log-api.service';
@@ -15,7 +15,7 @@ import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/se
 
 dayjs.extend(customParseFormat)
 
-type GroupedLog = readonly [string, Array<readonly [string, Array<[string, [ExcerciseLog, ...Array<ExcerciseLog>]]>]>];
+type GroupedLog = readonly [string, Array<readonly [string, Array<readonly [string, Array<ExcerciseLog>]>]>];
 
 interface Excercise ***REMOVED***
   name: string;
@@ -63,17 +63,24 @@ export class AppComponent implements OnInit ***REMOVED***
     private readonly excerciseLogApiService: ExcerciseLogApiService,
     private readonly serviceWorkerUpdates: SwUpdate) ***REMOVED***
 
-      this.serviceWorkerUpdates.versionUpdates.pipe(
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
-      ).subscribe(() => ***REMOVED***
-        document.location.reload();
-  ***REMOVED***);
+    this.serviceWorkerUpdates.versionUpdates.pipe(
+      filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
+      take(1)
+    ).subscribe(() => ***REMOVED***
+      document.location.reload();
+***REMOVED***);
 
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
       pairwise(),
       tap(([oldValue, currentValue]) => ***REMOVED***
-        if (oldValue !== currentValue) ***REMOVED***
+        if (oldValue === currentValue || !currentValue) ***REMOVED***
+          return;
+    ***REMOVED***
+        const selectedExcercise = this.selectedExcerciseSubject.value;
+        const selectedExcerciseType = this.excerciseRowsSubject.value.find(x => x.excerciseName === selectedExcercise)?.type
+
+        if (currentValue != selectedExcerciseType) ***REMOVED***
           this.selectedExcerciseSubject.next(null);
     ***REMOVED***
   ***REMOVED***),
@@ -126,38 +133,42 @@ export class AppComponent implements OnInit ***REMOVED***
       this.selectedTypeSubject,
       this.selectedUsernameSubject
     ]).pipe(
-      map(([groups, selectedExcercise, selectedTypeSubject, selectedUsername]) => ***REMOVED***
+      map(([groups, selectedExcercise, selectedType, selectedUsername]) => ***REMOVED***
         const result = R.pipe(
           groups,
-          R.map(([date, v]) => ***REMOVED***
-            let x = v.filter(([username]) => ***REMOVED***
-              let result = true;
+          R.map(([date, valuesByDate]) => ***REMOVED***
+            const filteredValuesByDate = R.pipe(
+              valuesByDate,
+              R.filter(([username]) => filterValuesByUsername(selectedUsername, username)),
+              R.map(([username, valuesByUsername]) => ***REMOVED***
+                const filteredValuesByUsername = R.pipe(
+                  valuesByUsername,
+                  R.map(([excercise, valuesByExcercise]) => ***REMOVED***
+                    const filteredValuesByExcercise = R.pipe(
+                      valuesByExcercise,
+                      R.filter(x => ***REMOVED***
+                        if (selectedType) ***REMOVED***
+                          return selectedType === x.type
+                    ***REMOVED*** else ***REMOVED***
+                          return true;
+                    ***REMOVED***
+                  ***REMOVED***)
+                    )
 
-              if (selectedUsername) ***REMOVED***
-                result &&= username === selectedUsername
-          ***REMOVED***
+                    return [excercise, filteredValuesByExcercise] as const;
+              ***REMOVED***),
+                  R.filter(([excercise]) => filterValuesByExcercise(selectedExcercise, excercise)),
+                  R.filter(([_, x]) => x.length > 0)
+                )
 
-              return result;
-        ***REMOVED***).map(([username, vv]) => ***REMOVED***
-              let y = vv.filter(([excercise]) => ***REMOVED***
-                let result = true;
+                return [username, filteredValuesByUsername] as const;
+          ***REMOVED***),
+              R.filter(([_, x]) => x.length > 0));
 
-                if (selectedExcercise) ***REMOVED***
-                  result &&= excercise === selectedExcercise;
-            ***REMOVED***
-
-                return result;
-          ***REMOVED***)
-
-              return [username, y] as const;
-        ***REMOVED***)
-
-            return [date, x] as const;
+            return [date, filteredValuesByDate] as const;
       ***REMOVED***),
-          R.filter(([_, v]) => v.length > 0)
+          R.filter(([_, x]) => x.length > 0)
         )
-
-        console.log(result);
 
         return result;
   ***REMOVED***))
@@ -226,4 +237,24 @@ export class AppComponent implements OnInit ***REMOVED***
         this.excercisesSubject.next(excercises);
   ***REMOVED***)
 ***REMOVED***
+***REMOVED***
+
+function filterValuesByExcercise(selectedExcercise: string | null, excercise: string): boolean ***REMOVED***
+  let result = true;
+
+  if (selectedExcercise) ***REMOVED***
+    result &&= excercise === selectedExcercise;
+***REMOVED***
+
+  return result;
+***REMOVED***
+
+function filterValuesByUsername(selectedUsername: string | null, username: string): boolean ***REMOVED***
+  let result = true;
+
+  if (selectedUsername) ***REMOVED***
+    result &&= username === selectedUsername
+***REMOVED***
+
+  return result;
 ***REMOVED***
