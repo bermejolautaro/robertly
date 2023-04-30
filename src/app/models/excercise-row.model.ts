@@ -1,4 +1,4 @@
-import { ExcerciseLog } from "@models/excercise-log.model";
+import { ExcerciseLog } from '@models/excercise-log.model';
 
 export interface ExcerciseRow {
   date: string;
@@ -6,6 +6,6 @@ export interface ExcerciseRow {
   type: string;
   username: string;
   series: ExcerciseLog[];
-  highlighted: boolean;
+  highlighted: 'green' | 'yellow' | null;
   total: number | null;
 }

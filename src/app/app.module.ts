@@ -1,7 +1,7 @@
 import { NgModule, isDevMode } from '@angular/core';
 
 import { HttpClientModule } from '@angular/common/http';
-import { NgbDropdownModule, NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAccordionModule, NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { ServiceWorkerModule } from '@angular/service-worker';
@@ -12,6 +12,8 @@ import { AppComponent } from '@app/app.component';
 import { ExcerciseRowsComponent } from '@components/excercise-rows.component';
 import { GroupedExcerciseRowsComponent } from '@components/grouped-excercise-rows.component';
 import { IfNullEmptyArrayPipe } from '@pipes/if-null-empty-array.pipe';
+import { ExcerciseRowBodyComponent } from './components/excercise-row-body.component';
+import { ExcerciseRowTitleComponent } from './components/excercise-row-title.component';
 
 @NgModule({
   declarations: [AppComponent],
@@ -22,6 +24,7 @@ import { IfNullEmptyArrayPipe } from '@pipes/if-null-empty-array.pipe';
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,
+    NgbAccordionModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
@@ -30,6 +33,8 @@ import { IfNullEmptyArrayPipe } from '@pipes/if-null-empty-array.pipe';
     }),
     ExcerciseRowsComponent,
     GroupedExcerciseRowsComponent,
+    ExcerciseRowBodyComponent,
+    ExcerciseRowTitleComponent,
     IfNullEmptyArrayPipe
   ],
   providers: [],

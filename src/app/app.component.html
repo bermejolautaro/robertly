@@ -19,23 +19,18 @@
 
     <!-- #region DROPDOWN EXCERCISE -->
     <div class="col-6">
-      <div
-           ngbDropdown
+      <div ngbDropdown
            class="d-flex justify-content-center">
-        <button
-                type="button"
+        <button type="button"
                 class="btn btn-outline-primary w-100"
                 ngbDropdownToggle>
           {{ selectedExcercise$ | async | titlecase }}
         </button>
-        <div
-             ngbDropdownMenu
+        <div ngbDropdownMenu
              class="w-100">
-          <button
-                  ngbDropdownItem
+          <button ngbDropdownItem
                   (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
-          <button
-                  ngbDropdownItem
+          <button ngbDropdownItem
                   *ngFor="let excercise of excercises$ | async"
                   (click)="selectedExcerciseSubject.next(excercise)">
             {{ excercise | titlecase }}
@@ -49,23 +44,18 @@
   <div class="row mb-2">
     <!-- #region DROPDOWN NAME -->
     <div class="col-12">
-      <div
-           ngbDropdown
+      <div ngbDropdown
            class="d-flex justify-content-center">
-        <button
-                type="button"
+        <button type="button"
                 class="btn btn-outline-primary w-100"
                 ngbDropdownToggle>
           {{ selectedUsername$ | async | titlecase }}
         </button>
-        <div
-             ngbDropdownMenu
+        <div ngbDropdownMenu
              class="w-100">
-          <button
-                  ngbDropdownItem
+          <button ngbDropdownItem
                   (click)="selectedUsernameSubject.next(null)">Clear filter</button>
-          <button
-                  ngbDropdownItem
+          <button ngbDropdownItem
                   *ngFor="let username of usernames"
                   (click)="selectedUsernameSubject.next(username)">
             {{ username | titlecase }}
@@ -89,11 +79,53 @@
 
 <div *ngIf="!isLoading; else loadingSpinner">
   <div class="container" *ngIf="isGrouped">
+    <div *ngIf="(personalRecord$ | async) as personalRecord" class="mb-5">
+      <h5>Personal record</h5>
+      <div ngbAccordion>
+        <div ngbAccordionItem class="accordion-highlight green">
+          <h2 ngbAccordionHeader>
+            <button ngbAccordionButton>
+              <app-excercise-row-title [excerciseRow]="personalRecord"></app-excercise-row-title>
+            </button>
+          </h2>
+          <div ngbAccordionCollapse>
+            <div ngbAccordionBody>
+              <ng-template>
+                <app-excercise-row-body [excerciseRow]="personalRecord"></app-excercise-row-body>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h5>Log History</h5>
     <app-grouped-excercise-rows [groupedExcerciseLogs]="groupedLogs$ | async | ifNullEmptyArray">
     </app-grouped-excercise-rows>
   </div>
 
   <div class="container" *ngIf="!isGrouped">
+    <div *ngIf="(personalRecord$ | async) as personalRecord" class="mb-5">
+      <h5>Personal record</h5>
+      <div ngbAccordion>
+        <div ngbAccordionItem class="accordion-highlight green">
+          <h2 ngbAccordionHeader>
+            <button ngbAccordionButton>
+              <app-excercise-row-title [excerciseRow]="personalRecord"></app-excercise-row-title>
+            </button>
+          </h2>
+          <div ngbAccordionCollapse>
+            <div ngbAccordionBody>
+              <ng-template>
+                <app-excercise-row-body [excerciseRow]="personalRecord"></app-excercise-row-body>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h5>Log History</h5>
     <app-excercise-rows [excerciseRows]="excerciseRows$ | async | ifNullEmptyArray"></app-excercise-rows>
   </div>
 </div>
