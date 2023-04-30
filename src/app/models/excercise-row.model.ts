@@ -1,4 +1,4 @@
-import ***REMOVED*** ExcerciseLog ***REMOVED*** from "@models/excercise-log.model";
+import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
 
 export interface ExcerciseRow ***REMOVED***
   date: string;
@@ -6,6 +6,6 @@ export interface ExcerciseRow ***REMOVED***
   type: string;
   username: string;
   series: ExcerciseLog[];
-  highlighted: boolean;
+  highlighted: 'green' | 'yellow' | null;
   total: number | null;
 ***REMOVED***

@@ -1,7 +1,7 @@
 import ***REMOVED*** NgModule, isDevMode ***REMOVED*** from '@angular/core';
 
 import ***REMOVED*** HttpClientModule ***REMOVED*** from '@angular/common/http';
-import ***REMOVED*** NgbDropdownModule, NgbModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import ***REMOVED*** NgbAccordionModule, NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 import ***REMOVED*** CommonModule ***REMOVED*** from '@angular/common';
 import ***REMOVED*** BrowserModule ***REMOVED*** from '@angular/platform-browser';
 import ***REMOVED*** ServiceWorkerModule ***REMOVED*** from '@angular/service-worker';
@@ -12,6 +12,8 @@ import ***REMOVED*** AppComponent ***REMOVED*** from '@app/app.component';
 import ***REMOVED*** ExcerciseRowsComponent ***REMOVED*** from '@components/excercise-rows.component';
 import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@components/grouped-excercise-rows.component';
 import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-empty-array.pipe';
+import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from './components/excercise-row-body.component';
+import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from './components/excercise-row-title.component';
 
 @NgModule(***REMOVED***
   declarations: [AppComponent],
@@ -22,6 +24,7 @@ import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-emp
     BrowserModule,
     FormsModule,
     ReactiveFormsModule,
+    NgbAccordionModule,
     ServiceWorkerModule.register('ngsw-worker.js', ***REMOVED***
       enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
@@ -30,6 +33,8 @@ import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-emp
 ***REMOVED***),
     ExcerciseRowsComponent,
     GroupedExcerciseRowsComponent,
+    ExcerciseRowBodyComponent,
+    ExcerciseRowTitleComponent,
     IfNullEmptyArrayPipe
   ],
   providers: [],

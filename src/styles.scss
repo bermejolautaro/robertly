@@ -6,9 +6,18 @@
 .accordion-highlight ***REMOVED***
   --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
   --bs-accordion-active-color: black;
-  --bs-accordion-btn-bg: hsl(120deg 72.55% 80%);
-  --bs-accordion-active-bg: hsl(120deg 72.55% 80%);
-  --bs-accordion-border-color: hsl(120deg 72.55% 70%);
+
+  &.green ***REMOVED***
+    --bs-accordion-btn-bg: hsl(120 72% 80%);
+    --bs-accordion-active-bg: hsl(120 72% 80%);
+    --bs-accordion-border-color: hsl(120 72% 70%);
+***REMOVED***
+
+  &.yellow ***REMOVED***
+    --bs-accordion-btn-bg: hsl(50, 100%, 85%);
+    --bs-accordion-active-bg: hsl(50 100% 85%);
+    --bs-accordion-border-color: hsl(50 100% 75%);
+***REMOVED***
 ***REMOVED***
 
 .form-switch ***REMOVED***

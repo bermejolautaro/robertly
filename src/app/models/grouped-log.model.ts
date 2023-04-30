@@ -1,3 +1,3 @@
-import ***REMOVED*** ExcerciseLog ***REMOVED*** from "@models/excercise-log.model";
+import ***REMOVED*** ExcerciseRow ***REMOVED*** from './excercise-row.model';
 
-export type GroupedLog = readonly [string, Array<readonly [string, Array<readonly [string, Array<ExcerciseLog>]>]>];
+export type GroupedLog = readonly [string, Array<readonly [string, Array<readonly [string, ExcerciseRow]>]>];

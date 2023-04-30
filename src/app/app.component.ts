@@ -7,16 +7,14 @@ import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
 
 import ***REMOVED*** BehaviorSubject, Observable, combineLatest ***REMOVED*** from 'rxjs';
-import ***REMOVED*** filter, finalize, map, pairwise, startWith, take, tap ***REMOVED*** from 'rxjs/operators'
+import ***REMOVED*** filter, finalize, map, pairwise, startWith, take, tap ***REMOVED*** from 'rxjs/operators';
 
 import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
 import ***REMOVED*** GroupedLog ***REMOVED*** from '@models/grouped-log.model';
 import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
+import ***REMOVED*** parseAndCompare ***REMOVED*** from '@helpers/date.helper';
 
-
-
-dayjs.extend(customParseFormat)
-
+dayjs.extend(customParseFormat);
 
 interface Excercise ***REMOVED***
   name: string;
@@ -26,7 +24,7 @@ interface Excercise ***REMOVED***
 @Component(***REMOVED***
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 ***REMOVED***)
 export class AppComponent implements OnInit ***REMOVED***
   public excerciseRowsSubject: BehaviorSubject<ExcerciseRow[]> = new BehaviorSubject<ExcerciseRow[]>([]);
@@ -48,19 +46,20 @@ export class AppComponent implements OnInit ***REMOVED***
   public groupedLogsSubject: BehaviorSubject<GroupedLog[]> = new BehaviorSubject<GroupedLog[]>([]);
   public groupedLogs$: Observable<GroupedLog[]>;
 
+  public personalRecord$: Observable<ExcerciseRow | null>;
+
   public isGrouped: boolean = false;
   public isLoading: boolean = true;
 
-  public constructor(
-    private readonly excerciseLogApiService: ExcerciseLogApiService,
-    private readonly serviceWorkerUpdates: SwUpdate) ***REMOVED***
-
-    this.serviceWorkerUpdates.versionUpdates.pipe(
-      filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-      take(1)
-    ).subscribe(() => ***REMOVED***
-      document.location.reload();
-***REMOVED***);
+  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService, private readonly serviceWorkerUpdates: SwUpdate) ***REMOVED***
+    this.serviceWorkerUpdates.versionUpdates
+      .pipe(
+        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
+        take(1)
+      )
+      .subscribe(() => ***REMOVED***
+        document.location.reload();
+  ***REMOVED***);
 
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
@@ -70,36 +69,29 @@ export class AppComponent implements OnInit ***REMOVED***
           return;
     ***REMOVED***
         const selectedExcercise = this.selectedExcerciseSubject.value;
-        const selectedExcerciseType = this.excerciseRowsSubject.value.find(x => x.excerciseName === selectedExcercise)?.type
+        const selectedExcerciseType = this.excerciseRowsSubject.value.find(x => x.excerciseName === selectedExcercise)?.type;
 
         if (currentValue != selectedExcerciseType) ***REMOVED***
           this.selectedExcerciseSubject.next(null);
     ***REMOVED***
   ***REMOVED***),
-      map(([, currentValue]) => currentValue ?? 'Type'),
+      map(([, currentValue]) => currentValue ?? 'Type')
     );
 
-    this.selectedExcercise$ = this.selectedExcerciseSubject.pipe(
-      map(x => x ?? 'Excercise'),
-    );
+    this.selectedExcercise$ = this.selectedExcerciseSubject.pipe(map(x => x ?? 'Excercise'));
 
-    this.selectedUsername$ = this.selectedUsernameSubject.pipe(
-      map(x => x ?? 'Username')
-    );
+    this.selectedUsername$ = this.selectedUsernameSubject.pipe(map(x => x ?? 'Username'));
 
-    this.excercises$ = combineLatest([
-      this.excercisesSubject,
-      this.selectedTypeSubject
-    ]).pipe(
-      map(([excercises, selectedType]) => !selectedType ? excercises : excercises.filter(x => x.type === selectedType)),
-      map(x => x.map(x => x.name)),
-    )
+    this.excercises$ = combineLatest([this.excercisesSubject, this.selectedTypeSubject]).pipe(
+      map(([excercises, selectedType]) => (!selectedType ? excercises : excercises.filter(x => x.type === selectedType))),
+      map(x => x.map(x => x.name))
+    );
 
     this.excerciseRows$ = combineLatest([
       this.excerciseRowsSubject,
       this.selectedExcerciseSubject,
       this.selectedTypeSubject,
-      this.selectedUsernameSubject
+      this.selectedUsernameSubject,
     ]).pipe(
       map(([rows, selectedExcercise, selectedTypeSubject, selectedUsername]) => ***REMOVED***
         let result = rows;
@@ -113,17 +105,18 @@ export class AppComponent implements OnInit ***REMOVED***
     ***REMOVED***
 
         if (selectedUsername) ***REMOVED***
-          result = R.filter(result, x => x.username === selectedUsername)
+          result = R.filter(result, x => x.username === selectedUsername);
     ***REMOVED***
 
         return result;
-  ***REMOVED***))
+  ***REMOVED***)
+    );
 
     this.groupedLogs$ = combineLatest([
       this.groupedLogsSubject,
       this.selectedExcerciseSubject,
       this.selectedTypeSubject,
-      this.selectedUsernameSubject
+      this.selectedUsernameSubject,
     ]).pipe(
       map(([groups, selectedExcercise, selectedType, selectedUsername]) => ***REMOVED***
         const result = R.pipe(
@@ -131,124 +124,120 @@ export class AppComponent implements OnInit ***REMOVED***
           R.map(([date, valuesByDate]) => ***REMOVED***
             const filteredValuesByDate = R.pipe(
               valuesByDate,
-              R.filter(([username]) => filterValuesByUsername(selectedUsername, username)),
+              R.filter(([username]) => (!selectedUsername ? true : selectedUsername === username)),
               R.map(([username, valuesByUsername]) => ***REMOVED***
                 const filteredValuesByUsername = R.pipe(
                   valuesByUsername,
-                  R.map(([excercise, valuesByExcercise]) => ***REMOVED***
-                    const filteredValuesByExcercise = R.pipe(
-                      valuesByExcercise,
-                      R.filter(x => ***REMOVED***
-                        if (selectedType) ***REMOVED***
-                          return selectedType === x.type
-                    ***REMOVED*** else ***REMOVED***
-                          return true;
-                    ***REMOVED***
-                  ***REMOVED***)
-                    )
-
-                    return [excercise, filteredValuesByExcercise] as const;
-              ***REMOVED***),
-                  R.filter(([excercise]) => filterValuesByExcercise(selectedExcercise, excercise)),
-                  R.filter(([_, x]) => x.length > 0)
-                )
+                  R.filter(([_excercise, row]) => (!selectedType ? true : row.type === selectedType)),
+                  R.filter(([excercise]) => (!selectedExcercise ? true : excercise === selectedExcercise)),
+                  R.filter(x => x.length > 0)
+                );
 
                 return [username, filteredValuesByUsername] as const;
           ***REMOVED***),
-              R.filter(([_, x]) => x.length > 0));
+              R.filter(([_, x]) => x.length > 0)
+            );
 
             return [date, filteredValuesByDate] as const;
       ***REMOVED***),
           R.filter(([_, x]) => x.length > 0)
-        )
+        );
 
         return result;
-  ***REMOVED***))
+  ***REMOVED***)
+    );
+
+    this.personalRecord$ = combineLatest([this.selectedUsernameSubject, this.selectedExcerciseSubject]).pipe(
+      map(([username, excercise]) => (username && excercise ? getPersonalRecord(this.excerciseRowsSubject.value, excercise, username) : null))
+    );
 ***REMOVED***
 
   public ngOnInit(): void ***REMOVED***
     this.isLoading = true;
-    this.excerciseLogApiService.getExcerciseLogs().pipe(
-      finalize(() => this.isLoading = false)
-    ).subscribe(excerciseLogs => ***REMOVED***
+    this.excerciseLogApiService
+      .getExcerciseLogs()
+      .pipe(finalize(() => (this.isLoading = false)))
+      .subscribe(excerciseLogs => ***REMOVED***
+        const groupedLogs = R.pipe(
+          excerciseLogs,
+          R.groupBy(x => x.date),
+          R.mapValues((x, date) =>
+            R.pipe(
+              x,
+              R.groupBy(y => y.user),
+              R.mapValues((y, username) =>
+                R.pipe(
+                  y,
+                  R.groupBy(z => z.name),
+                  R.mapValues((series, excerciseName) => (***REMOVED***
+                    date: date.toString(),
+                    username: username.toString(),
+                    excerciseName: excerciseName.toString(),
+                    type: R.first(series).type,
+                    series: [...series],
+                    highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
+                      ? series.every(x => x.reps >= 12)
+                        ? ('green' as const)
+                        : series.every(x => x.reps >= 6)
+                        ? ('yellow' as const)
+                        : null
+                      : null,
+                    total: series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps) : null,
+              ***REMOVED***)),
+                  R.toPairs
+                )
+              ),
+              R.toPairs
+            )
+          ),
+          R.toPairs,
+          R.sort(([a], [b]) => parseAndCompare(a, b))
+        );
 
-      const groupedLogs = R.pipe(
-        excerciseLogs,
-        R.groupBy(x => x.date),
-        R.mapValues(x => R.pipe(
-          x,
-          R.groupBy(y => y.user),
-          R.mapValues(y => R.pipe(
-            y,
-            R.groupBy(z => z.name),
-            R.toPairs
-          )),
-          R.toPairs
-        )),
-        R.toPairs,
-        R.sort(([dateA], [dateB]) => dayjs(dateA, 'DD-MM-YYYY').isBefore(dayjs(dateB, 'DD-MM-YYYY')) ? 1 : -1)
-      );
+        this.groupedLogsSubject.next(groupedLogs);
 
-      this.groupedLogsSubject.next(groupedLogs)
+        const excerciseRows = R.pipe(
+          groupedLogs,
+          R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv.flatMap(([_, vvv]) => vvv))),
+          R.sort((a, b) => parseAndCompare(a.date, b.date))
+        );
 
-      const excerciseRows = R.pipe(
-        groupedLogs,
-        R.map(([date, v]) => v.map(([name, vv]) => vv.map(([excercise, log]) => (***REMOVED***
-          date,
-          username: name,
-          excerciseName: excercise,
-          type: R.first(log).type,
-          series: log,
-          highlighted: log.every(x => x.weightKg === R.first(log).weightKg) && log.every(x => x.reps >= 12),
-          total: log.every(x => x.weightKg === R.first(log).weightKg) ? R.sumBy(log, x => x.reps) : null
-    ***REMOVED***)))),
-        R.flatMap(x => R.flatMap(x, y => y)),
-        R.map(x => (***REMOVED*** ...x, date: dayjs(x.date, 'DD-MM-YYYY') ***REMOVED***)),
-        R.sort((a, b) => a.date.isBefore(b.date) ? 1 : -1),
-        R.map(x => (***REMOVED*** ...x, date: x.date.format('DD/MM/YYYY') ***REMOVED***))
-      );
+        this.excerciseRowsSubject.next(excerciseRows);
 
-      this.excerciseRowsSubject.next(excerciseRows);
+        this.types = R.pipe(
+          excerciseLogs,
+          R.map(x => x.type),
+          R.uniq()
+        );
 
-      this.types = R.pipe(
-        excerciseLogs,
-        R.map(x => x.type),
-        R.uniq()
-      );
+        this.usernames = R.pipe(
+          excerciseLogs,
+          R.map(x => x.user),
+          R.uniq()
+        );
 
-      this.usernames = R.pipe(
-        excerciseLogs,
-        R.map(x => x.user),
-        R.uniq()
-      );
+        const excercises = R.pipe(
+          excerciseLogs,
+          R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
+          R.uniqBy(x => x.name)
+        );
 
-      const excercises = R.pipe(
-        excerciseLogs,
-        R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
-        R.uniqBy(x => x.name)
-      );
-
-      this.excercisesSubject.next(excercises);
-***REMOVED***)
+        this.excercisesSubject.next(excercises);
+  ***REMOVED***);
 ***REMOVED***
 ***REMOVED***
 
-function filterValuesByExcercise(selectedExcercise: string | null, excercise: string): boolean ***REMOVED***
-  let result = true;
+function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, username: string): ExcerciseRow | null ***REMOVED***
+  const result = R.pipe(
+    rows,
+    R.filter(x => x.username === username && x.excerciseName === excerciseName),
+    R.sort(
+      (a, b) =>
+        R.first(R.sort(b.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg -
+        R.first(R.sort(a.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg
+    ),
+    R.first()
+  );
 
-  if (selectedExcercise) ***REMOVED***
-    result &&= excercise === selectedExcercise;
-***REMOVED***
-
-  return result;
-***REMOVED***
-
-function filterValuesByUsername(selectedUsername: string | null, username: string): boolean ***REMOVED***
-  let result = true;
-
-  if (selectedUsername) ***REMOVED***
-    result &&= username === selectedUsername
-***REMOVED***
-
-  return result;
+  return result ?? null;
 ***REMOVED***
