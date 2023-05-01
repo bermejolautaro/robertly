@@ -1,7 +1,9 @@
 import ***REMOVED*** NgModule ***REMOVED*** from '@angular/core';
 import ***REMOVED*** RouterModule, Routes ***REMOVED*** from '@angular/router';
 
-const routes: Routes = [];
+const routes = [
+
+] satisfies Routes;
 
 @NgModule(***REMOVED***
   imports: [RouterModule.forRoot(routes)],
