@@ -1,9 +1,11 @@
 import ***REMOVED*** NgClass, NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** Component, Input ***REMOVED*** from '@angular/core';
-import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@app/models/excercise-row.model';
+
 import ***REMOVED*** NgbAccordionModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
-import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from './excercise-row-title.component';
-import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from './excercise-row-body.component';
+
+import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/excercise-row-title.component';
+import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from '@components/excercise-row-body.component';
 
 @Component(***REMOVED***
   selector: 'app-excercise-rows',

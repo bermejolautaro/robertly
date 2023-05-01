@@ -1,6 +1,6 @@
 import ***REMOVED*** NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** Component, Input ***REMOVED*** from '@angular/core';
-import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@app/models/excercise-row.model';
+import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
 
 @Component(***REMOVED***
   selector: 'app-excercise-row-body',

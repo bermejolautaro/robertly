@@ -1,9 +1,10 @@
 import ***REMOVED*** HttpClient ***REMOVED*** from "@angular/common/http";
 import ***REMOVED*** Injectable ***REMOVED*** from "@angular/core";
-import ***REMOVED*** ExcerciseLog ***REMOVED*** from "@app/models/excercise-log.model";
 import ***REMOVED*** Observable, map ***REMOVED*** from "rxjs";
 
 import * as R from 'remeda'
+
+import ***REMOVED*** ExcerciseLog ***REMOVED*** from "@models/excercise-log.model";
 
 @Injectable(***REMOVED***
   providedIn: 'root'

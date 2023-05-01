@@ -1,31 +1,22 @@
 import ***REMOVED*** AsyncPipe, NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** Component ***REMOVED*** from '@angular/core';
 import ***REMOVED*** FormsModule ***REMOVED*** from '@angular/forms';
-import ***REMOVED*** ExcerciseRowsComponent ***REMOVED*** from '@app/components/excercise-rows.component';
-import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@app/components/grouped-excercise-rows.component';
-import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@app/components/personal-record.component';
-import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@app/models/excercise-row.model';
-import ***REMOVED*** GroupedLog ***REMOVED*** from '@app/models/grouped-log.model';
-import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@app/pipes/if-null-empty-array.pipe';
-import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
-import ***REMOVED*** BehaviorSubject, Observable, combineLatest, of ***REMOVED*** from 'rxjs';
 
-import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
+import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+
+import ***REMOVED*** BehaviorSubject, Observable, combineLatest ***REMOVED*** from 'rxjs';
+import ***REMOVED*** finalize, map, pairwise, startWith, tap ***REMOVED*** from 'rxjs/operators';
 
 import * as R from 'remeda';
 
-import * as dayjs from 'dayjs';
-import * as customParseFormat from 'dayjs/plugin/customParseFormat';
-import * as weekOfYear from 'dayjs/plugin/weekOfYear';
-
-import ***REMOVED*** filter, finalize, map, pairwise, startWith, take, tap ***REMOVED*** from 'rxjs/operators';
-
-import ***REMOVED*** type ExcerciseName, MUSCLE_GROUP_PER_EXCERCISE ***REMOVED*** from '@models/constants';
+import type ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import type ***REMOVED*** GroupedLog ***REMOVED*** from '@models/grouped-log.model';
+import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-empty-array.pipe';
+import ***REMOVED*** ExcerciseRowsComponent ***REMOVED*** from '@components/excercise-rows.component';
+import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@components/grouped-excercise-rows.component';
+import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@components/personal-record.component';
 import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
-import ***REMOVED*** parseAndCompare ***REMOVED*** from '@helpers/date.helper';
-
-dayjs.extend(customParseFormat);
-dayjs.extend(weekOfYear);
+import ***REMOVED*** getPersonalRecord, groupExcerciseLogs, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
 
 interface Excercise ***REMOVED***
   name: string;
@@ -102,16 +93,24 @@ interface Excercise ***REMOVED***
 
     <div *ngIf="!isLoading; else loadingSpinner" [style.marginBottom.rem]="5">
       <div class="container" *ngIf="isGrouped">
-        <app-personal-record class="mb-5" [personalRecord]="personalRecord$ | async"></app-personal-record>
+        <app-personal-record
+          *ngIf="personalRecord$ | async as personalRecord"
+          class="mb-5"
+          [personalRecord]="personalRecord"
+        ></app-personal-record>
 
-        <h5>Log History</h5>
+        <h5 class="mb-3">Log History</h5>
         <app-grouped-excercise-rows [groupedExcerciseLogs]="groupedLogs$ | async | ifNullEmptyArray"> </app-grouped-excercise-rows>
       </div>
 
       <div class="container" *ngIf="!isGrouped">
-        <app-personal-record class="mb-5" [personalRecord]="personalRecord$ | async"></app-personal-record>
+        <app-personal-record
+          *ngIf="personalRecord$ | async as personalRecord"
+          class="mb-5"
+          [personalRecord]="personalRecord"
+        ></app-personal-record>
 
-        <h5>Log History</h5>
+        <h5 class="mb-3">Log History</h5>
         <app-excercise-rows [excerciseRows]="excerciseRows$ | async | ifNullEmptyArray"></app-excercise-rows>
       </div>
     </div>
@@ -164,16 +163,7 @@ export class ExcerciseLogsPageComponent ***REMOVED***
   public isGrouped: boolean = false;
   public isLoading: boolean = true;
 
-  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService, private readonly serviceWorkerUpdates: SwUpdate) ***REMOVED***
-    this.serviceWorkerUpdates.versionUpdates
-      .pipe(
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-        take(1)
-      )
-      .subscribe(() => ***REMOVED***
-        document.location.reload();
-  ***REMOVED***);
-
+  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService) ***REMOVED***
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
       pairwise(),
@@ -206,23 +196,14 @@ export class ExcerciseLogsPageComponent ***REMOVED***
       this.selectedTypeSubject,
       this.selectedUsernameSubject,
     ]).pipe(
-      map(([rows, selectedExcercise, selectedTypeSubject, selectedUsername]) => ***REMOVED***
-        let result = rows;
-
-        if (selectedTypeSubject) ***REMOVED***
-          result = R.filter(result, x => x.type === selectedTypeSubject);
-    ***REMOVED***
-
-        if (selectedExcercise) ***REMOVED***
-          result = R.filter(result, x => x.excerciseName === selectedExcercise);
-    ***REMOVED***
-
-        if (selectedUsername) ***REMOVED***
-          result = R.filter(result, x => x.username === selectedUsername);
-    ***REMOVED***
-
-        return result;
-  ***REMOVED***)
+      map(([rows, selectedExcercise, selectedTypeSubject, selectedUsername]) =>
+        R.pipe(
+          rows,
+          selectedTypeSubject ? R.filter(x => x.type === selectedTypeSubject) : R.identity,
+          selectedExcercise ? R.filter(x => x.excerciseName === selectedExcercise) : R.identity,
+          selectedUsername ? R.filter(x => x.username === selectedUsername) : R.identity
+        )
+      )
     );
 
     this.groupedLogs$ = combineLatest([
@@ -273,72 +254,8 @@ export class ExcerciseLogsPageComponent ***REMOVED***
       .getExcerciseLogs()
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe(excerciseLogs => ***REMOVED***
-        const groupedLogs = R.pipe(
-          excerciseLogs,
-          R.groupBy(x => x.date),
-          R.mapValues((x, date) =>
-            R.pipe(
-              x,
-              R.groupBy(y => y.user),
-              R.mapValues((y, username) =>
-                R.pipe(
-                  y,
-                  R.groupBy(z => z.name),
-                  R.mapValues((series, excerciseName) => (***REMOVED***
-                    date: date.toString(),
-                    username: username.toString(),
-                    excerciseName: excerciseName.toString(),
-                    type: R.first(series).type,
-                    series: [...series],
-                    highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
-                      ? series.every(x => x.reps >= 12)
-                        ? ('green' as const)
-                        : series.every(x => x.reps >= 8)
-                        ? ('yellow' as const)
-                        : null
-                      : null,
-                    muscleGroup: MUSCLE_GROUP_PER_EXCERCISE[excerciseName as ExcerciseName],
-                    total: series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps) : null,
-              ***REMOVED***)),
-                  R.toPairs
-                )
-              ),
-              R.toPairs
-            )
-          ),
-          R.toPairs,
-          R.sort(([a], [b]) => parseAndCompare(a, b))
-        );
-
-        this.groupedLogsSubject.next(groupedLogs);
-
-        const excerciseRows = R.pipe(
-          groupedLogs,
-          R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv.flatMap(([_, vvv]) => vvv))),
-          R.sort((a, b) => parseAndCompare(a.date, b.date))
-        );
-
-        // const x = R.pipe(
-        //   excerciseRows,
-        //   R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').week()),
-        //   R.mapValues(x =>
-        //     R.pipe(
-        //       x,
-        //       R.groupBy(y => y.username),
-        //       R.mapValues(y => R.pipe(
-        //         y,
-        //         R.groupBy(z => z.muscleGroup),
-        //         R.mapValues(h => R.pipe(
-        //           h,
-        //           R.map(x => x.series.length),
-        //           R.sumBy(g => g)
-        //         ))
-        //       )),
-        //     )
-        //   )
-        // );
-
-        this.excerciseRowsSubject.next(excerciseRows);
+        this.groupedLogsSubject.next(groupExcerciseLogs(excerciseLogs));
+        this.excerciseRowsSubject.next(mapGroupedToExcerciseRows(this.groupedLogsSubject.value));
 
         this.types = R.pipe(
           excerciseLogs,
@@ -361,19 +278,4 @@ export class ExcerciseLogsPageComponent ***REMOVED***
         this.excercisesSubject.next(excercises);
   ***REMOVED***);
 ***REMOVED***
-***REMOVED***
-
-function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, username: string): ExcerciseRow | null ***REMOVED***
-  const result = R.pipe(
-    rows,
-    R.filter(x => x.username === username && x.excerciseName === excerciseName),
-    R.sort(
-      (a, b) =>
-        R.first(R.sort(b.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg -
-        R.first(R.sort(a.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg
-    ),
-    R.first()
-  );
-
-  return result ?? null;
 ***REMOVED***

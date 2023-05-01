@@ -1,3 +1,4 @@
+import ***REMOVED*** MuscleGroup ***REMOVED*** from '@models/constants';
 import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
 
 export interface ExcerciseRow ***REMOVED***
@@ -8,4 +9,5 @@ export interface ExcerciseRow ***REMOVED***
   series: ExcerciseLog[];
   highlighted: 'green' | 'yellow' | null;
   total: number | null;
+  muscleGroup: MuscleGroup;
 ***REMOVED***

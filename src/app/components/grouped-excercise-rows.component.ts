@@ -1,9 +1,11 @@
 import ***REMOVED*** NgClass, NgFor, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** Component, Input ***REMOVED*** from '@angular/core';
 
-import ***REMOVED*** GroupedLog ***REMOVED*** from '@app/models/grouped-log.model';
 import ***REMOVED*** NgbAccordionModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
-import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from './excercise-row-body.component';
+
+import ***REMOVED*** GroupedLog ***REMOVED*** from '@models/grouped-log.model';
+import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from '@components/excercise-row-body.component';
+import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/excercise-row-title.component';
 
 @Component(***REMOVED***
   selector: 'app-grouped-excercise-rows',
@@ -46,11 +48,11 @@ import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from './excercise-r
                               >
                                 <h2 ngbAccordionHeader>
                                   <button ngbAccordionButton>
-                                    <div class="row w-100">
-                                      <div class="col d-flex align-items-center justify-content-center text-center">
-                                        ***REMOVED******REMOVED*** logByExcercise[0] | titlecase ***REMOVED******REMOVED***
-                                      </div>
-                                    </div>
+                                    <app-excercise-row-title
+                                      [showUsername]="false"
+                                      [showExcercise]="false"
+                                      [excerciseRow]="logByExcercise[1]"
+                                    ></app-excercise-row-title>
                                   </button>
                                 </h2>
                                 <div ngbAccordionCollapse>
@@ -77,7 +79,7 @@ import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from './excercise-r
   `,
   styles: [``],
   standalone: true,
-  imports: [NgFor, NgbAccordionModule, TitleCasePipe, NgClass, ExcerciseRowBodyComponent],
+  imports: [NgFor, NgbAccordionModule, TitleCasePipe, NgClass, ExcerciseRowBodyComponent, ExcerciseRowTitleComponent],
 ***REMOVED***)
 export class GroupedExcerciseRowsComponent ***REMOVED***
   @Input() public groupedExcerciseLogs: GroupedLog[] = [];
