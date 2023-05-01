@@ -5,16 +5,19 @@ import * as R from 'remeda';
 
 import * as dayjs from 'dayjs';
 import * as customParseFormat from 'dayjs/plugin/customParseFormat';
+import * as weekOfYear from 'dayjs/plugin/weekOfYear';
 
 import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
 import { filter, finalize, map, pairwise, startWith, take, tap } from 'rxjs/operators';
 
-import { ExcerciseRow } from '@models/excercise-row.model';
-import { GroupedLog } from '@models/grouped-log.model';
+import { type ExcerciseRow } from '@models/excercise-row.model';
+import { type GroupedLog } from '@models/grouped-log.model';
+import { type ExcerciseName, MUSCLE_GROUP_PER_EXCERCISE} from '@models/constants';
 import { ExcerciseLogApiService } from '@services/excercise-log-api.service';
 import { parseAndCompare } from '@helpers/date.helper';
 
 dayjs.extend(customParseFormat);
+dayjs.extend(weekOfYear);
 
 interface Excercise {
   name: string;
@@ -148,7 +151,9 @@ export class AppComponent implements OnInit {
     );
 
     this.personalRecord$ = combineLatest([this.selectedUsernameSubject, this.selectedExcerciseSubject]).pipe(
-      map(([username, excercise]) => (username && excercise ? getPersonalRecord(this.excerciseRowsSubject.value, excercise, username) : null))
+      map(([username, excercise]) =>
+        username && excercise ? getPersonalRecord(this.excerciseRowsSubject.value, excercise, username) : null
+      )
     );
   }
 
@@ -178,10 +183,11 @@ export class AppComponent implements OnInit {
                     highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
                       ? series.every(x => x.reps >= 12)
                         ? ('green' as const)
-                        : series.every(x => x.reps >= 6)
+                        : series.every(x => x.reps >= 8)
                         ? ('yellow' as const)
                         : null
                       : null,
+                    muscleGroup: MUSCLE_GROUP_PER_EXCERCISE[excerciseName as ExcerciseName],
                     total: series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps) : null,
                   })),
                   R.toPairs
@@ -201,6 +207,26 @@ export class AppComponent implements OnInit {
           R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv.flatMap(([_, vvv]) => vvv))),
           R.sort((a, b) => parseAndCompare(a.date, b.date))
         );
+
+        // const x = R.pipe(
+        //   excerciseRows,
+        //   R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').week()),
+        //   R.mapValues(x =>
+        //     R.pipe(
+        //       x,
+        //       R.groupBy(y => y.username),
+        //       R.mapValues(y => R.pipe(
+        //         y,
+        //         R.groupBy(z => z.muscleGroup),
+        //         R.mapValues(h => R.pipe(
+        //           h,
+        //           R.map(x => x.series.length),
+        //           R.sumBy(g => g)
+        //         ))
+        //       )),
+        //     )
+        //   )
+        // );
 
         this.excerciseRowsSubject.next(excerciseRows);
 
