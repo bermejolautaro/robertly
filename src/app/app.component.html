@@ -77,27 +77,9 @@
 </div>
 <!-- #endregion -->
 
-<div *ngIf="!isLoading; else loadingSpinner">
+<div *ngIf="!isLoading; else loadingSpinner" [style.marginBottom.rem]="5">
   <div class="container" *ngIf="isGrouped">
-    <div *ngIf="(personalRecord$ | async) as personalRecord" class="mb-5">
-      <h5>Personal record</h5>
-      <div ngbAccordion>
-        <div ngbAccordionItem class="accordion-highlight green">
-          <h2 ngbAccordionHeader>
-            <button ngbAccordionButton>
-              <app-excercise-row-title [excerciseRow]="personalRecord"></app-excercise-row-title>
-            </button>
-          </h2>
-          <div ngbAccordionCollapse>
-            <div ngbAccordionBody>
-              <ng-template>
-                <app-excercise-row-body [excerciseRow]="personalRecord"></app-excercise-row-body>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-personal-record class="mb-5" [personalRecord]="personalRecord$ | async"></app-personal-record>
 
     <h5>Log History</h5>
     <app-grouped-excercise-rows [groupedExcerciseLogs]="groupedLogs$ | async | ifNullEmptyArray">
@@ -105,30 +87,29 @@
   </div>
 
   <div class="container" *ngIf="!isGrouped">
-    <div *ngIf="(personalRecord$ | async) as personalRecord" class="mb-5">
-      <h5>Personal record</h5>
-      <div ngbAccordion>
-        <div ngbAccordionItem class="accordion-highlight green">
-          <h2 ngbAccordionHeader>
-            <button ngbAccordionButton>
-              <app-excercise-row-title [excerciseRow]="personalRecord"></app-excercise-row-title>
-            </button>
-          </h2>
-          <div ngbAccordionCollapse>
-            <div ngbAccordionBody>
-              <ng-template>
-                <app-excercise-row-body [excerciseRow]="personalRecord"></app-excercise-row-body>
-              </ng-template>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-personal-record class="mb-5" [personalRecord]="personalRecord$ | async"></app-personal-record>
 
     <h5>Log History</h5>
     <app-excercise-rows [excerciseRows]="excerciseRows$ | async | ifNullEmptyArray"></app-excercise-rows>
   </div>
 </div>
+
+<nav class="navbar navbar-dark bg-dark fixed-bottom">
+  <div class="container-fluid">
+    <ul class="navbar-nav flex-row gap-3 justify-content-center w-100">
+      <li class="nav-item w-100">
+        <a class="nav-link active  text-center d-flex justify-content-center align-items-center gap-2" href="#">
+          Logs <i class="fa fa-history" aria-hidden="true"></i>
+        </a>
+      </li>
+      <li class="nav-item w-100 justify-content-center gap-2 w-100">
+        <a class="nav-link text-center d-flex justify-content-center align-items-center gap-2" href="#">
+          Stats <i class="fa fa-bar-chart" aria-hidden="true"></i>
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
 
 <ng-template #loadingSpinner>
   <div class="d-flex justify-content-center align-items-center p-3">
