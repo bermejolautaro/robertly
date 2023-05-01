@@ -1,9 +1,11 @@
 import { NgClass, NgFor, TitleCasePipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
 
-import { GroupedLog } from '@app/models/grouped-log.model';
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
-import { ExcerciseRowBodyComponent } from './excercise-row-body.component';
+
+import { GroupedLog } from '@models/grouped-log.model';
+import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.component';
+import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.component';
 
 @Component({
   selector: 'app-grouped-excercise-rows',
@@ -46,11 +48,11 @@ import { ExcerciseRowBodyComponent } from './excercise-row-body.component';
                               >
                                 <h2 ngbAccordionHeader>
                                   <button ngbAccordionButton>
-                                    <div class="row w-100">
-                                      <div class="col d-flex align-items-center justify-content-center text-center">
-                                        {{ logByExcercise[0] | titlecase }}
-                                      </div>
-                                    </div>
+                                    <app-excercise-row-title
+                                      [showUsername]="false"
+                                      [showExcercise]="false"
+                                      [excerciseRow]="logByExcercise[1]"
+                                    ></app-excercise-row-title>
                                   </button>
                                 </h2>
                                 <div ngbAccordionCollapse>
@@ -77,7 +79,7 @@ import { ExcerciseRowBodyComponent } from './excercise-row-body.component';
   `,
   styles: [``],
   standalone: true,
-  imports: [NgFor, NgbAccordionModule, TitleCasePipe, NgClass, ExcerciseRowBodyComponent],
+  imports: [NgFor, NgbAccordionModule, TitleCasePipe, NgClass, ExcerciseRowBodyComponent, ExcerciseRowTitleComponent],
 })
 export class GroupedExcerciseRowsComponent {
   @Input() public groupedExcerciseLogs: GroupedLog[] = [];

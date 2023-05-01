@@ -1,9 +1,11 @@
 import { NgClass, NgFor, NgIf, TitleCasePipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { ExcerciseRow } from '@app/models/excercise-row.model';
+
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
-import { ExcerciseRowTitleComponent } from './excercise-row-title.component';
-import { ExcerciseRowBodyComponent } from './excercise-row-body.component';
+
+import { ExcerciseRow } from '@models/excercise-row.model';
+import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.component';
+import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.component';
 
 @Component({
   selector: 'app-excercise-rows',

@@ -1,3 +1,4 @@
+import { MuscleGroup } from '@models/constants';
 import { ExcerciseLog } from '@models/excercise-log.model';
 
 export interface ExcerciseRow {
@@ -8,4 +9,5 @@ export interface ExcerciseRow {
   series: ExcerciseLog[];
   highlighted: 'green' | 'yellow' | null;
   total: number | null;
+  muscleGroup: MuscleGroup;
 }

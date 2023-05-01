@@ -3,7 +3,7 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "@app/*": ["src/app/*"],
+      "@pages/*": ["src/app/pages/*"],
       "@helpers/*": ["src/app/helpers/*"],
       "@services/*": ["src/app/services/*"],
       "@models/*": ["src/app/models/*"],

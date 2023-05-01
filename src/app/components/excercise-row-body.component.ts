@@ -1,6 +1,6 @@
 import { NgFor, NgIf, TitleCasePipe } from '@angular/common';
 import { Component, Input } from '@angular/core';
-import { ExcerciseRow } from '@app/models/excercise-row.model';
+import { ExcerciseRow } from '@models/excercise-row.model';
 
 @Component({
   selector: 'app-excercise-row-body',

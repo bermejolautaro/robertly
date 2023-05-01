@@ -1,31 +1,22 @@
 import { AsyncPipe, NgFor, NgIf, TitleCasePipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ExcerciseRowsComponent } from '@app/components/excercise-rows.component';
-import { GroupedExcerciseRowsComponent } from '@app/components/grouped-excercise-rows.component';
-import { PersonalRecordComponent } from '@app/components/personal-record.component';
-import { ExcerciseRow } from '@app/models/excercise-row.model';
-import { GroupedLog } from '@app/models/grouped-log.model';
-import { IfNullEmptyArrayPipe } from '@app/pipes/if-null-empty-array.pipe';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-import { BehaviorSubject, Observable, combineLatest, of } from 'rxjs';
 
-import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+
+import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
+import { finalize, map, pairwise, startWith, tap } from 'rxjs/operators';
 
 import * as R from 'remeda';
 
-import * as dayjs from 'dayjs';
-import * as customParseFormat from 'dayjs/plugin/customParseFormat';
-import * as weekOfYear from 'dayjs/plugin/weekOfYear';
-
-import { filter, finalize, map, pairwise, startWith, take, tap } from 'rxjs/operators';
-
-import { type ExcerciseName, MUSCLE_GROUP_PER_EXCERCISE } from '@models/constants';
+import type { ExcerciseRow } from '@models/excercise-row.model';
+import type { GroupedLog } from '@models/grouped-log.model';
+import { IfNullEmptyArrayPipe } from '@pipes/if-null-empty-array.pipe';
+import { ExcerciseRowsComponent } from '@components/excercise-rows.component';
+import { GroupedExcerciseRowsComponent } from '@components/grouped-excercise-rows.component';
+import { PersonalRecordComponent } from '@components/personal-record.component';
 import { ExcerciseLogApiService } from '@services/excercise-log-api.service';
-import { parseAndCompare } from '@helpers/date.helper';
-
-dayjs.extend(customParseFormat);
-dayjs.extend(weekOfYear);
+import { getPersonalRecord, groupExcerciseLogs, mapGroupedToExcerciseRows } from '@helpers/excercise-log.helper';
 
 interface Excercise {
   name: string;
@@ -102,16 +93,24 @@ interface Excercise {
 
     <div *ngIf="!isLoading; else loadingSpinner" [style.marginBottom.rem]="5">
       <div class="container" *ngIf="isGrouped">
-        <app-personal-record class="mb-5" [personalRecord]="personalRecord$ | async"></app-personal-record>
+        <app-personal-record
+          *ngIf="personalRecord$ | async as personalRecord"
+          class="mb-5"
+          [personalRecord]="personalRecord"
+        ></app-personal-record>
 
-        <h5>Log History</h5>
+        <h5 class="mb-3">Log History</h5>
         <app-grouped-excercise-rows [groupedExcerciseLogs]="groupedLogs$ | async | ifNullEmptyArray"> </app-grouped-excercise-rows>
       </div>
 
       <div class="container" *ngIf="!isGrouped">
-        <app-personal-record class="mb-5" [personalRecord]="personalRecord$ | async"></app-personal-record>
+        <app-personal-record
+          *ngIf="personalRecord$ | async as personalRecord"
+          class="mb-5"
+          [personalRecord]="personalRecord"
+        ></app-personal-record>
 
-        <h5>Log History</h5>
+        <h5 class="mb-3">Log History</h5>
         <app-excercise-rows [excerciseRows]="excerciseRows$ | async | ifNullEmptyArray"></app-excercise-rows>
       </div>
     </div>
@@ -164,16 +163,7 @@ export class ExcerciseLogsPageComponent {
   public isGrouped: boolean = false;
   public isLoading: boolean = true;
 
-  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService, private readonly serviceWorkerUpdates: SwUpdate) {
-    this.serviceWorkerUpdates.versionUpdates
-      .pipe(
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-        take(1)
-      )
-      .subscribe(() => {
-        document.location.reload();
-      });
-
+  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService) {
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
       pairwise(),
@@ -206,23 +196,14 @@ export class ExcerciseLogsPageComponent {
       this.selectedTypeSubject,
       this.selectedUsernameSubject,
     ]).pipe(
-      map(([rows, selectedExcercise, selectedTypeSubject, selectedUsername]) => {
-        let result = rows;
-
-        if (selectedTypeSubject) {
-          result = R.filter(result, x => x.type === selectedTypeSubject);
-        }
-
-        if (selectedExcercise) {
-          result = R.filter(result, x => x.excerciseName === selectedExcercise);
-        }
-
-        if (selectedUsername) {
-          result = R.filter(result, x => x.username === selectedUsername);
-        }
-
-        return result;
-      })
+      map(([rows, selectedExcercise, selectedTypeSubject, selectedUsername]) =>
+        R.pipe(
+          rows,
+          selectedTypeSubject ? R.filter(x => x.type === selectedTypeSubject) : R.identity,
+          selectedExcercise ? R.filter(x => x.excerciseName === selectedExcercise) : R.identity,
+          selectedUsername ? R.filter(x => x.username === selectedUsername) : R.identity
+        )
+      )
     );
 
     this.groupedLogs$ = combineLatest([
@@ -273,72 +254,8 @@ export class ExcerciseLogsPageComponent {
       .getExcerciseLogs()
       .pipe(finalize(() => (this.isLoading = false)))
       .subscribe(excerciseLogs => {
-        const groupedLogs = R.pipe(
-          excerciseLogs,
-          R.groupBy(x => x.date),
-          R.mapValues((x, date) =>
-            R.pipe(
-              x,
-              R.groupBy(y => y.user),
-              R.mapValues((y, username) =>
-                R.pipe(
-                  y,
-                  R.groupBy(z => z.name),
-                  R.mapValues((series, excerciseName) => ({
-                    date: date.toString(),
-                    username: username.toString(),
-                    excerciseName: excerciseName.toString(),
-                    type: R.first(series).type,
-                    series: [...series],
-                    highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
-                      ? series.every(x => x.reps >= 12)
-                        ? ('green' as const)
-                        : series.every(x => x.reps >= 8)
-                        ? ('yellow' as const)
-                        : null
-                      : null,
-                    muscleGroup: MUSCLE_GROUP_PER_EXCERCISE[excerciseName as ExcerciseName],
-                    total: series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps) : null,
-                  })),
-                  R.toPairs
-                )
-              ),
-              R.toPairs
-            )
-          ),
-          R.toPairs,
-          R.sort(([a], [b]) => parseAndCompare(a, b))
-        );
-
-        this.groupedLogsSubject.next(groupedLogs);
-
-        const excerciseRows = R.pipe(
-          groupedLogs,
-          R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv.flatMap(([_, vvv]) => vvv))),
-          R.sort((a, b) => parseAndCompare(a.date, b.date))
-        );
-
-        // const x = R.pipe(
-        //   excerciseRows,
-        //   R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').week()),
-        //   R.mapValues(x =>
-        //     R.pipe(
-        //       x,
-        //       R.groupBy(y => y.username),
-        //       R.mapValues(y => R.pipe(
-        //         y,
-        //         R.groupBy(z => z.muscleGroup),
-        //         R.mapValues(h => R.pipe(
-        //           h,
-        //           R.map(x => x.series.length),
-        //           R.sumBy(g => g)
-        //         ))
-        //       )),
-        //     )
-        //   )
-        // );
-
-        this.excerciseRowsSubject.next(excerciseRows);
+        this.groupedLogsSubject.next(groupExcerciseLogs(excerciseLogs));
+        this.excerciseRowsSubject.next(mapGroupedToExcerciseRows(this.groupedLogsSubject.value));
 
         this.types = R.pipe(
           excerciseLogs,
@@ -361,19 +278,4 @@ export class ExcerciseLogsPageComponent {
         this.excercisesSubject.next(excercises);
       });
   }
-}
-
-function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, username: string): ExcerciseRow | null {
-  const result = R.pipe(
-    rows,
-    R.filter(x => x.username === username && x.excerciseName === excerciseName),
-    R.sort(
-      (a, b) =>
-        R.first(R.sort(b.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg -
-        R.first(R.sort(a.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg
-    ),
-    R.first()
-  );
-
-  return result ?? null;
 }

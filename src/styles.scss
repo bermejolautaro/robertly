@@ -8,6 +8,30 @@
   --bs-accordion-btn-active-icon: var(--bs-accordion-btn-icon);
   --bs-accordion-active-color: black;
 
+  &:not(:first-of-type) {
+    .accordion-button {
+      border-top-right-radius: 0;
+      border-top-left-radius: 0;
+
+      &.collapsed {
+        border-top-right-radius: 0;
+        border-top-left-radius: 0;
+      }
+    }
+  }
+  
+  &:not(:last-of-type) {
+    .accordion-button {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+
+      &.collapsed {
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+    }
+  }
+
   &.green {
     --bs-accordion-btn-bg: hsl(120 70% 85%);
     --bs-accordion-active-bg: hsl(120 70% 85%);
@@ -24,7 +48,6 @@
     --bs-accordion-btn-bg: hsl(200, 100%, 85%);
     --bs-accordion-active-bg: hsl(200 100% 85%);
     --bs-accordion-border-color: hsl(200 100% 75%);
-
   }
 }
 
