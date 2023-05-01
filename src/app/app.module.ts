@@ -14,6 +14,9 @@ import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@componen
 import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from '@components/excercise-row-body.component';
 import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/excercise-row-title.component';
 import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@components/personal-record.component';
+import ***REMOVED*** RouterModule, provideRouter, withDebugTracing ***REMOVED*** from '@angular/router';
+import ***REMOVED*** ExcerciseLogsPageComponent ***REMOVED*** from '@app/pages/excercise-logs.page.component';
+import ***REMOVED*** AppRoutingModule ***REMOVED*** from '@app/app-routing.module';
 
 @NgModule(***REMOVED***
   declarations: [AppComponent],
@@ -26,6 +29,8 @@ import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@components/per
     FormsModule,
     ReactiveFormsModule,
     NgbAccordionModule,
+    RouterModule,
+    AppRoutingModule,
     ServiceWorkerModule.register('ngsw-worker.js', ***REMOVED***
       enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
@@ -37,6 +42,7 @@ import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@components/per
     ExcerciseRowBodyComponent,
     ExcerciseRowTitleComponent,
     PersonalRecordComponent,
+    ExcerciseLogsPageComponent,
     IfNullEmptyArrayPipe
   ],
   providers: [],
