@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1682872531984,
+  "timestamp": 1682903869324,
   "index": "/gym-tracker-excel/index.html",
   "assetGroups": [
     {
@@ -11,13 +11,14 @@
         "ignoreVary": true
       },
       "urls": [
+        "/gym-tracker-excel/158.d6fa6e1b5c6d4b84.js",
         "/gym-tracker-excel/favicon.ico",
         "/gym-tracker-excel/index.html",
-        "/gym-tracker-excel/main.7a886eeb6768af80.js",
+        "/gym-tracker-excel/main.6e80785c692107ac.js",
         "/gym-tracker-excel/manifest.webmanifest",
-        "/gym-tracker-excel/polyfills.fa299dd04a586707.js",
-        "/gym-tracker-excel/runtime.6cb69b4d37d287ea.js",
-        "/gym-tracker-excel/styles.1369195b96aeeca3.css"
+        "/gym-tracker-excel/polyfills.a51bcd47d9b6fc05.js",
+        "/gym-tracker-excel/runtime.ef89b0b5e4e72946.js",
+        "/gym-tracker-excel/styles.7890c6c07ee3125f.css"
       ],
       "patterns": []
     },
@@ -33,25 +34,34 @@
         "/gym-tracker-excel/assets/icons/android-chrome-512x512.png",
         "/gym-tracker-excel/assets/icons/apple-touch-icon.png",
         "/gym-tracker-excel/assets/icons/favicon-16x16.png",
-        "/gym-tracker-excel/assets/icons/favicon-32x32.png"
+        "/gym-tracker-excel/assets/icons/favicon-32x32.png",
+        "/gym-tracker-excel/fontawesome-webfont.8a7cb27d142e3e19.ttf",
+        "/gym-tracker-excel/fontawesome-webfont.cf011583fb81df9f.woff",
+        "/gym-tracker-excel/fontawesome-webfont.da909aa098b0ee2d.svg",
+        "/gym-tracker-excel/fontawesome-webfont.e9955780856cf8aa.woff2"
       ],
       "patterns": []
     }
   ],
   "dataGroups": [],
   "hashTable": {
+    "/gym-tracker-excel/158.d6fa6e1b5c6d4b84.js": "705df5ecb38f1cc255329268772cc2bd86c1590e",
     "/gym-tracker-excel/assets/icons/android-chrome-192x192.png": "efc5832c72125018c99ee0513f0fa691a94befc6",
     "/gym-tracker-excel/assets/icons/android-chrome-512x512.png": "774180cce1f51fdbc68414896b85505627b1f812",
     "/gym-tracker-excel/assets/icons/apple-touch-icon.png": "b3f527e46181c430f6fd6f7fea8ccbe3c417d604",
     "/gym-tracker-excel/assets/icons/favicon-16x16.png": "1f98d03c4e43df6ace155d6aee14b3a3aded23a8",
     "/gym-tracker-excel/assets/icons/favicon-32x32.png": "08bfeb096acfb43dd330af0fd5715d6095343ec2",
     "/gym-tracker-excel/favicon.ico": "0612a0d81b1313c6da6056e10fd3fd401bd771dc",
-    "/gym-tracker-excel/index.html": "1a8a64197cfc21a320aa6d87a7b146ca2612a2f5",
-    "/gym-tracker-excel/main.7a886eeb6768af80.js": "3c452b47f3b43d0b9a7416283ffe9fe2721e434f",
+    "/gym-tracker-excel/fontawesome-webfont.8a7cb27d142e3e19.ttf": "13b1eab65a983c7a73bc7997c479d66943f7c6cb",
+    "/gym-tracker-excel/fontawesome-webfont.cf011583fb81df9f.woff": "28b782240b3e76db824e12c02754a9731a167527",
+    "/gym-tracker-excel/fontawesome-webfont.da909aa098b0ee2d.svg": "98a8aa5cf7d62c2eff5f07ede8d844b874ef06ed",
+    "/gym-tracker-excel/fontawesome-webfont.e9955780856cf8aa.woff2": "d6f48cba7d076fb6f2fd6ba993a75b9dc1ecbf0c",
+    "/gym-tracker-excel/index.html": "9b8befefa5268aae520c603dd85cfdea0af664ea",
+    "/gym-tracker-excel/main.6e80785c692107ac.js": "7166b0c04e98ffe791156e480aedb6f10e891bfa",
     "/gym-tracker-excel/manifest.webmanifest": "9de2038d8797196314fd830ce9264e9de6fc7d19",
-    "/gym-tracker-excel/polyfills.fa299dd04a586707.js": "853043d98bf8d7fb21cf960b14d3ce1480834c0f",
-    "/gym-tracker-excel/runtime.6cb69b4d37d287ea.js": "4ff0cf4307f0bcf0b8eb92260106396c2f859779",
-    "/gym-tracker-excel/styles.1369195b96aeeca3.css": "786b39c53c7a822a9208080918b72cf85246b96a"
+    "/gym-tracker-excel/polyfills.a51bcd47d9b6fc05.js": "3560eeebbfbd2609f11942f9248c33cb4d248abc",
+    "/gym-tracker-excel/runtime.ef89b0b5e4e72946.js": "bd7309a5993020fbb3695b1ca52abc3fbe5ca55a",
+    "/gym-tracker-excel/styles.7890c6c07ee3125f.css": "f7030525a6c7845b9d0569fcf0247b924128ec01"
   },
   "navigationUrls": [
     {
