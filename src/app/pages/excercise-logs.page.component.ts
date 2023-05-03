@@ -91,7 +91,7 @@ interface Excercise ***REMOVED***
     </div>
     <!-- #endregion -->
 
-    <div *ngIf="!isLoading; else loadingSpinner" [style.marginBottom.rem]="5">
+    <div *ngIf="!isLoading; else loadingSpinner">
       <div class="container" *ngIf="isGrouped">
         <app-personal-record
           *ngIf="personalRecord$ | async as personalRecord"
