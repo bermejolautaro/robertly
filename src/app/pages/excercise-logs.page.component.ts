@@ -1,5 +1,5 @@
 import ***REMOVED*** AsyncPipe, NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** Component ***REMOVED*** from '@angular/core';
+import ***REMOVED*** Component, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** FormsModule ***REMOVED*** from '@angular/forms';
 
 import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
@@ -163,7 +163,9 @@ export class ExcerciseLogsPageComponent ***REMOVED***
   public isGrouped: boolean = false;
   public isLoading: boolean = true;
 
-  public constructor(private readonly excerciseLogApiService: ExcerciseLogApiService) ***REMOVED***
+  private readonly excerciseLogApiService = inject(ExcerciseLogApiService);
+
+  public constructor() ***REMOVED***
     this.selectedType$ = this.selectedTypeSubject.pipe(
       startWith(null),
       pairwise(),

@@ -1,23 +1,28 @@
-import ***REMOVED*** HttpClient ***REMOVED*** from "@angular/common/http";
-import ***REMOVED*** Injectable ***REMOVED*** from "@angular/core";
-import ***REMOVED*** Observable, map ***REMOVED*** from "rxjs";
+import ***REMOVED*** HttpClient ***REMOVED*** from '@angular/common/http';
+import ***REMOVED*** Injectable, inject ***REMOVED*** from '@angular/core';
+import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
 
-import * as R from 'remeda'
+import * as R from 'remeda';
 
-import ***REMOVED*** ExcerciseLog ***REMOVED*** from "@models/excercise-log.model";
+import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
 
 @Injectable(***REMOVED***
-  providedIn: 'root'
+  providedIn: 'root',
 ***REMOVED***)
 export class ExcerciseLogApiService ***REMOVED***
-  public constructor(private readonly http: HttpClient) ***REMOVED*** ***REMOVED***
+  private readonly http = inject(HttpClient);
 
   public getExcerciseLogs(): Observable<ExcerciseLog[]> ***REMOVED***
-    return this.http.get<***REMOVED*** lautaro: string[][], roberto: string[][] ***REMOVED***>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
+    return this.http
+      .get<***REMOVED*** lautaro: string[][]; roberto: string[][] ***REMOVED***>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
       .pipe(
-        map(data => R.concat(
-          processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***)),
-          processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***)))))
+        map(data =>
+          R.concat(
+            processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***)),
+            processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***))
+          )
+        )
+      );
 ***REMOVED***
 ***REMOVED***
 
@@ -30,10 +35,10 @@ function processData(data: string[][]): ExcerciseLog[] ***REMOVED***
     const nextRow = data[i + 1];
 
     for (let j = 0; j < row.length; j++) ***REMOVED***
-      const element = row[j]
+      const element = row[j];
 
       const isHeader = j === 0 && (i === 0 || ((prevRow.length === 0 || prevRow[0] === '') && (nextRow.length === 0 || nextRow[0] === '')));
-      const isExerciseName = j === 0 && !isHeader && !!element
+      const isExerciseName = j === 0 && !isHeader && !!element;
 
       if (isHeader) ***REMOVED***
         result.push(***REMOVED*** header: true, value: element, row: i, col: j ***REMOVED***);
@@ -50,7 +55,6 @@ function processData(data: string[][]): ExcerciseLog[] ***REMOVED***
   let lastHeader = '';
 
   for (const element of result) ***REMOVED***
-
     if (element.header) ***REMOVED***
       dateRowIndexByType[element.value] = element.row + 1;
       lastHeader = element.value;
@@ -59,15 +63,15 @@ function processData(data: string[][]): ExcerciseLog[] ***REMOVED***
         value: element.value,
         row: element.row,
         col: element.col,
-        type: lastHeader
-  ***REMOVED***)
+        type: lastHeader,
+  ***REMOVED***);
 ***REMOVED***
 ***REMOVED***
 
   const result3 = [];
 
   for (const element of result2) ***REMOVED***
-    const dateRowIndex = dateRowIndexByType[element.type]
+    const dateRowIndex = dateRowIndexByType[element.type];
 
     for (let i = 1; i < data[dateRowIndex].length; i++) ***REMOVED***
       const repsString = data[element.row][i];
@@ -92,10 +96,9 @@ function processData(data: string[][]): ExcerciseLog[] ***REMOVED***
           serie: j + 1,
           weightKg: Number(kg.replace(',', '.')),
           reps: Number(reps),
-          user: ''
-    ***REMOVED***)
+          user: '',
+    ***REMOVED***);
   ***REMOVED***
-
 ***REMOVED***
 ***REMOVED***
 
