@@ -19,22 +19,7 @@ export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] 
           R.pipe(
             y,
             R.groupBy(z => z.name),
-            R.mapValues((series, excerciseName) => ({
-              date: date.toString(),
-              username: username.toString(),
-              excerciseName: excerciseName.toString(),
-              type: R.first(series).type,
-              series: [...series],
-              highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
-                ? series.every(x => x.reps >= 12)
-                  ? ('green' as const)
-                  : series.every(x => x.reps >= 8)
-                  ? ('yellow' as const)
-                  : null
-                : null,
-              muscleGroup: MUSCLE_GROUP_PER_EXCERCISE[excerciseName as ExcerciseName],
-              total: series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps) : null,
-            })),
+            R.mapValues((series, excerciseName) => mapToExcerciseRow(date, username, excerciseName, series)),
             R.toPairs
           )
         ),
@@ -44,6 +29,33 @@ export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] 
     R.toPairs,
     R.sort(([a], [b]) => parseAndCompare(a, b))
   );
+}
+
+function mapToExcerciseRow(
+  date: PropertyKey,
+  username: PropertyKey,
+  excerciseName: PropertyKey,
+  series: [ExcerciseLog, ...ExcerciseLog[]]
+): ExcerciseRow {
+  const total = series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps) : null;
+
+  return {
+    date: date.toString(),
+    username: username.toString(),
+    excerciseName: excerciseName.toString(),
+    type: R.first(series).type,
+    series: [...series],
+    highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
+      ? series.every(x => x.reps >= 12)
+        ? ('green' as const)
+        : series.every(x => x.reps >= 8)
+        ? ('yellow' as const)
+        : null
+      : null,
+    total,
+    average: total ? Math.ceil(total / series.length) : null,
+    muscleGroup: MUSCLE_GROUP_PER_EXCERCISE[excerciseName as ExcerciseName],
+  };
 }
 
 export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExcerciseRow[] {
@@ -69,10 +81,10 @@ export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, u
   return result ?? null;
 }
 
-export function getSeriesAmountPerMuscleGroup(excerciseRows: ExcerciseRow[]) {
+export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExcerciseRow[]) {
   return R.pipe(
     excerciseRows,
-    R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').week()),
+    R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').startOf('isoWeek').format('DD/MM/YYYY')),
     R.mapValues(x =>
       R.pipe(
         x,
@@ -84,8 +96,32 @@ export function getSeriesAmountPerMuscleGroup(excerciseRows: ExcerciseRow[]) {
             R.mapValues(w =>
               R.pipe(
                 w,
-                R.map(x => x.series.length),
-                R.sumBy(g => g)
+                R.sumBy(x => x.series.length)
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExcerciseRow[]) {
+  return R.pipe(
+    excerciseRows,
+    R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').startOf('month').format('DD/MM/YYYY')),
+    R.mapValues(x =>
+      R.pipe(
+        x,
+        R.groupBy(y => y.username),
+        R.mapValues(y =>
+          R.pipe(
+            y,
+            R.groupBy(z => z.muscleGroup),
+            R.mapValues(w =>
+              R.pipe(
+                w,
+                R.sumBy(x => x.series.length)
               )
             )
           )
@@ -98,7 +134,15 @@ export function getSeriesAmountPerMuscleGroup(excerciseRows: ExcerciseRow[]) {
 export function groupByWeek(excerciseRows: ExcerciseRow[]) {
   return R.pipe(
     excerciseRows,
-    R.groupBy(x => dayjs(x.date, 'DD/MM/YYYY').week()),
-    R.mapValues(x => R.sort(R.uniq(x.map(y => y.date + ' ' + dayjs(y.date, 'DD/MM/YYYY').format('dddd'))), (a, b) => parseAndCompare(a, b) * -1)),
-  )
+    R.groupBy(x => dayjs(x.date, 'DD/MM/YYYY').startOf('isoWeek').format('DD/MM/YYYY')),
+    R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
+  );
+}
+
+export function groupByMonth(excerciseRows: ExcerciseRow[]) {
+  return R.pipe(
+    excerciseRows,
+    R.groupBy(x => dayjs(x.date, 'DD/MM/YYYY').startOf('month').format('DD/MM/YYYY')),
+    R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
+  );
 }

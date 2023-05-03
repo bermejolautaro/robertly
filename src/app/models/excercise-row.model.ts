@@ -9,5 +9,6 @@ export interface ExcerciseRow {
   series: ExcerciseLog[];
   highlighted: 'green' | 'yellow' | null;
   total: number | null;
+  average: number | null;
   muscleGroup: MuscleGroup;
 }

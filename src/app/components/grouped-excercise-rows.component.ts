@@ -50,7 +50,7 @@ import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.comp
                                   <button ngbAccordionButton>
                                     <app-excercise-row-title
                                       [showUsername]="false"
-                                      [showExcercise]="false"
+                                      [showDate]="false"
                                       [excerciseRow]="logByExcercise[1]"
                                     ></app-excercise-row-title>
                                   </button>

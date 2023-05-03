@@ -1,23 +1,28 @@
-import { HttpClient } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Observable, map } from "rxjs";
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { Observable, map } from 'rxjs';
 
-import * as R from 'remeda'
+import * as R from 'remeda';
 
-import { ExcerciseLog } from "@models/excercise-log.model";
+import { ExcerciseLog } from '@models/excercise-log.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class ExcerciseLogApiService {
-  public constructor(private readonly http: HttpClient) { }
+  private readonly http = inject(HttpClient);
 
   public getExcerciseLogs(): Observable<ExcerciseLog[]> {
-    return this.http.get<{ lautaro: string[][], roberto: string[][] }>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
+    return this.http
+      .get<{ lautaro: string[][]; roberto: string[][] }>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
       .pipe(
-        map(data => R.concat(
-          processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' })),
-          processData(data.roberto).map(x => ({ ...x, user: 'roberto' })))))
+        map(data =>
+          R.concat(
+            processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' })),
+            processData(data.roberto).map(x => ({ ...x, user: 'roberto' }))
+          )
+        )
+      );
   }
 }
 
@@ -30,10 +35,10 @@ function processData(data: string[][]): ExcerciseLog[] {
     const nextRow = data[i + 1];
 
     for (let j = 0; j < row.length; j++) {
-      const element = row[j]
+      const element = row[j];
 
       const isHeader = j === 0 && (i === 0 || ((prevRow.length === 0 || prevRow[0] === '') && (nextRow.length === 0 || nextRow[0] === '')));
-      const isExerciseName = j === 0 && !isHeader && !!element
+      const isExerciseName = j === 0 && !isHeader && !!element;
 
       if (isHeader) {
         result.push({ header: true, value: element, row: i, col: j });
@@ -50,7 +55,6 @@ function processData(data: string[][]): ExcerciseLog[] {
   let lastHeader = '';
 
   for (const element of result) {
-
     if (element.header) {
       dateRowIndexByType[element.value] = element.row + 1;
       lastHeader = element.value;
@@ -59,15 +63,15 @@ function processData(data: string[][]): ExcerciseLog[] {
         value: element.value,
         row: element.row,
         col: element.col,
-        type: lastHeader
-      })
+        type: lastHeader,
+      });
     }
   }
 
   const result3 = [];
 
   for (const element of result2) {
-    const dateRowIndex = dateRowIndexByType[element.type]
+    const dateRowIndex = dateRowIndexByType[element.type];
 
     for (let i = 1; i < data[dateRowIndex].length; i++) {
       const repsString = data[element.row][i];
@@ -92,10 +96,9 @@ function processData(data: string[][]): ExcerciseLog[] {
           serie: j + 1,
           weightKg: Number(kg.replace(',', '.')),
           reps: Number(reps),
-          user: ''
-        })
+          user: '',
+        });
       }
-
     }
   }
 

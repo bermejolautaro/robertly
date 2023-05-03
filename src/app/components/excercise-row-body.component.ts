@@ -1,11 +1,11 @@
-import { NgFor, NgIf, TitleCasePipe } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { ExcerciseRow } from '@models/excercise-row.model';
 
 @Component({
   selector: 'app-excercise-row-body',
   template: `
-    <table *ngIf="excerciseRow" class="table table-striped" style="margin: 0">
+    <table *ngIf="excerciseRow" class="table table-striped m-0">
       <tbody>
         <tr class="row" *ngFor="let serie of excerciseRow.series">
           <td class="fw-bold col">Serie {{ serie.serie }}</td>
@@ -17,12 +17,17 @@ import { ExcerciseRow } from '@models/excercise-row.model';
           <td class="col text-center">{{ excerciseRow.total }} reps</td>
           <td class="col text-center">{{ excerciseRow.series[0].weightKg }}kg</td>
         </tr>
+        <tr class="row" *ngIf="excerciseRow.average">
+          <td class="fw-bold col">Average</td>
+          <td class="col text-center">{{ excerciseRow.average }} reps</td>
+          <td class="col text-center">{{ excerciseRow.series[0].weightKg }}kg</td>
+        </tr>
       </tbody>
     </table>
   `,
   styles: [``],
   standalone: true,
-  imports: [NgFor, NgIf, TitleCasePipe],
+  imports: [NgFor, NgIf],
 })
 export class ExcerciseRowBodyComponent {
   @Input() excerciseRow: ExcerciseRow | null = null;
