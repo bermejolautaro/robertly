@@ -30,5 +30,5 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
   imports: [NgFor, NgIf],
 ***REMOVED***)
 export class ExcerciseRowBodyComponent ***REMOVED***
-  @Input() excerciseRow: ExcerciseRow | null = null;
+  @Input(***REMOVED*** required: true ***REMOVED***) excerciseRow!: ExcerciseRow;
 ***REMOVED***

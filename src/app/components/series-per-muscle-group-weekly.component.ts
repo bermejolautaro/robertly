@@ -21,7 +21,9 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>***REMOVED******REMOVED*** selectedWeekDropdownValue() ***REMOVED******REMOVED***</button>
             <div ngbDropdownMenu class="w-100">
-              <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">***REMOVED******REMOVED*** week ***REMOVED******REMOVED***</button>
+              <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">
+                ***REMOVED******REMOVED*** week ***REMOVED******REMOVED***
+              </button>
             </div>
           </div>
         </div>
@@ -61,7 +63,7 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
   imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
 ***REMOVED***)
 export class SeriesPerMuscleGroupWeeklyComponent ***REMOVED***
-  @Input() public set rows(value: ExcerciseRow[]) ***REMOVED***
+  @Input(***REMOVED*** required: true ***REMOVED***) public set rows(value: ExcerciseRow[]) ***REMOVED***
     this.rowsSignal.set(value);
 ***REMOVED***
 

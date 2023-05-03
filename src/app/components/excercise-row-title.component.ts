@@ -32,5 +32,5 @@ export class ExcerciseRowTitleComponent ***REMOVED***
   @Input() showExcercise: boolean = true;
   @Input() showDate: boolean = true;
   @Input() showUsername: boolean = true;
-  @Input() excerciseRow: ExcerciseRow | null = null;
+  @Input(***REMOVED*** required: true ***REMOVED***) excerciseRow!: ExcerciseRow;
 ***REMOVED***

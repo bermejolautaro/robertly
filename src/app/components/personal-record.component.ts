@@ -38,5 +38,5 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
   imports: [NgIf, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent, NgbAccordionModule],
 ***REMOVED***)
 export class PersonalRecordComponent ***REMOVED***
-  @Input() personalRecord: ExcerciseRow | null = null;
+  @Input(***REMOVED*** required: true ***REMOVED***) personalRecord!: ExcerciseRow;
 ***REMOVED***
