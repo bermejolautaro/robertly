@@ -30,5 +30,5 @@ import { ExcerciseRow } from '@models/excercise-row.model';
   imports: [NgFor, NgIf],
 })
 export class ExcerciseRowBodyComponent {
-  @Input() excerciseRow: ExcerciseRow | null = null;
+  @Input({ required: true }) excerciseRow!: ExcerciseRow;
 }

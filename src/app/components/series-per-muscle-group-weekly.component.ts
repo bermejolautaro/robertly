@@ -21,7 +21,9 @@ import { MUSCLE_GROUPS } from '@models/constants';
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>{{ selectedWeekDropdownValue() }}</button>
             <div ngbDropdownMenu class="w-100">
-              <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">{{ week }}</button>
+              <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">
+                {{ week }}
+              </button>
             </div>
           </div>
         </div>
@@ -61,7 +63,7 @@ import { MUSCLE_GROUPS } from '@models/constants';
   imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
 })
 export class SeriesPerMuscleGroupWeeklyComponent {
-  @Input() public set rows(value: ExcerciseRow[]) {
+  @Input({ required: true }) public set rows(value: ExcerciseRow[]) {
     this.rowsSignal.set(value);
   }
 

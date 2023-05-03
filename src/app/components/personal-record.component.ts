@@ -38,5 +38,5 @@ import { ExcerciseRow } from '@models/excercise-row.model';
   imports: [NgIf, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent, NgbAccordionModule],
 })
 export class PersonalRecordComponent {
-  @Input() personalRecord: ExcerciseRow | null = null;
+  @Input({ required: true }) personalRecord!: ExcerciseRow;
 }
