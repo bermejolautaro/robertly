@@ -18,8 +18,7 @@
           "builder": "@angular-devkit/build-angular:browser-esbuild",
           "options": ***REMOVED***
             "allowedCommonJsDependencies": [
-              "dayjs",
-              "dayjs/plugin/customParseFormat"
+              "dayjs"
             ],
             "outputPath": "dist/gym-angular-excel",
             "index": "src/index.html",

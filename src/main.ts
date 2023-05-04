@@ -38,12 +38,7 @@ bootstrapApplication(AppComponent, ***REMOVED***
   providers: [
     provideHttpClient(),
     provideRouter(routes as unknown as Routes),
-    provideServiceWorker('ngsw-worker.js', ***REMOVED***
-      enabled: !isDevMode(),
-      // Register the ServiceWorker as soon as the application is stable
-      // or after 30 seconds (whichever comes first).
-      registrationStrategy: 'registerWhenStable:30000',
-***REMOVED***),
-    ***REMOVED*** provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api'***REMOVED***
+    provideServiceWorker('ngsw-worker.js'),
+    ***REMOVED*** provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' ***REMOVED***,
   ],
 ***REMOVED***).catch(console.error);

@@ -52,8 +52,8 @@ export class AppComponent ***REMOVED***
   public readonly STATS_PATH = STATS_PATH;
   public readonly LOGS_PATH = LOGS_PATH;
 
-  public constructor(private readonly serviceWorkerUpdates: SwUpdate) ***REMOVED***
-    this.serviceWorkerUpdates.versionUpdates
+  public constructor(serviceWorkerUpdates: SwUpdate) ***REMOVED***
+    serviceWorkerUpdates.versionUpdates
       .pipe(
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
         take(1)
