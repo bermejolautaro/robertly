@@ -6,13 +6,14 @@ import { ExcerciseRow } from '@models/excercise-row.model';
   selector: 'app-excercise-row-title',
   template: `
     <div class="w-100">
-      <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-bold': null" *ngIf="excerciseRow">
-        <div *ngIf="showExcercise" class="col d-flex" [style.fontSize.rem]="1">
+      <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-bold' : null" *ngIf="excerciseRow">
+        <div *ngIf="showExcercise" class="col d-flex align-items-center gap-1" [style.fontSize.rem]="1">
           {{ excerciseRow.excerciseName | titlecase }}
+          <i *ngIf="showStar" class="fa fa-star"></i>
         </div>
       </div>
       <div class="row">
-        <div *ngIf="showDate" class="col d-flex text-muted" [style.fontSize.rem]=".8">
+        <div *ngIf="showDate" class="col d-flex text-muted" [style.fontSize.rem]="0.8">
           {{ excerciseRow.date }} - {{ excerciseRow.username | titlecase }}
         </div>
       </div>
@@ -30,6 +31,7 @@ import { ExcerciseRow } from '@models/excercise-row.model';
   imports: [NgFor, NgIf, NgClass, TitleCasePipe],
 })
 export class ExcerciseRowTitleComponent {
+  @Input() showStar: boolean = false;
   @Input() showExcercise: boolean = true;
   @Input() showDate: boolean = true;
   @Input() showUsername: boolean = true;
