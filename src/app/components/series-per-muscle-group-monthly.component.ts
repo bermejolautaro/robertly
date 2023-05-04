@@ -1,13 +1,14 @@
 import { AsyncPipe, KeyValuePipe, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { Component, Input, computed, signal } from '@angular/core';
 
 import * as R from 'remeda';
 
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+
 import { getSeriesAmountPerMuscleGroupMonthly, groupByMonth } from '@helpers/excercise-log.helper';
 import { ExcerciseRow } from '@models/excercise-row.model';
-import { BehaviorSubject, Observable, map } from 'rxjs';
 import { MUSCLE_GROUPS } from '@models/constants';
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { ParseToMonthPipe } from '@pipes/date.pipe';
 
 @Component({
   selector: 'app-series-per-muscle-group-monthly',
@@ -19,38 +20,40 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
         </div>
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>{{ selectedMonth$ | async }}</button>
+            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
+              {{ selectedWeekDropdownValue() | parseToMonth }}
+            </button>
             <div ngbDropdownMenu class="w-100">
-              <button ngbDropdownItem (click)="selectedMonthSubject.next(null)">Clear filter</button>
-              <button ngbDropdownItem *ngFor="let month of months" (click)="selectedMonthSubject.next(month)">{{ month }}</button>
+              <button ngbDropdownItem *ngFor="let month of monthsSignal()" (click)="selectedMonthDropdownSignal.set(month)">
+                {{ month | parseToMonth }}
+              </button>
             </div>
           </div>
         </div>
-        <ng-container *ngIf="selectedMonthSubject | async as selectedMonth">
-          <ng-container *ngIf="seriesPerMuscleGroupMonthly && daysGroupByMonth">
-            <table class="table table-sm m-0 mb-3">
-              <thead>
-                <tr>
-                  <td scope="col" class="fw-semibold">Muscle Group</td>
-                  <td class="text-center fw-semibold" *ngFor="let name of seriesPerMuscleGroupMonthly[selectedMonth] | keyvalue">
-                    {{ name.key | titlecase }}
-                  </td>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let muscleGroup of muscleGroups">
-                  <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
-                  <td class="text-center" *ngFor="let x of seriesPerMuscleGroupMonthly[selectedMonth] | keyvalue">
-                    {{ x.value[muscleGroup] || 0 }}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <div class="fw-semibold">
-              {{ daysGroupByMonth[selectedMonth] }} {{ daysGroupByMonth[selectedMonth] === 1 ? 'day' : 'days' }} trained this month
-            </div>
-          </ng-container>
-        </ng-container>
+        <table class="table table-sm m-0 mb-3">
+          <thead>
+            <tr>
+              <td scope="col" class="fw-semibold">Muscle Group</td>
+              <td
+                class="text-center fw-semibold"
+                *ngFor="let name of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()] | keyvalue"
+              >
+                {{ name.key | titlecase }}
+              </td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let muscleGroup of muscleGroups">
+              <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
+              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()] | keyvalue">
+                {{ x.value[muscleGroup] || 0 }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="fw-semibold">
+          {{ daysTrainedMessage() }}
+        </div>
       </div>
     </div>
   `,
@@ -62,30 +65,25 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
     `,
   ],
   standalone: true,
-  imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, AsyncPipe, NgbDropdownModule],
+  imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, AsyncPipe, ParseToMonthPipe, NgbDropdownModule],
 })
 export class SeriesPerMuscleGroupMonthlyComponent {
-  private _rows: ExcerciseRow[] = [];
-
-  @Input() public set rows(value: ExcerciseRow[]) {
-    this._rows = value;
-    this.seriesPerMuscleGroupMonthly = getSeriesAmountPerMuscleGroupMonthly(this.rows);
-    this.daysGroupByMonth = R.mapValues(groupByMonth(this.rows), x => x.length);
-
-    this.months = R.keys(this.seriesPerMuscleGroupMonthly);
-    this.selectedMonthSubject.next(this.months[0]);
-  }
-
-  public get rows(): ExcerciseRow[] {
-    return this._rows;
+  @Input({ required: true }) public set rows(value: ExcerciseRow[]) {
+    this.rowsSignal.set(value);
   }
 
   public readonly muscleGroups = MUSCLE_GROUPS;
 
-  public seriesPerMuscleGroupMonthly: Record<string, Record<string, Record<string, number>>> | null = null;
-  public daysGroupByMonth: Record<PropertyKey, number> | null = null;
-  public months: string[] = [];
+  public readonly rowsSignal = signal<ExcerciseRow[]>([]);
+  public readonly daysGroupByMonthSignal = computed(() => R.mapValues(groupByMonth(this.rowsSignal()), x => x.length));
+  public readonly seriesPerMuscleGroupMonthlySignal = computed(() => getSeriesAmountPerMuscleGroupMonthly(this.rowsSignal()));
+  public readonly monthsSignal = computed(() => R.keys(this.seriesPerMuscleGroupMonthlySignal()));
 
-  public selectedMonthSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
-  public selectedMonth$: Observable<string> = this.selectedMonthSubject.pipe(map(x => x ?? 'Month'));
+  public readonly selectedMonthDropdownSignal = signal<string | null>(null);
+  public readonly selectedMonthSignal = computed(() => this.selectedMonthDropdownSignal() ?? this.monthsSignal()[0]);
+  public readonly selectedWeekDropdownValue = computed(() => this.selectedMonthSignal() ?? 'Month');
+  public readonly daysTrainedMessage = computed(() => {
+    const daysTrained = this.daysGroupByMonthSignal()[this.selectedMonthSignal()];
+    return `${daysTrained} ${daysTrained === 1 ? 'day' : 'days'} trained this month`;
+  });
 }
