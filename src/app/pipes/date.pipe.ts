@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 
 @Pipe({ name: 'parseToMonth', standalone: true })
 export class ParseToMonthPipe implements PipeTransform {

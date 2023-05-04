@@ -4,10 +4,10 @@ import { Routes, provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 
-import * as dayjs from 'dayjs';
-import * as customParseFormat from 'dayjs/plugin/customParseFormat';
-import * as weekOfYear from 'dayjs/plugin/weekOfYear';
-import * as isoWeek from 'dayjs/plugin/isoWeek';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import isoWeek from 'dayjs/plugin/isoWeek';
 
 import { AppComponent } from 'src/app/app.component';
 

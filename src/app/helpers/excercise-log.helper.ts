@@ -4,7 +4,7 @@ import { type ExcerciseLog } from '@models/excercise-log.model';
 import { ExcerciseRow } from '@models/excercise-row.model';
 import { GroupedLog } from '@models/grouped-log.model';
 
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import * as R from 'remeda';
 
 export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] {
