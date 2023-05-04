@@ -5,7 +5,7 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
 @Component(***REMOVED***
   selector: 'app-excercise-row-body',
   template: `
-    <table *ngIf="excerciseRow" class="table table-striped m-0">
+    <table *ngIf="excerciseRow" class="table table-striped table-sm m-0">
       <tbody>
         <tr class="row" *ngFor="let serie of excerciseRow.series">
           <td class="fw-bold col">Serie ***REMOVED******REMOVED*** serie.serie ***REMOVED******REMOVED***</td>
