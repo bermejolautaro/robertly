@@ -2,7 +2,7 @@ import ***REMOVED*** Component ***REMOVED*** from '@angular/core';
 import ***REMOVED*** RouterLinkActive, RouterLinkWithHref, RouterOutlet ***REMOVED*** from '@angular/router';
 import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
 
-import ***REMOVED*** filter, take ***REMOVED*** from 'rxjs';
+import ***REMOVED*** filter, take, tap ***REMOVED*** from 'rxjs';
 import ***REMOVED*** LOGS_PATH, STATS_PATH ***REMOVED*** from 'src/main';
 
 @Component(***REMOVED***
@@ -53,8 +53,11 @@ export class AppComponent ***REMOVED***
   public readonly LOGS_PATH = LOGS_PATH;
 
   public constructor(serviceWorkerUpdates: SwUpdate) ***REMOVED***
+    serviceWorkerUpdates.unrecoverable.subscribe(x => console.error(x));
+
     serviceWorkerUpdates.versionUpdates
       .pipe(
+        tap(x => console.log(x)),
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
         take(1)
       )
