@@ -28,7 +28,7 @@ interface Excercise ***REMOVED***
   template: `
     <!-- #region FILTERS -->
     <div class="container my-4">
-      <div class="row mb-2">
+      <div class="row mb-2 gx-2">
         <!-- #region DROPDOWN TYPE -->
         <div class="col-6">
           <div ngbDropdown class="d-flex justify-content-center">
@@ -95,22 +95,20 @@ interface Excercise ***REMOVED***
       <div class="container" *ngIf="isGrouped">
         <app-personal-record
           *ngIf="personalRecord$ | async as personalRecord"
-          class="mb-5"
+          class="mb-3"
           [personalRecord]="personalRecord"
         ></app-personal-record>
 
-        <h5 class="mb-3">Log History</h5>
         <app-grouped-excercise-rows [groupedExcerciseLogs]="groupedLogs$ | async | ifNullEmptyArray"> </app-grouped-excercise-rows>
       </div>
 
       <div class="container" *ngIf="!isGrouped">
         <app-personal-record
           *ngIf="personalRecord$ | async as personalRecord"
-          class="mb-5"
+          class="mb-3"
           [personalRecord]="personalRecord"
         ></app-personal-record>
 
-        <h5 class="mb-3">Log History</h5>
         <app-excercise-rows [excerciseRows]="excerciseRows$ | async | ifNullEmptyArray"></app-excercise-rows>
       </div>
     </div>
@@ -123,7 +121,14 @@ interface Excercise ***REMOVED***
       </div>
     </ng-template>
   `,
-  styles: [``],
+  styles: [
+    `
+      .dropdown-menu ***REMOVED***
+        max-height: 400px;
+        overflow: scroll;
+  ***REMOVED***
+    `,
+  ],
   standalone: true,
   imports: [
     NgFor,

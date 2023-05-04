@@ -6,13 +6,14 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
   selector: 'app-excercise-row-title',
   template: `
     <div class="w-100">
-      <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-bold': null" *ngIf="excerciseRow">
-        <div *ngIf="showExcercise" class="col d-flex" [style.fontSize.rem]="1">
+      <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-bold' : null" *ngIf="excerciseRow">
+        <div *ngIf="showExcercise" class="col d-flex align-items-center gap-1" [style.fontSize.rem]="1">
           ***REMOVED******REMOVED*** excerciseRow.excerciseName | titlecase ***REMOVED******REMOVED***
+          <i *ngIf="showStar" class="fa fa-star"></i>
         </div>
       </div>
       <div class="row">
-        <div *ngIf="showDate" class="col d-flex text-muted" [style.fontSize.rem]=".8">
+        <div *ngIf="showDate" class="col d-flex text-muted" [style.fontSize.rem]="0.8">
           ***REMOVED******REMOVED*** excerciseRow.date ***REMOVED******REMOVED*** - ***REMOVED******REMOVED*** excerciseRow.username | titlecase ***REMOVED******REMOVED***
         </div>
       </div>
@@ -30,6 +31,7 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
   imports: [NgFor, NgIf, NgClass, TitleCasePipe],
 ***REMOVED***)
 export class ExcerciseRowTitleComponent ***REMOVED***
+  @Input() showStar: boolean = false;
   @Input() showExcercise: boolean = true;
   @Input() showDate: boolean = true;
   @Input() showUsername: boolean = true;

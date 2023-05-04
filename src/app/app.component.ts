@@ -22,7 +22,7 @@ import ***REMOVED*** LOGS_PATH, STATS_PATH ***REMOVED*** from 'src/main';
               routerLinkActive="active"
               [routerLinkActiveOptions]="***REMOVED*** exact: true ***REMOVED***"
             >
-              Logs <i class="fa fa-history" aria-hidden="true"></i>
+              Logs <i class="fa fa-history"></i>
             </a>
           </li>
           <li class="nav-item w-100">
@@ -31,7 +31,7 @@ import ***REMOVED*** LOGS_PATH, STATS_PATH ***REMOVED*** from 'src/main';
               [routerLink]="STATS_PATH"
               routerLinkActive="active"
             >
-              Stats <i class="fa fa-bar-chart" aria-hidden="true"></i>
+              Stats <i class="fa fa-bar-chart"></i>
             </a>
           </li>
         </ul>
