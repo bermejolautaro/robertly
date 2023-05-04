@@ -1,5 +1,5 @@
 import { AsyncPipe, NgIf } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { Observable, map } from 'rxjs';
 
@@ -29,6 +29,7 @@ import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-mus
   `,
   styles: [``],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIf, AsyncPipe, SeriesPerMuscleGroupWeeklyComponent, SeriesPerMuscleGroupMonthlyComponent],
 })
 export class StatsPageComponent {

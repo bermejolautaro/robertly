@@ -1,5 +1,5 @@
 import { AsyncPipe, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -130,6 +130,7 @@ interface Excercise {
     `,
   ],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgFor,
     NgIf,

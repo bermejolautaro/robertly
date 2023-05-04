@@ -1,5 +1,5 @@
 import { NgClass, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ExcerciseRow } from '@models/excercise-row.model';
 
 @Component({
@@ -28,6 +28,7 @@ import { ExcerciseRow } from '@models/excercise-row.model';
     `,
   ],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgFor, NgIf, NgClass, TitleCasePipe],
 })
 export class ExcerciseRowTitleComponent {

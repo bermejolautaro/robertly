@@ -1,5 +1,5 @@
 import { NgFor, NgIf } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ExcerciseRow } from '@models/excercise-row.model';
 
 @Component({
@@ -27,6 +27,7 @@ import { ExcerciseRow } from '@models/excercise-row.model';
   `,
   styles: [``],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgFor, NgIf],
 })
 export class ExcerciseRowBodyComponent {

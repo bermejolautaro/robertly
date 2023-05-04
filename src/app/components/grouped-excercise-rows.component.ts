@@ -1,5 +1,5 @@
 import { NgClass, NgFor, TitleCasePipe } from '@angular/common';
-import { Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -79,6 +79,7 @@ import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.comp
   `,
   styles: [``],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgFor, NgbAccordionModule, TitleCasePipe, NgClass, ExcerciseRowBodyComponent, ExcerciseRowTitleComponent],
 })
 export class GroupedExcerciseRowsComponent {
