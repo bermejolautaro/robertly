@@ -4,7 +4,7 @@ import ***REMOVED*** type ExcerciseLog ***REMOVED*** from '@models/excercise-log
 import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
 import ***REMOVED*** GroupedLog ***REMOVED*** from '@models/grouped-log.model';
 
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import * as R from 'remeda';
 
 export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] ***REMOVED***

@@ -15,7 +15,7 @@
       "prefix": "app",
       "architect": ***REMOVED***
         "build": ***REMOVED***
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:browser-esbuild",
           "options": ***REMOVED***
             "allowedCommonJsDependencies": [
               "dayjs",
