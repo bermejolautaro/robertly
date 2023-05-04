@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import { filter, take } from 'rxjs';
+import { filter, take, tap } from 'rxjs';
 import { LOGS_PATH, STATS_PATH } from 'src/main';
 
 @Component({
@@ -53,8 +53,11 @@ export class AppComponent {
   public readonly LOGS_PATH = LOGS_PATH;
 
   public constructor(serviceWorkerUpdates: SwUpdate) {
+    serviceWorkerUpdates.unrecoverable.subscribe(x => console.error(x));
+
     serviceWorkerUpdates.versionUpdates
       .pipe(
+        tap(x => console.log(x)),
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
         take(1)
       )
