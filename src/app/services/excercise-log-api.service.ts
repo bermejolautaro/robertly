@@ -5,24 +5,24 @@ import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
 import * as R from 'remeda';
 
 import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
+import ***REMOVED*** BACKEND_URL ***REMOVED*** from 'src/main';
 
 @Injectable(***REMOVED***
   providedIn: 'root',
 ***REMOVED***)
 export class ExcerciseLogApiService ***REMOVED***
   private readonly http = inject(HttpClient);
+  private readonly url = inject(BACKEND_URL);
 
   public getExcerciseLogs(): Observable<ExcerciseLog[]> ***REMOVED***
-    return this.http
-      .get<***REMOVED*** lautaro: string[][]; roberto: string[][] ***REMOVED***>('https://gym-nodejs-excel-bermejolautaro.vercel.app/api/get-data')
-      .pipe(
-        map(data =>
-          R.concat(
-            processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***)),
-            processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***))
-          )
+    return this.http.get<***REMOVED*** lautaro: string[][]; roberto: string[][] ***REMOVED***>(`$***REMOVED***this.url***REMOVED***/get-data`).pipe(
+      map(data =>
+        R.concat(
+          processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***)),
+          processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***))
         )
-      );
+      )
+    );
 ***REMOVED***
 ***REMOVED***
 
