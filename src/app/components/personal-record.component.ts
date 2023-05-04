@@ -1,5 +1,5 @@
 import ***REMOVED*** NgIf ***REMOVED*** from '@angular/common';
-import ***REMOVED*** Component, Input ***REMOVED*** from '@angular/core';
+import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
 import ***REMOVED*** NgbAccordionModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
 import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/excercise-row-title.component';
@@ -34,6 +34,7 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
     `,
   ],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIf, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent, NgbAccordionModule],
 ***REMOVED***)
 export class PersonalRecordComponent ***REMOVED***

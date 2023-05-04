@@ -1,5 +1,5 @@
 import ***REMOVED*** NgFor, NgIf ***REMOVED*** from '@angular/common';
-import ***REMOVED*** Component, Input ***REMOVED*** from '@angular/core';
+import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
 import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
 
 @Component(***REMOVED***
@@ -27,6 +27,7 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
   `,
   styles: [``],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgFor, NgIf],
 ***REMOVED***)
 export class ExcerciseRowBodyComponent ***REMOVED***

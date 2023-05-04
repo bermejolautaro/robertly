@@ -1,5 +1,5 @@
 import ***REMOVED*** AsyncPipe, NgIf ***REMOVED*** from '@angular/common';
-import ***REMOVED*** Component, inject ***REMOVED*** from '@angular/core';
+import ***REMOVED*** ChangeDetectionStrategy, Component, inject ***REMOVED*** from '@angular/core';
 
 import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
 
@@ -29,6 +29,7 @@ import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@c
   `,
   styles: [``],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgIf, AsyncPipe, SeriesPerMuscleGroupWeeklyComponent, SeriesPerMuscleGroupMonthlyComponent],
 ***REMOVED***)
 export class StatsPageComponent ***REMOVED***

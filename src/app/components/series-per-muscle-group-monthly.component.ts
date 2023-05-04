@@ -1,5 +1,5 @@
 import ***REMOVED*** AsyncPipe, KeyValuePipe, NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** Component, Input, computed, signal ***REMOVED*** from '@angular/core';
+import ***REMOVED*** ChangeDetectionStrategy, Component, Input, computed, signal ***REMOVED*** from '@angular/core';
 
 import * as R from 'remeda';
 
@@ -65,6 +65,7 @@ import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/date.pipe';
     `,
   ],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, AsyncPipe, ParseToMonthPipe, NgbDropdownModule],
 ***REMOVED***)
 export class SeriesPerMuscleGroupMonthlyComponent ***REMOVED***
