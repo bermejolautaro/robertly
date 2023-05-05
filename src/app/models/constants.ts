@@ -25,7 +25,10 @@ export const EXCERCISES_NAMES = [
   'lateral raises polea',
   'pec fly',
   'shoulder press db',
-  'pecho inclinado db'
+  'pecho inclinado db',
+  'bicep preacher db',
+  'espinales',
+  'tricep polea barra'
 ] as const;
 
 export const MUSCLE_GROUPS = ['chest', 'back', 'arms', 'shoulders', 'legs', 'calves'] as const;
@@ -59,5 +62,8 @@ export const MUSCLE_GROUP_PER_EXCERCISE: Record<ExcerciseName, MuscleGroup> = **
   'lateral raises polea': 'shoulders',
   'pec fly': 'chest',
   'shoulder press db': 'shoulders',
-  'pecho inclinado db': 'chest'
+  'pecho inclinado db': 'chest',
+  'bicep preacher db': 'arms',
+  espinales: 'back',
+  'tricep polea barra': 'arms'
 ***REMOVED*** as const;
