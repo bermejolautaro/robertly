@@ -52,10 +52,15 @@ interface Excercise ***REMOVED***
               ***REMOVED******REMOVED*** selectedExcercise$ | async | titlecase ***REMOVED******REMOVED***
             </button>
             <div ngbDropdownMenu class="w-100">
-              <button ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
-              <button ngbDropdownItem *ngFor="let excercise of excercises$ | async" (click)="selectedExcerciseSubject.next(excercise)">
-                ***REMOVED******REMOVED*** excercise | titlecase ***REMOVED******REMOVED***
-              </button>
+              <div style="overflow: scroll; max-height: 400px">
+                <button ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
+                <button ngbDropdownItem *ngFor="let excercise of excercises$ | async" (click)="selectedExcerciseSubject.next(excercise)">
+                  ***REMOVED******REMOVED*** excercise | titlecase ***REMOVED******REMOVED***
+                </button>
+              </div>
+              <div class="d-flex justify-content-center align-items-center">
+                <i class="fa fa-caret-down"></i>
+              </div>
             </div>
           </div>
         </div>
@@ -121,27 +126,20 @@ interface Excercise ***REMOVED***
       </div>
     </ng-template>
   `,
-  styles: [
-    `
-      .dropdown-menu ***REMOVED***
-        max-height: 400px;
-        overflow: scroll;
-  ***REMOVED***
-    `,
-  ],
+  styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgFor,
     NgIf,
+    FormsModule,
     AsyncPipe,
     TitleCasePipe,
-    FormsModule,
-    NgbDropdownModule,
+    IfNullEmptyArrayPipe,
     PersonalRecordComponent,
     GroupedExcerciseRowsComponent,
     ExcerciseRowsComponent,
-    IfNullEmptyArrayPipe,
+    NgbDropdownModule,
   ],
 ***REMOVED***)
 export class ExcerciseLogsPageComponent ***REMOVED***
