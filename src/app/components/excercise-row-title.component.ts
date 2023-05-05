@@ -6,7 +6,7 @@ import { ExcerciseRow } from '@models/excercise-row.model';
   selector: 'app-excercise-row-title',
   template: `
     <div class="w-100">
-      <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-bold' : null" *ngIf="excerciseRow">
+      <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-semibold' : null" *ngIf="excerciseRow">
         <div *ngIf="showExcercise" class="col d-flex align-items-center gap-1" [style.fontSize.rem]="1">
           {{ excerciseRow.excerciseName | titlecase }}
           <i *ngIf="showStar" class="fa fa-star"></i>

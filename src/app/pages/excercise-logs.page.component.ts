@@ -32,7 +32,7 @@ interface Excercise {
         <!-- #region DROPDOWN TYPE -->
         <div class="col-6">
           <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
+            <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
               {{ selectedType$ | async | titlecase }}
             </button>
             <div ngbDropdownMenu class="w-100">
@@ -48,17 +48,17 @@ interface Excercise {
         <!-- #region DROPDOWN EXCERCISE -->
         <div class="col-6">
           <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
+            <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
               {{ selectedExcercise$ | async | titlecase }}
             </button>
             <div ngbDropdownMenu class="w-100">
               <div style="overflow: scroll; max-height: 400px">
-                <button ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
+                <button class="border-bottom" ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
                 <button ngbDropdownItem *ngFor="let excercise of excercises$ | async" (click)="selectedExcerciseSubject.next(excercise)">
                   {{ excercise | titlecase }}
                 </button>
               </div>
-              <div class="d-flex justify-content-center align-items-center">
+              <div class="d-flex justify-content-center align-items-center border-top border-1">
                 <i class="fa fa-caret-down"></i>
               </div>
             </div>
@@ -71,7 +71,7 @@ interface Excercise {
         <!-- #region DROPDOWN NAME -->
         <div class="col-12">
           <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
+            <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
               {{ selectedUsername$ | async | titlecase }}
             </button>
             <div ngbDropdownMenu class="w-100">
