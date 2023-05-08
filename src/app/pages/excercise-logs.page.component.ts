@@ -16,7 +16,7 @@ import ***REMOVED*** ExcerciseRowsComponent ***REMOVED*** from '@components/exce
 import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@components/grouped-excercise-rows.component';
 import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@components/personal-record.component';
 import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
-import ***REMOVED*** getPersonalRecord, groupExcerciseLogs, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED*** getMissingExcerciseNames, getPersonalRecord, groupExcerciseLogs, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
 
 interface Excercise ***REMOVED***
   name: string;
@@ -53,7 +53,7 @@ interface Excercise ***REMOVED***
             </button>
             <div ngbDropdownMenu class="w-100">
               <div style="overflow: scroll; max-height: 400px">
-                <button class="border-bottom" ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
+                <button ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
                 <button ngbDropdownItem *ngFor="let excercise of excercises$ | async" (click)="selectedExcerciseSubject.next(excercise)">
                   ***REMOVED******REMOVED*** excercise | titlecase ***REMOVED******REMOVED***
                 </button>
@@ -282,6 +282,8 @@ export class ExcerciseLogsPageComponent ***REMOVED***
         );
 
         this.excercisesSubject.next(excercises);
+
+        console.log(getMissingExcerciseNames(this.excerciseRowsSubject.value));
   ***REMOVED***);
 ***REMOVED***
 ***REMOVED***

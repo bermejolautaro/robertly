@@ -1,9 +1,9 @@
 import ***REMOVED*** Pipe, PipeTransform ***REMOVED*** from '@angular/core';
-import dayjs from 'dayjs';
+import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
 
 @Pipe(***REMOVED*** name: 'parseToMonth', standalone: true ***REMOVED***)
 export class ParseToMonthPipe implements PipeTransform ***REMOVED***
   public transform(value: string): string ***REMOVED***
-    return dayjs(value, 'DD/MM/YYYY').format('MMMM[ - ]YYYY');
+    return parseDate(value).format('MMMM[ - ]YYYY');
 ***REMOVED***
 ***REMOVED***

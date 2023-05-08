@@ -22,22 +22,22 @@ const routes = [
   ***REMOVED***
     path: STATS_PATH,
     loadComponent: () => import('@pages/stats.page.component').then(x => x.StatsPageComponent),
-***REMOVED***
+***REMOVED*** as const,
   ***REMOVED***
     path: LOGS_PATH,
     pathMatch: 'full',
     loadComponent: () => import('@pages/excercise-logs.page.component').then(x => x.ExcerciseLogsPageComponent),
-***REMOVED***
-] as const satisfies Readonly<Routes>;
+***REMOVED*** as const,
+] satisfies Routes
 
-type RoutePath = (typeof routes)[number]['path'];
+export type RoutePath = (typeof routes)[number]['path'];
 
 export const BACKEND_URL = new InjectionToken<string>('BACKEND_URL');
 
 bootstrapApplication(AppComponent, ***REMOVED***
   providers: [
     provideHttpClient(),
-    provideRouter(routes as unknown as Routes),
+    provideRouter(routes),
     provideServiceWorker('ngsw-worker.js'),
     ***REMOVED*** provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' ***REMOVED***,
   ],

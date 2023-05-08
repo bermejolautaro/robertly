@@ -1,10 +1,8 @@
-import ***REMOVED*** parseAndCompare ***REMOVED*** from '@helpers/date.helper';
-import ***REMOVED*** type ExcerciseName, MUSCLE_GROUP_PER_EXCERCISE ***REMOVED*** from '@models/constants';
+import ***REMOVED*** parseAndCompare, parseDate ***REMOVED*** from '@helpers/date.helper';
+import ***REMOVED*** type ExcerciseName, MUSCLE_GROUP_PER_EXCERCISE, EXCERCISES_NAMES ***REMOVED*** from '@models/constants';
 import ***REMOVED*** type ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
-import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
-import ***REMOVED*** GroupedLog ***REMOVED*** from '@models/grouped-log.model';
-
-import dayjs from 'dayjs';
+import ***REMOVED*** type ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** type GroupedLog ***REMOVED*** from '@models/grouped-log.model';
 import * as R from 'remeda';
 
 export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] ***REMOVED***
@@ -66,6 +64,15 @@ export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExcerciseR
   );
 ***REMOVED***
 
+export function getMissingExcerciseNames(rows: ExcerciseRow[]): string[] ***REMOVED***
+  return R.pipe(
+    rows,
+    R.map(x => x.excerciseName.toLowerCase()),
+    R.uniqBy(x => x),
+    R.difference(EXCERCISES_NAMES)
+  );
+***REMOVED***
+
 export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, username: string): ExcerciseRow | null ***REMOVED***
   const result = R.pipe(
     rows,
@@ -84,7 +91,7 @@ export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, u
 export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExcerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
-    R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').startOf('isoWeek').format('DD/MM/YYYY')),
+    R.groupBy(row => parseDate(row.date).startOf('isoWeek').format('DD/MM/YYYY')),
     R.mapValues(x =>
       R.pipe(
         x,
@@ -109,7 +116,7 @@ export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExcerciseRow[
 export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExcerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
-    R.groupBy(row => dayjs(row.date, 'DD/MM/YYYY').startOf('month').format('DD/MM/YYYY')),
+    R.groupBy(row => parseDate(row.date).startOf('month').format('DD/MM/YYYY')),
     R.mapValues(x =>
       R.pipe(
         x,
@@ -134,7 +141,7 @@ export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExcerciseRow
 export function groupByWeek(excerciseRows: ExcerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
-    R.groupBy(x => dayjs(x.date, 'DD/MM/YYYY').startOf('isoWeek').format('DD/MM/YYYY')),
+    R.groupBy(x => parseDate(x.date).startOf('isoWeek').format('DD/MM/YYYY')),
     R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
 ***REMOVED***
@@ -142,7 +149,7 @@ export function groupByWeek(excerciseRows: ExcerciseRow[]) ***REMOVED***
 export function groupByMonth(excerciseRows: ExcerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
-    R.groupBy(x => dayjs(x.date, 'DD/MM/YYYY').startOf('month').format('DD/MM/YYYY')),
+    R.groupBy(x => parseDate(x.date).startOf('month').format('DD/MM/YYYY')),
     R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
 ***REMOVED***
