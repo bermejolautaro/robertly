@@ -28,7 +28,13 @@ export const EXCERCISES_NAMES = [
   'pecho inclinado db',
   'bicep preacher db',
   'espinales',
-  'tricep polea barra'
+  'tricep polea barra',
+  'abductores',
+  'femorales',
+  'gemelos',
+  'sentadilla',
+  'tricep polea soga',
+  'sillon cuadricep 1 pierna'
 ] as const;
 
 export const MUSCLE_GROUPS = ['chest', 'back', 'arms', 'shoulders', 'legs', 'calves'] as const;
@@ -65,5 +71,13 @@ export const MUSCLE_GROUP_PER_EXCERCISE: Record<ExcerciseName, MuscleGroup> = {
   'pecho inclinado db': 'chest',
   'bicep preacher db': 'arms',
   espinales: 'back',
-  'tricep polea barra': 'arms'
+  'tricep polea barra': 'arms',
+  abductores: 'legs',
+  femorales: 'legs',
+  gemelos: 'calves',
+  sentadilla: 'legs',
+  'tricep polea soga': 'arms',
+  "sillon cuadricep 1 pierna": 'legs'
 } as const;
+
+export const DATE_FORMATS = ['DD-MM-YYYY', 'D-MM-YYYY', 'D-M-YYYY'] as const;

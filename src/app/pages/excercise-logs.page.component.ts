@@ -16,7 +16,7 @@ import { ExcerciseRowsComponent } from '@components/excercise-rows.component';
 import { GroupedExcerciseRowsComponent } from '@components/grouped-excercise-rows.component';
 import { PersonalRecordComponent } from '@components/personal-record.component';
 import { ExcerciseLogApiService } from '@services/excercise-log-api.service';
-import { getPersonalRecord, groupExcerciseLogs, mapGroupedToExcerciseRows } from '@helpers/excercise-log.helper';
+import { getMissingExcerciseNames, getPersonalRecord, groupExcerciseLogs, mapGroupedToExcerciseRows } from '@helpers/excercise-log.helper';
 
 interface Excercise {
   name: string;
@@ -53,7 +53,7 @@ interface Excercise {
             </button>
             <div ngbDropdownMenu class="w-100">
               <div style="overflow: scroll; max-height: 400px">
-                <button class="border-bottom" ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
+                <button ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
                 <button ngbDropdownItem *ngFor="let excercise of excercises$ | async" (click)="selectedExcerciseSubject.next(excercise)">
                   {{ excercise | titlecase }}
                 </button>
@@ -282,6 +282,8 @@ export class ExcerciseLogsPageComponent {
         );
 
         this.excercisesSubject.next(excercises);
+
+        console.log(getMissingExcerciseNames(this.excerciseRowsSubject.value));
       });
   }
 }

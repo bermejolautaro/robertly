@@ -40,6 +40,7 @@ import { ParseToMonthPipe } from '@pipes/date.pipe';
               >
                 {{ name.key | titlecase }}
               </td>
+              <td class="text-center fw-semibold">Target</td>
             </tr>
           </thead>
           <tbody>
@@ -48,6 +49,7 @@ import { ParseToMonthPipe } from '@pipes/date.pipe';
               <td class="text-center" *ngFor="let x of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()] | keyvalue">
                 {{ x.value[muscleGroup] || 0 }}
               </td>
+              <td class="text-center">40</td>
             </tr>
           </tbody>
         </table>

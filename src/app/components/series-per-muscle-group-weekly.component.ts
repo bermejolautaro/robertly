@@ -34,6 +34,7 @@ import { MUSCLE_GROUPS } from '@models/constants';
               <td class="text-center fw-semibold" *ngFor="let name of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()] | keyvalue">
                 {{ name.key | titlecase }}
               </td>
+              <td class="text-center fw-semibold">Target</td>
             </tr>
           </thead>
           <tbody>
@@ -42,6 +43,7 @@ import { MUSCLE_GROUPS } from '@models/constants';
               <td class="text-center" *ngFor="let x of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()] | keyvalue">
                 {{ x.value[muscleGroup] || 0 }}
               </td>
+              <td class="text-center">10</td>
             </tr>
           </tbody>
         </table>

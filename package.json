@@ -6,8 +6,8 @@
     "prettier": "prettier --write \"**/*.{js,json,css,scss,less,md,ts,html,component.html}\"",
     "start": "ng serve",
     "build": "ng build",
-    "ngsw-config": "node_modules\\.bin\\ngsw-config dist\\gym-angular-excel ngsw-config.json [/base/href]",
-    "deploy": "npm run ngsw-config && echo \"nsgw-config done!\" && ng deploy --base-href=/gym-tracker-excel/ ",
+    "ngsw-config": "node_modules\\.bin\\ngsw-config dist\\gym-angular-excel ngsw-config.json [/base/href] && echo \"nsgw-config done!\"",
+    "deploy": "npm run ngsw-config && ng deploy --base-href=/gym-tracker-excel/ ",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
