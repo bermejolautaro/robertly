@@ -34,7 +34,8 @@ export const EXCERCISES_NAMES = [
   'gemelos',
   'sentadilla',
   'tricep polea soga',
-  'sillon cuadricep 1 pierna'
+  'sillon cuadricep 1 pierna',
+  'chest press'
 ] as const;
 
 export const MUSCLE_GROUPS = ['chest', 'back', 'arms', 'shoulders', 'legs', 'calves'] as const;
@@ -77,7 +78,8 @@ export const MUSCLE_GROUP_PER_EXCERCISE: Record<ExcerciseName, MuscleGroup> = {
   gemelos: 'calves',
   sentadilla: 'legs',
   'tricep polea soga': 'arms',
-  "sillon cuadricep 1 pierna": 'legs'
+  "sillon cuadricep 1 pierna": 'legs',
+  'chest press': 'chest'
 } as const;
 
 export const DATE_FORMATS = ['DD-MM-YYYY', 'D-MM-YYYY', 'D-M-YYYY'] as const;

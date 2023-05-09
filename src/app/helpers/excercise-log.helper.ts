@@ -77,15 +77,23 @@ export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, u
   const result = R.pipe(
     rows,
     R.filter(x => x.username === username && x.excerciseName === excerciseName),
-    R.sort(
-      (a, b) =>
-        R.first(R.sort(b.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg -
-        R.first(R.sort(a.series, (aa, bb) => bb.weightKg - aa.weightKg))!.weightKg
-    ),
+    R.sort((a, b) => {
+      const bestSerieFromA = R.first(R.sort(a.series, sortByWeightAndRepsDesc))!;
+      const bestSerieFromB = R.first(R.sort(b.series, sortByWeightAndRepsDesc))!;
+
+      return sortByWeightAndRepsDesc(bestSerieFromA, bestSerieFromB);
+    }),
     R.first()
   );
 
   return result ?? null;
+}
+
+function sortByWeightAndRepsDesc(a: ExcerciseLog, b: ExcerciseLog): number {
+  const differenceWeight = b.weightKg - a.weightKg;
+  const differenceReps = b.reps - a.reps;
+
+  return differenceWeight !== 0 ? differenceWeight : differenceReps;
 }
 
 export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExcerciseRow[]) {
