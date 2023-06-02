@@ -10,5 +10,6 @@ export interface ExcerciseRow ***REMOVED***
   highlighted: 'green' | 'yellow' | null;
   total: number | null;
   average: number | null;
+  tonnage: number;
   muscleGroup: MuscleGroup;
 ***REMOVED***

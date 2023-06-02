@@ -3,7 +3,7 @@ import ***REMOVED*** ChangeDetectionStrategy, Component, inject ***REMOVED*** fr
 
 import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
 
-import ***REMOVED*** mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED*** mapGroupedToExcerciseRows, amountDaysTrained ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** groupExcerciseLogs ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
 
@@ -17,6 +17,21 @@ import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@c
     <div class="container my-4" *ngIf="rows$ | async as rows; else loadingSpinner">
       <app-series-per-muscle-group-weekly class="mb-4" [rows]="rows"></app-series-per-muscle-group-weekly>
       <app-series-per-muscle-group-monthly class="mb-4" [rows]="rows"></app-series-per-muscle-group-monthly>
+      <div class="card border-0 shadow-material-1">
+        <div class="card-body">
+          <div class="card-title mb-3">
+            <h5>Miscellaneous</h5>
+            <table class="table table-sm m-0 mb-3">
+              <tbody>
+                <tr>
+                  <td>Days trained</td>
+                  <td>***REMOVED******REMOVED*** amountDaysTrained(rows) ***REMOVED******REMOVED*** days</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <ng-template #loadingSpinner>
@@ -34,6 +49,8 @@ import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@c
 ***REMOVED***)
 export class StatsPageComponent ***REMOVED***
   private readonly excerciseLogApiService = inject(ExcerciseLogApiService);
+
+  public amountDaysTrained = amountDaysTrained;
 
   public rows$: Observable<ExcerciseRow[]> = this.excerciseLogApiService
     .getExcerciseLogs()

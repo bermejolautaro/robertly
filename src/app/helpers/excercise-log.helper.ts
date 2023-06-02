@@ -51,6 +51,7 @@ function mapToExcerciseRow(
         : null
       : null,
     total,
+    tonnage: series.reduce((prev, curr) => prev + curr.reps * curr.weightKg, 0),
     average: total ? Math.ceil(total / series.length) : null,
     muscleGroup: MUSCLE_GROUP_PER_EXCERCISE[excerciseName as ExcerciseName],
 ***REMOVED***;
@@ -71,6 +72,14 @@ export function getMissingExcerciseNames(rows: ExcerciseRow[]): string[] ***REMO
     R.uniqBy(x => x),
     R.difference(EXCERCISES_NAMES)
   );
+***REMOVED***
+
+export function amountDaysTrained(rows: ExcerciseRow[]): number ***REMOVED***
+  return R.pipe(
+    rows,
+    R.map(x => x.date),
+    R.uniq()
+  ).length
 ***REMOVED***
 
 export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, username: string): ExcerciseRow | null ***REMOVED***

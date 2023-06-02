@@ -22,6 +22,11 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.average ***REMOVED******REMOVED*** reps</td>
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0].weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
+        <tr class="row">
+          <td class="fw-bold col">Tonnage</td>
+          <td class="col text-center">&nbsp;</td>
+          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.tonnage ***REMOVED******REMOVED***kg</td>
+        </tr>
       </tbody>
     </table>
   `,
