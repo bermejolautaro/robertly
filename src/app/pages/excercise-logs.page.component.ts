@@ -1,5 +1,5 @@
 import { AsyncPipe, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ViewChild, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { NgbDropdownModule, NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
@@ -37,6 +37,7 @@ interface Excercise {
         [ngbTypeahead]="search"
         (focus)="focus$.next($any($event).target.value)"
         (click)="click$.next($any($event).target.value); excerciseTypeAhead = ''"
+        #typeaheadInput
         #instance="ngbTypeahead"
       />
 
@@ -182,12 +183,14 @@ export class ExcerciseLogsPageComponent {
 
   public excerciseTypeAhead: string = '';
 
+  @ViewChild('typeaheadInput', { static: true }) typeaheadInput: ElementRef<HTMLInputElement> | null = null;
   @ViewChild('instance', { static: true }) instance: NgbTypeahead | null = null;
   focus$ = new Subject<string>();
   click$ = new Subject<string>();
 
   public onExcerciseTypeaheadChange(term: string): void {
     this.selectedExcerciseSubject.next(term);
+    this.typeaheadInput?.nativeElement.blur();
   }
 
   search: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
@@ -195,7 +198,7 @@ export class ExcerciseLogsPageComponent {
     const clicksWithClosedPopup$ = this.click$.pipe(
       delay(100),
       filter(() => !this.instance!.isPopupOpen()),
-      map(x => '')
+      map(() => '')
     );
 
     const inputFocus$ = this.focus$;
