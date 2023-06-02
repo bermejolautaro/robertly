@@ -1,11 +1,11 @@
 import { AsyncPipe, NgFor, NgIf, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
 
-import { BehaviorSubject, Observable, combineLatest } from 'rxjs';
-import { finalize, map, pairwise, startWith, tap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, OperatorFunction, Subject, combineLatest, merge } from 'rxjs';
+import { delay, distinctUntilChanged, filter, finalize, map, pairwise, startWith, tap, withLatestFrom } from 'rxjs/operators';
 
 import * as R from 'remeda';
 
@@ -28,6 +28,18 @@ interface Excercise {
   template: `
     <!-- #region FILTERS -->
     <div class="container my-4">
+      <input
+        type="text"
+        class="form-control mb-2"
+        placeholder="Excercise"
+        [(ngModel)]="excerciseTypeAhead"
+        (selectItem)="onExcerciseTypeaheadChange($any($event).item)"
+        [ngbTypeahead]="search"
+        (focus)="focus$.next($any($event).target.value)"
+        (click)="click$.next($any($event).target.value); excerciseTypeAhead = ''"
+        #instance="ngbTypeahead"
+      />
+
       <div class="row mb-2 gx-2">
         <!-- #region DROPDOWN TYPE -->
         <div class="col-6">
@@ -140,6 +152,7 @@ interface Excercise {
     GroupedExcerciseRowsComponent,
     ExcerciseRowsComponent,
     NgbDropdownModule,
+    NgbTypeahead,
   ],
 })
 export class ExcerciseLogsPageComponent {
@@ -166,6 +179,32 @@ export class ExcerciseLogsPageComponent {
 
   public isGrouped: boolean = false;
   public isLoading: boolean = true;
+
+  public excerciseTypeAhead: string = '';
+
+  @ViewChild('instance', { static: true }) instance: NgbTypeahead | null = null;
+  focus$ = new Subject<string>();
+  click$ = new Subject<string>();
+
+  public onExcerciseTypeaheadChange(term: string): void {
+    this.selectedExcerciseSubject.next(term);
+  }
+
+  search: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+    const clicksWithClosedPopup$ = this.click$.pipe(
+      delay(100),
+      filter(() => !this.instance!.isPopupOpen()),
+      map(x => '')
+    );
+
+    const inputFocus$ = this.focus$;
+
+    return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
+      withLatestFrom(this.excercises$),
+      map(([term, excercises]) => (term === '' ? excercises : excercises.filter(v => v.toLowerCase().includes(term.toLowerCase()))))
+    );
+  };
 
   private readonly excerciseLogApiService = inject(ExcerciseLogApiService);
 
