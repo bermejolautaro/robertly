@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { Observable, map } from 'rxjs';
 
-import { mapGroupedToExcerciseRows } from '@helpers/excercise-log.helper';
+import { mapGroupedToExcerciseRows, amountDaysTrained } from '@helpers/excercise-log.helper';
 import { groupExcerciseLogs } from '@helpers/excercise-log.helper';
 import { ExcerciseLogApiService } from '@services/excercise-log-api.service';
 
@@ -17,6 +17,21 @@ import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-mus
     <div class="container my-4" *ngIf="rows$ | async as rows; else loadingSpinner">
       <app-series-per-muscle-group-weekly class="mb-4" [rows]="rows"></app-series-per-muscle-group-weekly>
       <app-series-per-muscle-group-monthly class="mb-4" [rows]="rows"></app-series-per-muscle-group-monthly>
+      <div class="card border-0 shadow-material-1">
+        <div class="card-body">
+          <div class="card-title mb-3">
+            <h5>Miscellaneous</h5>
+            <table class="table table-sm m-0 mb-3">
+              <tbody>
+                <tr>
+                  <td>Days trained</td>
+                  <td>{{ amountDaysTrained(rows) }} days</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
 
     <ng-template #loadingSpinner>
@@ -34,6 +49,8 @@ import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-mus
 })
 export class StatsPageComponent {
   private readonly excerciseLogApiService = inject(ExcerciseLogApiService);
+
+  public amountDaysTrained = amountDaysTrained;
 
   public rows$: Observable<ExcerciseRow[]> = this.excerciseLogApiService
     .getExcerciseLogs()

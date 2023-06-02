@@ -40,6 +40,7 @@ export const EXCERCISES_NAMES = [
   'skullcrusher',
   'leg press',
   'shrugs db',
+  'zancada smith'
 ] as const;
 
 export const MUSCLE_GROUPS = ['chest', 'back', 'arms', 'shoulders', 'legs', 'calves'] as const;
@@ -88,6 +89,7 @@ export const MUSCLE_GROUP_PER_EXCERCISE: Record<ExcerciseName, MuscleGroup> = {
   skullcrusher: 'arms',
   'leg press': 'legs',
   'shrugs db': 'back',
+  "zancada smith": 'legs'
 } as const;
 
 export const DATE_FORMATS = ['DD-MM-YYYY', 'D-MM-YYYY', 'D-M-YYYY'] as const;

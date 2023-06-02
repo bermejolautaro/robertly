@@ -22,6 +22,11 @@ import { ExcerciseRow } from '@models/excercise-row.model';
           <td class="col text-center">{{ excerciseRow.average }} reps</td>
           <td class="col text-center">{{ excerciseRow.series[0].weightKg }}kg</td>
         </tr>
+        <tr class="row">
+          <td class="fw-bold col">Tonnage</td>
+          <td class="col text-center">&nbsp;</td>
+          <td class="col text-center">{{ excerciseRow.tonnage }}kg</td>
+        </tr>
       </tbody>
     </table>
   `,
