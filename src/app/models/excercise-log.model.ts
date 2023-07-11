@@ -1,9 +1,9 @@
 export interface ExcerciseLog ***REMOVED***
   date: string;
-  weightKg: number;
   name: string;
-  reps: number;
-  serie: number;
   type: string;
   user: string;
+  weightKg: number | null;
+  reps: number | null;
+  serie: number | null;
 ***REMOVED***

@@ -8,6 +8,7 @@ import * as R from 'remeda';
 export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] ***REMOVED***
   return R.pipe(
     excerciseLogs,
+    R.filter(x => !!x.serie),
     R.groupBy(x => x.date),
     R.mapValues((x, date) =>
       R.pipe(
@@ -35,7 +36,7 @@ function mapToExcerciseRow(
   excerciseName: PropertyKey,
   series: [ExcerciseLog, ...ExcerciseLog[]]
 ): ExcerciseRow ***REMOVED***
-  const total = series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps) : null;
+  const total = series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps!) : null;
 
   return ***REMOVED***
     date: date.toString(),
@@ -44,14 +45,14 @@ function mapToExcerciseRow(
     type: R.first(series).type,
     series: [...series],
     highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
-      ? series.every(x => x.reps >= 12)
+      ? series.every(x => x.reps! >= 12)
         ? ('green' as const)
-        : series.every(x => x.reps >= 8)
+        : series.every(x => x.reps! >= 8)
         ? ('yellow' as const)
         : null
       : null,
     total,
-    tonnage: series.reduce((prev, curr) => prev + curr.reps * curr.weightKg, 0),
+    tonnage: series.reduce((prev, curr) => prev + curr.reps! * curr.weightKg!, 0),
     average: total ? Math.ceil(total / series.length) : null,
     muscleGroup: MUSCLE_GROUP_PER_EXCERCISE[excerciseName as ExcerciseName],
 ***REMOVED***;
@@ -74,9 +75,9 @@ export function getMissingExcerciseNames(rows: ExcerciseRow[]): string[] ***REMO
   );
 ***REMOVED***
 
-export function amountDaysTrained(rows: ExcerciseRow[]): number ***REMOVED***
+export function amountDaysTrained(logs: ExcerciseLog[]): number ***REMOVED***
   return R.pipe(
-    rows,
+    logs,
     R.map(x => x.date),
     R.uniq()
   ).length
@@ -99,8 +100,8 @@ export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, u
 ***REMOVED***
 
 function sortByWeightAndRepsDesc(a: ExcerciseLog, b: ExcerciseLog): number ***REMOVED***
-  const differenceWeight = b.weightKg - a.weightKg;
-  const differenceReps = b.reps - a.reps;
+  const differenceWeight = b.weightKg! - a.weightKg!;
+  const differenceReps = b.reps! - a.reps!;
 
   return differenceWeight !== 0 ? differenceWeight : differenceReps;
 ***REMOVED***

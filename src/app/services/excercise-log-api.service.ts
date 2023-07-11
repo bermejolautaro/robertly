@@ -78,6 +78,15 @@ function processData(data: string[][]): ExcerciseLog[] ***REMOVED***
       const series = repsString?.split('|') ?? '';
 
       if (!series) ***REMOVED***
+        result3.push(***REMOVED***
+          type: element.type.toLowerCase(),
+          name: element.value.toLowerCase(),
+          date: data[dateRowIndex][i],
+          serie: null,
+          weightKg: null,
+          reps: null,
+          user: '',
+    ***REMOVED***);
         continue;
   ***REMOVED***
 

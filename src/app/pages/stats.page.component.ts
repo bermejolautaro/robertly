@@ -1,7 +1,7 @@
 import ***REMOVED*** AsyncPipe, NgIf ***REMOVED*** from '@angular/common';
 import ***REMOVED*** ChangeDetectionStrategy, Component, inject ***REMOVED*** from '@angular/core';
 
-import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
+import ***REMOVED*** Observable, map, shareReplay ***REMOVED*** from 'rxjs';
 
 import ***REMOVED*** mapGroupedToExcerciseRows, amountDaysTrained ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** groupExcerciseLogs ***REMOVED*** from '@helpers/excercise-log.helper';
@@ -10,6 +10,7 @@ import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from '@services/excerc
 import ***REMOVED*** SeriesPerMuscleGroupWeeklyComponent ***REMOVED*** from '@components/series-per-muscle-group-weekly.component';
 import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
 import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-monthly.component';
+import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
 
 @Component(***REMOVED***
   selector: 'app-stats-page',
@@ -25,7 +26,7 @@ import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@c
               <tbody>
                 <tr>
                   <td>Days trained</td>
-                  <td>***REMOVED******REMOVED*** amountDaysTrained(rows) ***REMOVED******REMOVED*** days</td>
+                  <td *ngIf="logs$ | async as logs">***REMOVED******REMOVED*** amountDaysTrained(logs) ***REMOVED******REMOVED*** days</td>
                 </tr>
               </tbody>
             </table>
@@ -52,7 +53,7 @@ export class StatsPageComponent ***REMOVED***
 
   public amountDaysTrained = amountDaysTrained;
 
-  public rows$: Observable<ExcerciseRow[]> = this.excerciseLogApiService
-    .getExcerciseLogs()
-    .pipe(map(x => mapGroupedToExcerciseRows(groupExcerciseLogs(x))));
+  public logs$: Observable<ExcerciseLog[]> = this.excerciseLogApiService.getExcerciseLogs().pipe(shareReplay(1));
+
+  public rows$: Observable<ExcerciseRow[]> = this.logs$.pipe(map(x => mapGroupedToExcerciseRows(groupExcerciseLogs(x))));
 ***REMOVED***
