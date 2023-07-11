@@ -78,6 +78,15 @@ function processData(data: string[][]): ExcerciseLog[] {
       const series = repsString?.split('|') ?? '';
 
       if (!series) {
+        result3.push({
+          type: element.type.toLowerCase(),
+          name: element.value.toLowerCase(),
+          date: data[dateRowIndex][i],
+          serie: null,
+          weightKg: null,
+          reps: null,
+          user: '',
+        });
         continue;
       }
 

@@ -1,7 +1,7 @@
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 
 import { mapGroupedToExcerciseRows, amountDaysTrained } from '@helpers/excercise-log.helper';
 import { groupExcerciseLogs } from '@helpers/excercise-log.helper';
@@ -10,6 +10,7 @@ import { ExcerciseLogApiService } from '@services/excercise-log-api.service';
 import { SeriesPerMuscleGroupWeeklyComponent } from '@components/series-per-muscle-group-weekly.component';
 import { ExcerciseRow } from '@models/excercise-row.model';
 import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-muscle-group-monthly.component';
+import { ExcerciseLog } from '@models/excercise-log.model';
 
 @Component({
   selector: 'app-stats-page',
@@ -25,7 +26,7 @@ import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-mus
               <tbody>
                 <tr>
                   <td>Days trained</td>
-                  <td>{{ amountDaysTrained(rows) }} days</td>
+                  <td *ngIf="logs$ | async as logs">{{ amountDaysTrained(logs) }} days</td>
                 </tr>
               </tbody>
             </table>
@@ -52,7 +53,7 @@ export class StatsPageComponent {
 
   public amountDaysTrained = amountDaysTrained;
 
-  public rows$: Observable<ExcerciseRow[]> = this.excerciseLogApiService
-    .getExcerciseLogs()
-    .pipe(map(x => mapGroupedToExcerciseRows(groupExcerciseLogs(x))));
+  public logs$: Observable<ExcerciseLog[]> = this.excerciseLogApiService.getExcerciseLogs().pipe(shareReplay(1));
+
+  public rows$: Observable<ExcerciseRow[]> = this.logs$.pipe(map(x => mapGroupedToExcerciseRows(groupExcerciseLogs(x))));
 }
