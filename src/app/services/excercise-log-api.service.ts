@@ -7,6 +7,12 @@ import * as R from 'remeda';
 import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
 import ***REMOVED*** BACKEND_URL ***REMOVED*** from 'src/main';
 
+type GetDataResponse = ***REMOVED***
+  lautaro: string[][],
+  roberto: string[][],
+  nikito: string[][]
+***REMOVED***
+
 @Injectable(***REMOVED***
   providedIn: 'root',
 ***REMOVED***)
@@ -15,14 +21,13 @@ export class ExcerciseLogApiService ***REMOVED***
   private readonly url = inject(BACKEND_URL);
 
   public getExcerciseLogs(): Observable<ExcerciseLog[]> ***REMOVED***
-    return this.http.get<***REMOVED*** lautaro: string[][]; roberto: string[][] ***REMOVED***>(`$***REMOVED***this.url***REMOVED***/get-data`).pipe(
-      map(data =>
-        R.concat(
-          processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***)),
-          processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***))
-        )
-      )
-    );
+    return this.http.get<GetDataResponse>(`$***REMOVED***this.url***REMOVED***/get-data`).pipe(
+      map(data => ([
+        ...processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***)),
+        ...processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***)),
+        ...processData(data.nikito).map(x => (***REMOVED*** ...x, user: 'nikito' ***REMOVED***))
+      ])
+    ));
 ***REMOVED***
 ***REMOVED***
 

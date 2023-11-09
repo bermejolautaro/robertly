@@ -8,7 +8,6 @@ import * as R from 'remeda';
 export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] ***REMOVED***
   return R.pipe(
     excerciseLogs,
-    R.filter(x => !!x.serie),
     R.groupBy(x => x.date),
     R.mapValues((x, date) =>
       R.pipe(
@@ -121,6 +120,7 @@ export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExcerciseRow[
             R.mapValues(w =>
               R.pipe(
                 w,
+                R.filter(x => !!x.series.at(0)?.serie),
                 R.sumBy(x => x.series.length)
               )
             )
@@ -146,6 +146,7 @@ export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExcerciseRow
             R.mapValues(w =>
               R.pipe(
                 w,
+                R.filter(x => !!x.series.at(0)?.serie),
                 R.sumBy(x => x.series.length)
               )
             )
