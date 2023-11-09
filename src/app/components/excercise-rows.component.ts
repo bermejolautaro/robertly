@@ -15,7 +15,7 @@ import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.compon
         <div ngbAccordion>
           <div
             ngbAccordionItem
-            *ngFor="let excerciseRow of excerciseRows"
+            *ngFor="let excerciseRow of filtered()"
             [ngClass]="excerciseRow.highlighted ? 'accordion-highlight ' + excerciseRow.highlighted : null"
           >
             <h2 ngbAccordionHeader>
@@ -42,4 +42,8 @@ import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.compon
 })
 export class ExcerciseRowsComponent {
   @Input() public excerciseRows: ExcerciseRow[] = [];
+
+  public filteredRows(): ExcerciseRow[] {
+    return this.excerciseRows.filter(x => !!x.series.at(0)?.serie);
+  }
 }

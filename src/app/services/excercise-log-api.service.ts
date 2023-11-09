@@ -7,6 +7,12 @@ import * as R from 'remeda';
 import { ExcerciseLog } from '@models/excercise-log.model';
 import { BACKEND_URL } from 'src/main';
 
+type GetDataResponse = {
+  lautaro: string[][],
+  roberto: string[][],
+  nikito: string[][]
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -15,14 +21,13 @@ export class ExcerciseLogApiService {
   private readonly url = inject(BACKEND_URL);
 
   public getExcerciseLogs(): Observable<ExcerciseLog[]> {
-    return this.http.get<{ lautaro: string[][]; roberto: string[][] }>(`${this.url}/get-data`).pipe(
-      map(data =>
-        R.concat(
-          processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' })),
-          processData(data.roberto).map(x => ({ ...x, user: 'roberto' }))
-        )
-      )
-    );
+    return this.http.get<GetDataResponse>(`${this.url}/get-data`).pipe(
+      map(data => ([
+        ...processData(data.lautaro).map(x => ({ ...x, user: 'lautaro' })),
+        ...processData(data.roberto).map(x => ({ ...x, user: 'roberto' })),
+        ...processData(data.nikito).map(x => ({ ...x, user: 'nikito' }))
+      ])
+    ));
   }
 }
 
