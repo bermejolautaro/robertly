@@ -15,7 +15,7 @@ import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from '@components/e
         <div ngbAccordion>
           <div
             ngbAccordionItem
-            *ngFor="let excerciseRow of filtered()"
+            *ngFor="let excerciseRow of filteredRows()"
             [ngClass]="excerciseRow.highlighted ? 'accordion-highlight ' + excerciseRow.highlighted : null"
           >
             <h2 ngbAccordionHeader>
