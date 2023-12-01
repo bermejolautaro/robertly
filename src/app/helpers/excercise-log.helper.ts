@@ -75,11 +75,13 @@ export function getMissingExcerciseNames(rows: ExcerciseRow[]): string[] ***REMO
 ***REMOVED***
 
 export function amountDaysTrained(logs: ExcerciseLog[]): number ***REMOVED***
-  return R.pipe(
+  const result = R.pipe(
     logs,
     R.map(x => x.date),
     R.uniq()
-  ).length
+  );
+
+  return result.length;
 ***REMOVED***
 
 export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, username: string): ExcerciseRow | null ***REMOVED***

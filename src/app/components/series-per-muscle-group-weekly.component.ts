@@ -31,7 +31,7 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
           <thead>
             <tr>
               <td scope="col" class="fw-semibold">Muscle Group</td>
-              <td class="text-center fw-semibold" *ngFor="let name of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()] | keyvalue">
+              <td class="text-center fw-semibold" *ngFor="let name of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()!] | keyvalue">
                 ***REMOVED******REMOVED*** name.key | titlecase ***REMOVED******REMOVED***
               </td>
               <td class="text-center fw-semibold">Target</td>
@@ -40,7 +40,7 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
           <tbody>
             <tr *ngFor="let muscleGroup of muscleGroups">
               <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
-              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()] | keyvalue">
+              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()!] | keyvalue">
                 ***REMOVED******REMOVED*** x.value[muscleGroup] || 0 ***REMOVED******REMOVED***
               </td>
               <td class="text-center">10</td>
@@ -80,7 +80,7 @@ export class SeriesPerMuscleGroupWeeklyComponent ***REMOVED***
   public readonly selectedWeekDropdownValue = computed(() => this.selectedWeekSignal() ?? 'Week');
 
   public readonly daysTrainedMessage = computed(() => ***REMOVED***
-    const daysTrained = this.daysGroupByWeekSignal()[this.selectedWeekSignal()];
+    const daysTrained = this.daysGroupByWeekSignal()[this.selectedWeekSignal()!];
     return `$***REMOVED***daysTrained***REMOVED*** $***REMOVED***daysTrained === 1 ? 'day' : 'days'***REMOVED*** trained this week`;
 ***REMOVED***);
 ***REMOVED***

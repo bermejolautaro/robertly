@@ -2,16 +2,42 @@ import ***REMOVED*** HttpClient ***REMOVED*** from '@angular/common/http';
 import ***REMOVED*** Injectable, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
 
-import * as R from 'remeda';
+// import * as R from 'remeda';
 
-import ***REMOVED*** ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
+import ***REMOVED*** ExcerciseLog ***REMOVED*** from 'src/app/models/excercise-log.model';
 import ***REMOVED*** BACKEND_URL ***REMOVED*** from 'src/main';
 
 type GetDataResponse = ***REMOVED***
-  lautaro: string[][],
-  roberto: string[][],
-  nikito: string[][]
-***REMOVED***
+  lautaro: string[][];
+  roberto: string[][];
+  nikito: string[][];
+  matias: string[][];
+  peque: string[][];
+***REMOVED***;
+
+type FirstStepResult = ***REMOVED***
+  header: boolean;
+  value: string | null;
+  row: number;
+  col: number;
+***REMOVED***;
+
+type SecondStepResult = ***REMOVED***
+  value: string | null;
+  rowIndex: number;
+  columnIndex: number;
+  type: string;
+***REMOVED***;
+
+type ThirdStepResult = ***REMOVED***
+  type: string;
+  name: string;
+  date: string;
+  serie: number | null;
+  weightKg: number | null;
+  reps: number | null;
+  user: string;
+***REMOVED***;
 
 @Injectable(***REMOVED***
   providedIn: 'root',
@@ -21,100 +47,137 @@ export class ExcerciseLogApiService ***REMOVED***
   private readonly url = inject(BACKEND_URL);
 
   public getExcerciseLogs(): Observable<ExcerciseLog[]> ***REMOVED***
-    return this.http.get<GetDataResponse>(`$***REMOVED***this.url***REMOVED***/get-data`).pipe(
-      map(data => ([
-        ...processData(data.lautaro).map(x => (***REMOVED*** ...x, user: 'lautaro' ***REMOVED***)),
-        ...processData(data.roberto).map(x => (***REMOVED*** ...x, user: 'roberto' ***REMOVED***)),
-        ...processData(data.nikito).map(x => (***REMOVED*** ...x, user: 'nikito' ***REMOVED***))
-      ])
-    ));
+    return this.http
+      .get<GetDataResponse>(`$***REMOVED***this.url***REMOVED***/get-data`)
+      .pipe(
+        map(data => [
+          ...processData(data.lautaro, 'lautaro'),
+          ...processData(data.roberto, 'roberto'),
+          ...processData(data.nikito, 'nikito'),
+          ...processData(data.matias, 'matias'),
+          ...processData(data.peque, 'peque'),
+        ])
+      );
 ***REMOVED***
 ***REMOVED***
 
-function processData(data: string[][]): ExcerciseLog[] ***REMOVED***
+export function processDataFirstStep(data: string[][]): FirstStepResult[] ***REMOVED***
+  const result: FirstStepResult[] = [];
+  const firstColumn = data.map(x => x[0] || null);
+
+  for (let rowIndex = 0; rowIndex < firstColumn.length; rowIndex++) ***REMOVED***
+    const prevRow = firstColumn[rowIndex - 1] ?? null;
+    const row = firstColumn[rowIndex] ?? null;
+    const nextRow = firstColumn[rowIndex + 1] ?? null;
+
+    if (!row) ***REMOVED***
+      continue;
+***REMOVED***
+
+    const element = firstColumn[rowIndex] ?? null;
+
+    // Assume last element is an excercise and not a header
+    const isHeader = !prevRow && !nextRow && rowIndex !== firstColumn.length - 1;
+    const isExerciseName = !isHeader && !!element;
+
+    if (isHeader) ***REMOVED***
+      result.push(***REMOVED*** header: true, value: element, row: rowIndex, col: 0 ***REMOVED***);
+***REMOVED*** else if (isExerciseName) ***REMOVED***
+      result.push(***REMOVED*** header: false, value: element, row: rowIndex, col: 0 ***REMOVED***);
+***REMOVED***
+***REMOVED***
+
+  return result;
+***REMOVED***
+
+export function processDataSecondStep(data: FirstStepResult[]): [SecondStepResult[], Record<string, number>] ***REMOVED***
   const result = [];
-
-  for (let i = 0; i < data.length; i++) ***REMOVED***
-    const prevRow = data[i - 1];
-    const row = data[i];
-    const nextRow = data[i + 1];
-
-    for (let j = 0; j < row.length; j++) ***REMOVED***
-      const element = row[j];
-
-      const isHeader = j === 0 && (i === 0 || ((prevRow.length === 0 || prevRow[0] === '') && (nextRow.length === 0 || nextRow[0] === '')));
-      const isExerciseName = j === 0 && !isHeader && !!element;
-
-      if (isHeader) ***REMOVED***
-        result.push(***REMOVED*** header: true, value: element, row: i, col: j ***REMOVED***);
-  ***REMOVED*** else if (isExerciseName) ***REMOVED***
-        result.push(***REMOVED*** header: false, value: element, row: i, col: j ***REMOVED***);
-  ***REMOVED***
-***REMOVED***
-***REMOVED***
-
-  const result2 = [];
 
   const dateRowIndexByType: Record<string, number> = ***REMOVED******REMOVED***;
 
   let lastHeader = '';
 
-  for (const element of result) ***REMOVED***
-    if (element.header) ***REMOVED***
+  for (const element of data) ***REMOVED***
+    if (element.header && element.value) ***REMOVED***
       dateRowIndexByType[element.value] = element.row + 1;
-      lastHeader = element.value;
+      lastHeader = element.value ?? '';
 ***REMOVED*** else ***REMOVED***
-      result2.push(***REMOVED***
+      result.push(***REMOVED***
         value: element.value,
-        row: element.row,
-        col: element.col,
+        rowIndex: element.row,
+        columnIndex: element.col,
         type: lastHeader,
   ***REMOVED***);
 ***REMOVED***
 ***REMOVED***
 
-  const result3 = [];
+  return [result, dateRowIndexByType];
+***REMOVED***
 
-  for (const element of result2) ***REMOVED***
-    const dateRowIndex = dateRowIndexByType[element.type];
+export function processDataThirdStep(
+  secondStepResult: SecondStepResult[],
+  data: string[][],
+  dateRowIndexByType: Record<string, number>,
+  username: string = ''
+): ThirdStepResult[] ***REMOVED***
+  const result = [];
 
-    for (let i = 1; i < data[dateRowIndex].length; i++) ***REMOVED***
-      const repsString = data[element.row][i];
-      const series = repsString?.split('|') ?? '';
+  for (const element of secondStepResult) ***REMOVED***
+    const dateRowIndex = dateRowIndexByType[element.type] ?? -1;
 
-      if (!series) ***REMOVED***
-        result3.push(***REMOVED***
+    const emptyDateAlreadyAdded: Record<string, boolean> = ***REMOVED******REMOVED***;
+
+    const columns = data[dateRowIndex] ?? [];
+
+    for (let col = 1; col < columns.length; col++) ***REMOVED***
+      const row = data[element.rowIndex] ?? [];
+      const repsString = row[col] || null;
+      const series = repsString?.split('|') ?? [];
+
+      const date = data[dateRowIndex]![col]!;
+
+      if (!series.length && !emptyDateAlreadyAdded[date]) ***REMOVED***
+        emptyDateAlreadyAdded[date] = true;
+
+        result.push(***REMOVED***
           type: element.type.toLowerCase(),
-          name: element.value.toLowerCase(),
-          date: data[dateRowIndex][i],
+          name: null!,
+          date,
           serie: null,
           weightKg: null,
           reps: null,
-          user: '',
+          user: username,
     ***REMOVED***);
         continue;
   ***REMOVED***
 
-      for (let j = 0; j < series.length; j++) ***REMOVED***
-        const serie = series[j];
+      for (let j = 0; j < series!.length; j++) ***REMOVED***
+        const serie = series![j]!;
         const [kg, reps] = serie.split('-');
 
         if (!kg || !reps) ***REMOVED***
           continue;
     ***REMOVED***
 
-        result3.push(***REMOVED***
+        result.push(***REMOVED***
           type: element.type.toLowerCase(),
-          name: element.value.toLowerCase(),
-          date: data[dateRowIndex][i],
+          name: element.value!.toLowerCase(),
+          date: data[dateRowIndex]![col]!,
           serie: j + 1,
           weightKg: Number(kg.replace(',', '.')),
           reps: Number(reps),
-          user: '',
+          user: username,
     ***REMOVED***);
   ***REMOVED***
 ***REMOVED***
 ***REMOVED***
 
-  return result3;
+  return result;
+***REMOVED***
+
+export function processData(data: string[][], username: string = ''): ExcerciseLog[] ***REMOVED***
+  const [secondStepResult, dateRowIndexByType] = processDataSecondStep(processDataFirstStep(data));
+  const result = processDataThirdStep(secondStepResult, data, dateRowIndexByType, username);
+
+  return result;
 ***REMOVED***

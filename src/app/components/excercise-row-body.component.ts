@@ -15,12 +15,12 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
         <tr class="row" *ngIf="excerciseRow.total">
           <td class="fw-bold col">Total</td>
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.total ***REMOVED******REMOVED*** reps</td>
-          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0].weightKg ***REMOVED******REMOVED***kg</td>
+          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
         <tr class="row" *ngIf="excerciseRow.average">
           <td class="fw-bold col">Average</td>
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.average ***REMOVED******REMOVED*** reps</td>
-          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0].weightKg ***REMOVED******REMOVED***kg</td>
+          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
         <tr class="row">
           <td class="fw-bold col">Tonnage</td>
