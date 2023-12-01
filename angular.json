@@ -78,10 +78,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": ***REMOVED***
             "production": ***REMOVED***
-              "browserTarget": "gym-angular-excel:build:production"
+              "buildTarget": "gym-angular-excel:build:production"
         ***REMOVED***,
             "development": ***REMOVED***
-              "browserTarget": "gym-angular-excel:build:development"
+              "buildTarget": "gym-angular-excel:build:development"
         ***REMOVED***
       ***REMOVED***,
           "defaultConfiguration": "development"
@@ -89,7 +89,7 @@
         "extract-i18n": ***REMOVED***
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": ***REMOVED***
-            "browserTarget": "gym-angular-excel:build"
+            "buildTarget": "gym-angular-excel:build"
       ***REMOVED***
     ***REMOVED***,
         "test": ***REMOVED***

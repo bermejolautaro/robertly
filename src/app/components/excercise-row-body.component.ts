@@ -1,27 +1,36 @@
-import ***REMOVED*** NgFor, NgIf ***REMOVED*** from '@angular/common';
 import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
 import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
 
 @Component(***REMOVED***
   selector: 'app-excercise-row-body',
   template: `
-    <table *ngIf="excerciseRow" class="table table-striped table-sm m-0">
+    @if (excerciseRow) ***REMOVED***
+    <table class="table table-striped table-sm m-0">
       <tbody>
-        <tr class="row" *ngFor="let serie of excerciseRow.series">
+        @for (serie of excerciseRow.series; track serie.serie) ***REMOVED***
+        <tr class="row">
           <td class="fw-bold col">Serie ***REMOVED******REMOVED*** serie.serie ***REMOVED******REMOVED***</td>
           <td class="col text-center">***REMOVED******REMOVED*** serie.reps ***REMOVED******REMOVED*** reps</td>
           <td class="col text-center">***REMOVED******REMOVED*** serie.weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
-        <tr class="row" *ngIf="excerciseRow.total">
+    ***REMOVED*** 
+        
+        @if (excerciseRow.total) ***REMOVED***
+        <tr class="row">
           <td class="fw-bold col">Total</td>
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.total ***REMOVED******REMOVED*** reps</td>
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
-        <tr class="row" *ngIf="excerciseRow.average">
+    ***REMOVED*** 
+        
+        @if (excerciseRow.average) ***REMOVED***
+        <tr class="row">
           <td class="fw-bold col">Average</td>
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.average ***REMOVED******REMOVED*** reps</td>
           <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
+    ***REMOVED***
+
         <tr class="row">
           <td class="fw-bold col">Tonnage</td>
           <td class="col text-center">&nbsp;</td>
@@ -29,11 +38,12 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
         </tr>
       </tbody>
     </table>
+***REMOVED***
   `,
   styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgFor, NgIf],
+  imports: [],
 ***REMOVED***)
 export class ExcerciseRowBodyComponent ***REMOVED***
   @Input(***REMOVED*** required: true ***REMOVED***) excerciseRow!: ExcerciseRow;
