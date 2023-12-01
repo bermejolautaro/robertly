@@ -205,7 +205,7 @@ export class ExcerciseLogsPageComponent {
 
     return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
       withLatestFrom(this.excercises$),
-      map(([term, excercises]) => (term === '' ? excercises : excercises.filter(v => v.toLowerCase().includes(term.toLowerCase()))))
+      map(([term, excercises]) => (term === '' ? excercises : excercises.filter(x => !!x).filter(v => v.toLowerCase().includes(term.toLowerCase()))))
     );
   };
 
