@@ -15,12 +15,12 @@ import { ExcerciseRow } from '@models/excercise-row.model';
         <tr class="row" *ngIf="excerciseRow.total">
           <td class="fw-bold col">Total</td>
           <td class="col text-center">{{ excerciseRow.total }} reps</td>
-          <td class="col text-center">{{ excerciseRow.series[0].weightKg }}kg</td>
+          <td class="col text-center">{{ excerciseRow.series[0]!.weightKg }}kg</td>
         </tr>
         <tr class="row" *ngIf="excerciseRow.average">
           <td class="fw-bold col">Average</td>
           <td class="col text-center">{{ excerciseRow.average }} reps</td>
-          <td class="col text-center">{{ excerciseRow.series[0].weightKg }}kg</td>
+          <td class="col text-center">{{ excerciseRow.series[0]!.weightKg }}kg</td>
         </tr>
         <tr class="row">
           <td class="fw-bold col">Tonnage</td>

@@ -31,7 +31,7 @@ import { MUSCLE_GROUPS } from '@models/constants';
           <thead>
             <tr>
               <td scope="col" class="fw-semibold">Muscle Group</td>
-              <td class="text-center fw-semibold" *ngFor="let name of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()] | keyvalue">
+              <td class="text-center fw-semibold" *ngFor="let name of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()!] | keyvalue">
                 {{ name.key | titlecase }}
               </td>
               <td class="text-center fw-semibold">Target</td>
@@ -40,7 +40,7 @@ import { MUSCLE_GROUPS } from '@models/constants';
           <tbody>
             <tr *ngFor="let muscleGroup of muscleGroups">
               <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
-              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()] | keyvalue">
+              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()!] | keyvalue">
                 {{ x.value[muscleGroup] || 0 }}
               </td>
               <td class="text-center">10</td>
@@ -80,7 +80,7 @@ export class SeriesPerMuscleGroupWeeklyComponent {
   public readonly selectedWeekDropdownValue = computed(() => this.selectedWeekSignal() ?? 'Week');
 
   public readonly daysTrainedMessage = computed(() => {
-    const daysTrained = this.daysGroupByWeekSignal()[this.selectedWeekSignal()];
+    const daysTrained = this.daysGroupByWeekSignal()[this.selectedWeekSignal()!];
     return `${daysTrained} ${daysTrained === 1 ? 'day' : 'days'} trained this week`;
   });
 }

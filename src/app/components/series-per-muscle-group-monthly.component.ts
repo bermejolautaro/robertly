@@ -36,7 +36,7 @@ import { ParseToMonthPipe } from '@pipes/date.pipe';
               <td scope="col" class="fw-semibold">Muscle Group</td>
               <td
                 class="text-center fw-semibold"
-                *ngFor="let name of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()] | keyvalue"
+                *ngFor="let name of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()!] | keyvalue"
               >
                 {{ name.key | titlecase }}
               </td>
@@ -46,7 +46,7 @@ import { ParseToMonthPipe } from '@pipes/date.pipe';
           <tbody>
             <tr *ngFor="let muscleGroup of muscleGroups">
               <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
-              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()] | keyvalue">
+              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()!] | keyvalue">
                 {{ x.value[muscleGroup] || 0 }}
               </td>
               <td class="text-center">40</td>
@@ -86,7 +86,7 @@ export class SeriesPerMuscleGroupMonthlyComponent {
   public readonly selectedMonthSignal = computed(() => this.selectedMonthDropdownSignal() ?? this.monthsSignal()[0]);
   public readonly selectedWeekDropdownValue = computed(() => this.selectedMonthSignal() ?? 'Month');
   public readonly daysTrainedMessage = computed(() => {
-    const daysTrained = this.daysGroupByMonthSignal()[this.selectedMonthSignal()];
+    const daysTrained = this.daysGroupByMonthSignal()[this.selectedMonthSignal()!];
     return `${daysTrained} ${daysTrained === 1 ? 'day' : 'days'} trained this month`;
   });
 }
