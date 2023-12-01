@@ -1,7 +1,7 @@
 {
   "configVersion": 1,
-  "timestamp": 1701429619877,
-  "index": "/index.html",
+  "timestamp": 1701429873496,
+  "index": "/gym-tracker-excel/index.html",
   "assetGroups": [
     {
       "name": "app",
@@ -11,17 +11,17 @@
         "ignoreVary": true
       },
       "urls": [
-        "/chunk-2EOHYN35.js",
-        "/chunk-3JCEXTXR.js",
-        "/chunk-LWEHNFHP.js",
-        "/excercise-logs.page.component-HBFRGPLX.js",
-        "/favicon.ico",
-        "/index.html",
-        "/main.7HJSMMW3.js",
-        "/manifest.webmanifest",
-        "/polyfills.FOXBITQP.js",
-        "/stats.page.component-F4PWT7EE.js",
-        "/styles.YNVZ4NCK.css"
+        "/gym-tracker-excel/chunk-2EOHYN35.js",
+        "/gym-tracker-excel/chunk-3JCEXTXR.js",
+        "/gym-tracker-excel/chunk-LWEHNFHP.js",
+        "/gym-tracker-excel/excercise-logs.page.component-HBFRGPLX.js",
+        "/gym-tracker-excel/favicon.ico",
+        "/gym-tracker-excel/index.html",
+        "/gym-tracker-excel/main.7HJSMMW3.js",
+        "/gym-tracker-excel/manifest.webmanifest",
+        "/gym-tracker-excel/polyfills.FOXBITQP.js",
+        "/gym-tracker-excel/stats.page.component-F4PWT7EE.js",
+        "/gym-tracker-excel/styles.YNVZ4NCK.css"
       ],
       "patterns": []
     },
@@ -33,41 +33,41 @@
         "ignoreVary": true
       },
       "urls": [
-        "/assets/icons/android-chrome-192x192.png",
-        "/assets/icons/android-chrome-512x512.png",
-        "/assets/icons/apple-touch-icon.png",
-        "/assets/icons/favicon-16x16.png",
-        "/assets/icons/favicon-32x32.png",
-        "/fontawesome-webfont.3KIJVIEY.svg",
-        "/fontawesome-webfont.5GKVPAEF.woff2",
-        "/fontawesome-webfont.RJ6LE7IU.ttf",
-        "/fontawesome-webfont.Z4ARLA73.woff"
+        "/gym-tracker-excel/assets/icons/android-chrome-192x192.png",
+        "/gym-tracker-excel/assets/icons/android-chrome-512x512.png",
+        "/gym-tracker-excel/assets/icons/apple-touch-icon.png",
+        "/gym-tracker-excel/assets/icons/favicon-16x16.png",
+        "/gym-tracker-excel/assets/icons/favicon-32x32.png",
+        "/gym-tracker-excel/fontawesome-webfont.3KIJVIEY.svg",
+        "/gym-tracker-excel/fontawesome-webfont.5GKVPAEF.woff2",
+        "/gym-tracker-excel/fontawesome-webfont.RJ6LE7IU.ttf",
+        "/gym-tracker-excel/fontawesome-webfont.Z4ARLA73.woff"
       ],
       "patterns": []
     }
   ],
   "dataGroups": [],
   "hashTable": {
-    "/assets/icons/android-chrome-192x192.png": "cff1be28929b40280e1f01822f0f3c1dffd78509",
-    "/assets/icons/android-chrome-512x512.png": "6448ab45f37ad7b8f2e2c1db87f104a948c639a3",
-    "/assets/icons/apple-touch-icon.png": "44b8deec63085762cbe2883a976707abaa7c9d22",
-    "/assets/icons/favicon-16x16.png": "d522f19984bbf287627faa66cd3d413682b53b18",
-    "/assets/icons/favicon-32x32.png": "2fd575c923e31f988a7a84b2c8cd5c44f6d81235",
-    "/chunk-2EOHYN35.js": "227c7b182128e0e5b583c34019d3a41fa734feee",
-    "/chunk-3JCEXTXR.js": "69ff7fc0181b3b8187e66d6dba9f88a10b19ae00",
-    "/chunk-LWEHNFHP.js": "48e9863195e0f728461fdf0b258c4ade757973b2",
-    "/excercise-logs.page.component-HBFRGPLX.js": "7680ebf6aeda781bc4213296c23424813a1521f3",
-    "/favicon.ico": "533fb5f3af77b2815e90a3f4732261cfa63b942e",
-    "/fontawesome-webfont.3KIJVIEY.svg": "98a8aa5cf7d62c2eff5f07ede8d844b874ef06ed",
-    "/fontawesome-webfont.5GKVPAEF.woff2": "c2ff566e1f4ce6709f29780bb298c72f3020d337",
-    "/fontawesome-webfont.RJ6LE7IU.ttf": "9936653dac787d907ec1daf6c3724f7f90e78532",
-    "/fontawesome-webfont.Z4ARLA73.woff": "e48649a2bb6b1723a8138a39604422a7ab9346c4",
-    "/index.html": "a62097f864750fad09e4a8e7b2a865773ad391d0",
-    "/main.7HJSMMW3.js": "226ef3b4050090e53717750e48c128440e3fd622",
-    "/manifest.webmanifest": "9de2038d8797196314fd830ce9264e9de6fc7d19",
-    "/polyfills.FOXBITQP.js": "75acc9ccb895a735cd7f6f0e337a54ecf2b404b8",
-    "/stats.page.component-F4PWT7EE.js": "12b52bb70aedb6052c067293f8e3681cb16a009b",
-    "/styles.YNVZ4NCK.css": "76589efafa2f3b24af58ef609a7bc62c4dd05b32"
+    "/gym-tracker-excel/assets/icons/android-chrome-192x192.png": "cff1be28929b40280e1f01822f0f3c1dffd78509",
+    "/gym-tracker-excel/assets/icons/android-chrome-512x512.png": "6448ab45f37ad7b8f2e2c1db87f104a948c639a3",
+    "/gym-tracker-excel/assets/icons/apple-touch-icon.png": "44b8deec63085762cbe2883a976707abaa7c9d22",
+    "/gym-tracker-excel/assets/icons/favicon-16x16.png": "d522f19984bbf287627faa66cd3d413682b53b18",
+    "/gym-tracker-excel/assets/icons/favicon-32x32.png": "2fd575c923e31f988a7a84b2c8cd5c44f6d81235",
+    "/gym-tracker-excel/chunk-2EOHYN35.js": "227c7b182128e0e5b583c34019d3a41fa734feee",
+    "/gym-tracker-excel/chunk-3JCEXTXR.js": "69ff7fc0181b3b8187e66d6dba9f88a10b19ae00",
+    "/gym-tracker-excel/chunk-LWEHNFHP.js": "48e9863195e0f728461fdf0b258c4ade757973b2",
+    "/gym-tracker-excel/excercise-logs.page.component-HBFRGPLX.js": "7680ebf6aeda781bc4213296c23424813a1521f3",
+    "/gym-tracker-excel/favicon.ico": "533fb5f3af77b2815e90a3f4732261cfa63b942e",
+    "/gym-tracker-excel/fontawesome-webfont.3KIJVIEY.svg": "98a8aa5cf7d62c2eff5f07ede8d844b874ef06ed",
+    "/gym-tracker-excel/fontawesome-webfont.5GKVPAEF.woff2": "c2ff566e1f4ce6709f29780bb298c72f3020d337",
+    "/gym-tracker-excel/fontawesome-webfont.RJ6LE7IU.ttf": "9936653dac787d907ec1daf6c3724f7f90e78532",
+    "/gym-tracker-excel/fontawesome-webfont.Z4ARLA73.woff": "e48649a2bb6b1723a8138a39604422a7ab9346c4",
+    "/gym-tracker-excel/index.html": "08f6809185941b8bbf444f5c03b38e9dcd4cb941",
+    "/gym-tracker-excel/main.7HJSMMW3.js": "226ef3b4050090e53717750e48c128440e3fd622",
+    "/gym-tracker-excel/manifest.webmanifest": "9de2038d8797196314fd830ce9264e9de6fc7d19",
+    "/gym-tracker-excel/polyfills.FOXBITQP.js": "75acc9ccb895a735cd7f6f0e337a54ecf2b404b8",
+    "/gym-tracker-excel/stats.page.component-F4PWT7EE.js": "12b52bb70aedb6052c067293f8e3681cb16a009b",
+    "/gym-tracker-excel/styles.YNVZ4NCK.css": "76589efafa2f3b24af58ef609a7bc62c4dd05b32"
   },
   "navigationUrls": [
     {
