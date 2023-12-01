@@ -38,7 +38,7 @@ bootstrapApplication(AppComponent, ***REMOVED***
   providers: [
     provideHttpClient(),
     provideRouter(routes),
-    provideServiceWorker('ngsw-worker.js'),
+    provideServiceWorker('ngsw-worker.js', ***REMOVED*** enabled: !isDevMode() ***REMOVED***),
     ***REMOVED*** provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' ***REMOVED***,
   ],
 ***REMOVED***).catch(console.error);
