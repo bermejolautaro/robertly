@@ -78,10 +78,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "gym-angular-excel:build:production"
+              "buildTarget": "gym-angular-excel:build:production"
             },
             "development": {
-              "browserTarget": "gym-angular-excel:build:development"
+              "buildTarget": "gym-angular-excel:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -89,7 +89,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "gym-angular-excel:build"
+            "buildTarget": "gym-angular-excel:build"
           }
         },
         "test": {

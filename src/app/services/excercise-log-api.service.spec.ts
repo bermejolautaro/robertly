@@ -695,7 +695,6 @@ describe('ExcerciseLogApiService', () => {
   it('first step tests', () => {
     const result = processDataFirstStep(data2);
     const [a, b] = processDataSecondStep(result);
-    debugger;
     const result3 = processDataThirdStep(a, data2, b);
 
     const result4 = R.uniqBy(result3, x => x.date).map(x => x.date);

@@ -9,19 +9,20 @@
     "ngsw-config": "node_modules\\.bin\\ngsw-config dist\\gym-angular-excel ngsw-config.json [/base/href] && echo \"nsgw-config done!\"",
     "deploy": "npm run ngsw-config && ng deploy --base-href=/gym-tracker-excel/ ",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "postinstall": "node scripts/service-worker-workaround.js"
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "^16.0.0",
-    "@angular/common": "^16.0.0",
-    "@angular/compiler": "^16.0.0",
-    "@angular/core": "^16.0.0",
-    "@angular/forms": "^16.0.0",
-    "@angular/platform-browser": "^16.0.0",
-    "@angular/platform-browser-dynamic": "^16.0.0",
-    "@angular/router": "^16.0.0",
-    "@angular/service-worker": "^16.0.0",
+    "@angular/animations": "^17.0.5",
+    "@angular/common": "^17.0.5",
+    "@angular/compiler": "^17.0.5",
+    "@angular/core": "^17.0.5",
+    "@angular/forms": "^17.0.5",
+    "@angular/platform-browser": "^17.0.5",
+    "@angular/platform-browser-dynamic": "^17.0.5",
+    "@angular/router": "^17.0.5",
+    "@angular/service-worker": "^17.0.5",
     "@ng-bootstrap/ng-bootstrap": "^14.1.0",
     "@popperjs/core": "^2.11.6",
     "bootstrap": "^5.2.3",
@@ -30,13 +31,13 @@
     "remeda": "^1.12.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
-    "zone.js": "~0.13.0"
+    "zone.js": "~0.14.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^16.0.0",
-    "@angular/cli": "~16.0.0",
-    "@angular/compiler-cli": "^16.0.0",
-    "@angular/localize": "^16.0.0",
+    "@angular-devkit/build-angular": "^17.0.5",
+    "@angular/cli": "~17.0.5",
+    "@angular/compiler-cli": "^17.0.5",
+    "@angular/localize": "^17.0.5",
     "@schuchard/prettier": "^5.1.0",
     "@types/jasmine": "~4.3.0",
     "angular-cli-ghpages": "^1.0.5",
@@ -49,6 +50,6 @@
     "karma-jasmine-html-reporter": "~2.0.0",
     "prettier": "latest",
     "tslint-config-prettier": "latest",
-    "typescript": "~4.9.4"
+    "typescript": "~5.2.2"
   }
 }

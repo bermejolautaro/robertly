@@ -1,27 +1,36 @@
-import { NgFor, NgIf } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ExcerciseRow } from '@models/excercise-row.model';
 
 @Component({
   selector: 'app-excercise-row-body',
   template: `
-    <table *ngIf="excerciseRow" class="table table-striped table-sm m-0">
+    @if (excerciseRow) {
+    <table class="table table-striped table-sm m-0">
       <tbody>
-        <tr class="row" *ngFor="let serie of excerciseRow.series">
+        @for (serie of excerciseRow.series; track serie.serie) {
+        <tr class="row">
           <td class="fw-bold col">Serie {{ serie.serie }}</td>
           <td class="col text-center">{{ serie.reps }} reps</td>
           <td class="col text-center">{{ serie.weightKg }}kg</td>
         </tr>
-        <tr class="row" *ngIf="excerciseRow.total">
+        } 
+        
+        @if (excerciseRow.total) {
+        <tr class="row">
           <td class="fw-bold col">Total</td>
           <td class="col text-center">{{ excerciseRow.total }} reps</td>
           <td class="col text-center">{{ excerciseRow.series[0]!.weightKg }}kg</td>
         </tr>
-        <tr class="row" *ngIf="excerciseRow.average">
+        } 
+        
+        @if (excerciseRow.average) {
+        <tr class="row">
           <td class="fw-bold col">Average</td>
           <td class="col text-center">{{ excerciseRow.average }} reps</td>
           <td class="col text-center">{{ excerciseRow.series[0]!.weightKg }}kg</td>
         </tr>
+        }
+
         <tr class="row">
           <td class="fw-bold col">Tonnage</td>
           <td class="col text-center">&nbsp;</td>
@@ -29,11 +38,12 @@ import { ExcerciseRow } from '@models/excercise-row.model';
         </tr>
       </tbody>
     </table>
+    }
   `,
   styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgFor, NgIf],
+  imports: [],
 })
 export class ExcerciseRowBodyComponent {
   @Input({ required: true }) excerciseRow!: ExcerciseRow;
