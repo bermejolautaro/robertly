@@ -13,7 +13,7 @@ describe('ExcerciseLogService', () => {
     console.log(service.filteredLogs());
     service.updateLogs$.next([{ date: '1997/10/20', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 }]);
     console.log(service.filteredLogs());
-    service.selectedExcercise$.next('bicep curl');
+    service.selectedExcercise$.next({ name: 'bicep curl', type: 'pull' });
     console.log(service.filteredLogs());
 
     expect(69).toBe(69);
