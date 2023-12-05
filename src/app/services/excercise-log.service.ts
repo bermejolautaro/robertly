@@ -1,0 +1,182 @@
+import ***REMOVED*** Injectable, computed, signal, effect ***REMOVED*** from '@angular/core';
+import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
+import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
+
+import * as R from 'remeda';
+import ***REMOVED*** Subject, delay, tap ***REMOVED*** from 'rxjs';
+import ***REMOVED*** getPersonalRecord, groupExcerciseLogs, groupExerciseLogsByUser, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
+
+interface SelectedExcercise ***REMOVED***
+  name: string;
+  type: string;
+***REMOVED***
+
+type State = ***REMOVED***
+  logs: ExerciseLog[];
+  filteredLogs: ExerciseLog[];
+  selectedExercise: SelectedExcercise | null;
+  selectedUsername: string | null;
+  selectedType: string | null;
+  loaded: boolean;
+  error: string | null;
+***REMOVED***;
+
+@Injectable()
+export class ExerciseLogService ***REMOVED***
+  private readonly state = signal<State>(***REMOVED***
+    logs: [],
+    filteredLogs: [],
+    selectedExercise: null,
+    selectedUsername: null,
+    selectedType: null,
+    loaded: false,
+    error: null,
+***REMOVED***);
+
+  public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
+  public readonly selectedExcercise$: Subject<SelectedExcercise | null> = new Subject();
+  public readonly selectedUsername$: Subject<string | null> = new Subject();
+  public readonly selectedType$: Subject<string | null> = new Subject();
+
+  public readonly loaded = computed(() => this.state().loaded);
+
+  public readonly logs = computed(() => this.state().logs);
+
+  public readonly filteredLogs = computed(() => ***REMOVED***
+    return this.state().filteredLogs;
+***REMOVED***);
+
+  public readonly types = computed(() =>
+    R.pipe(
+      this.state().filteredLogs,
+      R.map(x => x.type),
+      R.uniq()
+    )
+  );
+
+  public readonly usernames = computed(() =>
+    R.pipe(
+      this.state().filteredLogs,
+      R.map(x => x.user),
+      R.uniq()
+    )
+  );
+
+  public readonly excercises = computed(() => ***REMOVED***
+    return R.pipe(
+      this.state().filteredLogs,
+      R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
+      R.uniqBy(x => x.name)
+    );
+***REMOVED***);
+
+  public readonly selectedTypeLabel = computed(() => this.state().selectedType ?? 'Type');
+  public readonly selectedExcerciseLabel = computed(() => this.state().selectedExercise ?? ***REMOVED*** name: 'Exercise', type: '' ***REMOVED***);
+  public readonly selectedUsernameLabel = computed(() => this.state().selectedUsername ?? 'All Users');
+
+  public readonly groupedLogs = computed(() => ***REMOVED***
+    const groups = groupExcerciseLogs(this.state().filteredLogs);
+    const selectedUsername = this.state().selectedUsername;
+    const selectedExcercise = this.state().selectedExercise;
+    const selectedType = this.state().selectedType;
+
+    const result = R.pipe(
+      groups,
+      R.map(([date, valuesByDate]) => ***REMOVED***
+        const filteredValuesByDate = R.pipe(
+          valuesByDate,
+          R.filter(([username]) => (!selectedUsername ? true : selectedUsername === username)),
+          R.map(([username, valuesByUsername]) => ***REMOVED***
+            const filteredValuesByUsername = R.pipe(
+              valuesByUsername,
+              R.filter(([_excercise, row]) => (!selectedType ? true : row.type === selectedType)),
+              R.filter(([excercise]) => (!selectedExcercise ? true : excercise === selectedExcercise.name)),
+              R.filter(x => x.length > 0)
+            );
+
+            return [username, filteredValuesByUsername] as const;
+      ***REMOVED***),
+          R.filter(([_, x]) => x.length > 0)
+        );
+
+        return [date, filteredValuesByDate] as const;
+  ***REMOVED***),
+      R.filter(([_, x]) => x.length > 0)
+    );
+
+    return result;
+***REMOVED***);
+
+  public readonly exerciseRows = computed(() => ***REMOVED***
+    const rows = mapGroupedToExcerciseRows(this.groupedLogs());
+    return R.pipe(
+      rows,
+      this.state().selectedType ? R.filter(x => x.type === this.state().selectedType) : R.identity,
+      this.state().selectedExercise ? R.filter(x => x.excerciseName === this.state().selectedExercise?.name) : R.identity,
+      this.state().selectedUsername ? R.filter(x => x.username === this.state().selectedUsername) : R.identity
+    );
+***REMOVED***);
+
+  public readonly personalRecord = computed(() => ***REMOVED***
+    const excercise = this.state().selectedExercise?.name;
+    const username = this.state().selectedUsername;
+    return excercise && username ? getPersonalRecord(this.exerciseRows(), excercise, username) : null;
+***REMOVED***);
+
+  public readonly amountDaysTrainedPerUser = computed(() => ***REMOVED***
+    const logsGroupedByUser = groupExerciseLogsByUser(this.state().filteredLogs);
+***REMOVED***);
+
+  public constructor() ***REMOVED***
+    effect(() => console.log(this.state()));
+
+    this.updateLogs$
+      .pipe(
+        tap(() => this.state.update(state => (***REMOVED*** ...state, loaded: false ***REMOVED***))),
+        delay(300),
+        takeUntilDestroyed()
+      )
+      .subscribe(***REMOVED***
+        next: logs =>
+          this.state.update(state => (***REMOVED***
+            ...state,
+            logs: logs,
+            filteredLogs: logs.filter(x => !!x.name),
+            loaded: true,
+      ***REMOVED***)),
+  ***REMOVED***);
+
+    this.selectedExcercise$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+      next: selectedExcercise =>
+        this.state.update(state => (***REMOVED***
+          ...state,
+          selectedExercise: selectedExcercise,
+          selectedType: selectedExcercise?.type ?? null,
+    ***REMOVED***)),
+***REMOVED***);
+
+    this.selectedType$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+      next: selectedType => ***REMOVED***
+        let selectedExercise = this.state().selectedExercise;
+
+        if (selectedType && selectedExercise?.type && selectedType !== selectedExercise.type) ***REMOVED***
+          selectedExercise = null;
+    ***REMOVED***
+
+        this.state.update(state => (***REMOVED***
+          ...state,
+          selectedType,
+          selectedExercise,
+    ***REMOVED***));
+  ***REMOVED***,
+***REMOVED***);
+
+    this.selectedUsername$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+      next: selectedUsername =>
+        this.state.update(state => (***REMOVED***
+          ...state,
+          selectedUsername,
+    ***REMOVED***)),
+***REMOVED***);
+***REMOVED***
+***REMOVED***

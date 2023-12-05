@@ -1,4 +1,4 @@
-export interface ExcerciseLog ***REMOVED***
+export interface ExerciseLog ***REMOVED***
   date: string;
   name: string;
   type: string;

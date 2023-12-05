@@ -1,150 +1,34 @@
-import ***REMOVED*** AsyncPipe, NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, ViewChild, inject ***REMOVED*** from '@angular/core';
+import ***REMOVED*** AsyncPipe, TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, ViewChild, effect, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** FormsModule ***REMOVED*** from '@angular/forms';
 
-import ***REMOVED*** NgbDropdownModule, NgbTypeahead ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import ***REMOVED*** NgbDropdownModule, NgbTypeahead, NgbTypeaheadSelectItemEvent ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** BehaviorSubject, Observable, OperatorFunction, Subject, combineLatest, merge ***REMOVED*** from 'rxjs';
-import ***REMOVED*** delay, distinctUntilChanged, filter, finalize, map, pairwise, startWith, tap, withLatestFrom ***REMOVED*** from 'rxjs/operators';
+import ***REMOVED*** Observable, OperatorFunction, Subject, merge ***REMOVED*** from 'rxjs';
+import ***REMOVED*** distinctUntilChanged, map ***REMOVED*** from 'rxjs/operators';
 
-import * as R from 'remeda';
-
-import type ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
-import type ***REMOVED*** GroupedLog ***REMOVED*** from '@models/grouped-log.model';
 import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-empty-array.pipe';
 import ***REMOVED*** ExcerciseRowsComponent ***REMOVED*** from '@components/excercise-rows.component';
 import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@components/grouped-excercise-rows.component';
 import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@components/personal-record.component';
-import ***REMOVED*** ExcerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
-import ***REMOVED*** getMissingExcerciseNames, getPersonalRecord, groupExcerciseLogs, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
-
-interface Excercise ***REMOVED***
-  name: string;
-  type: string;
-***REMOVED***
+import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
 
 @Component(***REMOVED***
   selector: 'app-excercise-logs-page',
-  template: `
-    <!-- #region FILTERS -->
-    <div class="container my-4">
-      <input
-        type="text"
-        class="form-control mb-2"
-        placeholder="Excercise"
-        [(ngModel)]="excerciseTypeAhead"
-        (selectItem)="onExcerciseTypeaheadChange($any($event).item)"
-        [ngbTypeahead]="search"
-        (focus)="focus$.next($any($event).target.value)"
-        (click)="click$.next($any($event).target.value); excerciseTypeAhead = ''"
-        #typeaheadInput
-        #instance="ngbTypeahead"
-      />
-
-      <div class="row mb-2 gx-2">
-        <!-- #region DROPDOWN TYPE -->
-        <div class="col-6">
-          <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-              ***REMOVED******REMOVED*** selectedType$ | async | titlecase ***REMOVED******REMOVED***
-            </button>
-            <div ngbDropdownMenu class="w-100">
-              <button ngbDropdownItem (click)="selectedTypeSubject.next(null)">Clear filter</button>
-              <button ngbDropdownItem *ngFor="let type of types" (click)="selectedTypeSubject.next(type)">
-                ***REMOVED******REMOVED*** type | titlecase ***REMOVED******REMOVED***
-              </button>
-            </div>
-          </div>
-        </div>
-        <!-- #endregion -->
-
-        <!-- #region DROPDOWN EXCERCISE -->
-        <div class="col-6">
-          <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-              ***REMOVED******REMOVED*** selectedExcercise$ | async | titlecase ***REMOVED******REMOVED***
-            </button>
-            <div ngbDropdownMenu class="w-100">
-              <div style="overflow: scroll; max-height: 400px">
-                <button ngbDropdownItem (click)="selectedExcerciseSubject.next(null)">Clear filter</button>
-                <button ngbDropdownItem *ngFor="let excercise of excercises$ | async" (click)="selectedExcerciseSubject.next(excercise)">
-                  ***REMOVED******REMOVED*** excercise | titlecase ***REMOVED******REMOVED***
-                </button>
-              </div>
-              <div class="d-flex justify-content-center align-items-center border-top border-1">
-                <i class="fa fa-caret-down"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- #endregion -->
-      </div>
-
-      <div class="row mb-2">
-        <!-- #region DROPDOWN NAME -->
-        <div class="col-12">
-          <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-              ***REMOVED******REMOVED*** selectedUsername$ | async | titlecase ***REMOVED******REMOVED***
-            </button>
-            <div ngbDropdownMenu class="w-100">
-              <button ngbDropdownItem (click)="selectedUsernameSubject.next(null)">Clear filter</button>
-              <button ngbDropdownItem *ngFor="let username of usernames" (click)="selectedUsernameSubject.next(username)">
-                ***REMOVED******REMOVED*** username | titlecase ***REMOVED******REMOVED***
-              </button>
-            </div>
-          </div>
-        </div>
-        <!-- #endregion -->
-      </div>
-
-      <div class="row">
-        <div class="col-12">
-          <div class="form-check form-switch d-flex align-items-center gap-1">
-            <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="isGrouped" />
-            <label class="form-check-label">Grouped</label>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- #endregion -->
-
-    <div *ngIf="!isLoading; else loadingSpinner">
-      <div class="container" *ngIf="isGrouped">
-        <app-personal-record
-          *ngIf="personalRecord$ | async as personalRecord"
-          class="mb-3"
-          [personalRecord]="personalRecord"
-        ></app-personal-record>
-
-        <app-grouped-excercise-rows [groupedExcerciseLogs]="groupedLogs$ | async | ifNullEmptyArray"> </app-grouped-excercise-rows>
-      </div>
-
-      <div class="container" *ngIf="!isGrouped">
-        <app-personal-record
-          *ngIf="personalRecord$ | async as personalRecord"
-          class="mb-3"
-          [personalRecord]="personalRecord"
-        ></app-personal-record>
-
-        <app-excercise-rows [excerciseRows]="excerciseRows$ | async | ifNullEmptyArray"></app-excercise-rows>
-      </div>
-    </div>
-
-    <ng-template #loadingSpinner>
-      <div class="position-absolute top-50 start-50 translate-middle">
-        <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    </ng-template>
+  templateUrl: 'excercise-logs.page.component.html',
+  styles: `
+    ::ng-deep ***REMOVED***
+      .exercise-typeahead ***REMOVED***
+        overflow-y: scroll; 
+        overflow-x: hidden; 
+        max-height: 400px;
+  ***REMOVED***
+***REMOVED***
   `,
-  styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [TitleCasePipe],
   imports: [
-    NgFor,
-    NgIf,
     FormsModule,
     AsyncPipe,
     TitleCasePipe,
@@ -157,175 +41,45 @@ interface Excercise ***REMOVED***
   ],
 ***REMOVED***)
 export class ExcerciseLogsPageComponent ***REMOVED***
-  public excerciseRowsSubject: BehaviorSubject<ExcerciseRow[]> = new BehaviorSubject<ExcerciseRow[]>([]);
-  public excerciseRows$: Observable<ExcerciseRow[]>;
-
-  public types: string[] = [];
-  public selectedTypeSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
-  public selectedType$: Observable<string>;
-
-  public excercisesSubject: BehaviorSubject<Excercise[]> = new BehaviorSubject<Excercise[]>([]);
-  public excercises$: Observable<string[]>;
-  public selectedExcerciseSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
-  public selectedExcercise$: Observable<string>;
-
-  public usernames: string[] = [];
-  public selectedUsernameSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
-  public selectedUsername$: Observable<string>;
-
-  public groupedLogsSubject: BehaviorSubject<GroupedLog[]> = new BehaviorSubject<GroupedLog[]>([]);
-  public groupedLogs$: Observable<GroupedLog[]>;
-
-  public personalRecord$: Observable<ExcerciseRow | null>;
+  private readonly titleCasePipe = inject(TitleCasePipe);
+  public readonly excerciseLogService = inject(ExerciseLogService);
 
   public isGrouped: boolean = false;
-  public isLoading: boolean = true;
 
   public excerciseTypeAhead: string = '';
 
   @ViewChild('typeaheadInput', ***REMOVED*** static: true ***REMOVED***) typeaheadInput: ElementRef<HTMLInputElement> | null = null;
-  @ViewChild('instance', ***REMOVED*** static: true ***REMOVED***) instance: NgbTypeahead | null = null;
-  focus$ = new Subject<string>();
-  click$ = new Subject<string>();
+  public readonly focus$: Subject<string> = new Subject<string>();
 
-  public onExcerciseTypeaheadChange(term: string): void ***REMOVED***
-    this.selectedExcerciseSubject.next(term);
-    this.typeaheadInput?.nativeElement.blur();
-***REMOVED***
-
-  search: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => ***REMOVED***
+  public readonly search: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => ***REMOVED***
     const debouncedText$ = text$.pipe(distinctUntilChanged());
-    const clicksWithClosedPopup$ = this.click$.pipe(
-      delay(100),
-      filter(() => !this.instance!.isPopupOpen()),
-      map(() => '')
-    );
 
-    const inputFocus$ = this.focus$;
+    return merge(debouncedText$, this.focus$).pipe(
+      map(term => ***REMOVED***
+        const excercises = this.excerciseLogService.excercises().map(x => x.name);
+        const selectedExcercise = this.excerciseLogService.selectedExcerciseLabel();
 
-    return merge(debouncedText$, inputFocus$, clicksWithClosedPopup$).pipe(
-      withLatestFrom(this.excercises$),
-      map(([term, excercises]) => (term === '' ? excercises : excercises.filter(x => !!x).filter(v => v.toLowerCase().includes(term.toLowerCase()))))
+        return term === '' || term === selectedExcercise.name
+          ? excercises
+          : excercises.filter(x => !!x).filter(v => v.toLowerCase().includes(term.toLowerCase()));
+  ***REMOVED***)
     );
 ***REMOVED***;
 
-  private readonly excerciseLogApiService = inject(ExcerciseLogApiService);
+  public readonly formatter = (x: string) => this.titleCasePipe.transform(x);
 
-  public constructor() ***REMOVED***
-    this.selectedType$ = this.selectedTypeSubject.pipe(
-      startWith(null),
-      pairwise(),
-      tap(([oldValue, currentValue]) => ***REMOVED***
-        if (oldValue === currentValue || !currentValue) ***REMOVED***
-          return;
-    ***REMOVED***
-        const selectedExcercise = this.selectedExcerciseSubject.value;
-        const selectedExcerciseType = this.excerciseRowsSubject.value.find(x => x.excerciseName === selectedExcercise)?.type;
+  public onExcerciseTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void ***REMOVED***
+    const selectedExercise =
+      this.excerciseLogService
+        .excercises()
+        .filter(x => x.name === event.item)
+        .at(0) ?? null;
 
-        if (currentValue != selectedExcerciseType) ***REMOVED***
-          this.selectedExcerciseSubject.next(null);
-    ***REMOVED***
-  ***REMOVED***),
-      map(([, currentValue]) => currentValue ?? 'Type')
-    );
-
-    this.selectedExcercise$ = this.selectedExcerciseSubject.pipe(map(x => x ?? 'Excercise'));
-
-    this.selectedUsername$ = this.selectedUsernameSubject.pipe(map(x => x ?? 'Username'));
-
-    this.excercises$ = combineLatest([this.excercisesSubject, this.selectedTypeSubject]).pipe(
-      map(([excercises, selectedType]) => (!selectedType ? excercises : excercises.filter(x => x.type === selectedType))),
-      map(x => x.map(x => x.name))
-    );
-
-    this.excerciseRows$ = combineLatest([
-      this.excerciseRowsSubject,
-      this.selectedExcerciseSubject,
-      this.selectedTypeSubject,
-      this.selectedUsernameSubject,
-    ]).pipe(
-      map(([rows, selectedExcercise, selectedTypeSubject, selectedUsername]) =>
-        R.pipe(
-          rows,
-          selectedTypeSubject ? R.filter(x => x.type === selectedTypeSubject) : R.identity,
-          selectedExcercise ? R.filter(x => x.excerciseName === selectedExcercise) : R.identity,
-          selectedUsername ? R.filter(x => x.username === selectedUsername) : R.identity
-        )
-      )
-    );
-
-    this.groupedLogs$ = combineLatest([
-      this.groupedLogsSubject,
-      this.selectedExcerciseSubject,
-      this.selectedTypeSubject,
-      this.selectedUsernameSubject,
-    ]).pipe(
-      map(([groups, selectedExcercise, selectedType, selectedUsername]) => ***REMOVED***
-        const result = R.pipe(
-          groups,
-          R.map(([date, valuesByDate]) => ***REMOVED***
-            const filteredValuesByDate = R.pipe(
-              valuesByDate,
-              R.filter(([username]) => (!selectedUsername ? true : selectedUsername === username)),
-              R.map(([username, valuesByUsername]) => ***REMOVED***
-                const filteredValuesByUsername = R.pipe(
-                  valuesByUsername,
-                  R.filter(([_excercise, row]) => (!selectedType ? true : row.type === selectedType)),
-                  R.filter(([excercise]) => (!selectedExcercise ? true : excercise === selectedExcercise)),
-                  R.filter(x => x.length > 0)
-                );
-
-                return [username, filteredValuesByUsername] as const;
-          ***REMOVED***),
-              R.filter(([_, x]) => x.length > 0)
-            );
-
-            return [date, filteredValuesByDate] as const;
-      ***REMOVED***),
-          R.filter(([_, x]) => x.length > 0)
-        );
-
-        return result;
-  ***REMOVED***)
-    );
-
-    this.personalRecord$ = combineLatest([this.selectedUsernameSubject, this.selectedExcerciseSubject]).pipe(
-      map(([username, excercise]) =>
-        username && excercise ? getPersonalRecord(this.excerciseRowsSubject.value, excercise, username) : null
-      )
-    );
+    this.excerciseLogService.selectedExcercise$.next(selectedExercise);
+    this.typeaheadInput?.nativeElement.blur();
 ***REMOVED***
 
-  public ngOnInit(): void ***REMOVED***
-    this.isLoading = true;
-    this.excerciseLogApiService
-      .getExcerciseLogs()
-      .pipe(finalize(() => (this.isLoading = false)))
-      .subscribe(excerciseLogs => ***REMOVED***
-        this.groupedLogsSubject.next(groupExcerciseLogs(excerciseLogs));
-        this.excerciseRowsSubject.next(mapGroupedToExcerciseRows(this.groupedLogsSubject.value));
-
-        this.types = R.pipe(
-          excerciseLogs,
-          R.map(x => x.type),
-          R.uniq()
-        );
-
-        this.usernames = R.pipe(
-          excerciseLogs,
-          R.map(x => x.user),
-          R.uniq()
-        );
-
-        const excercises = R.pipe(
-          excerciseLogs,
-          R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
-          R.uniqBy(x => x.name)
-        );
-
-        this.excercisesSubject.next(excercises);
-
-        console.log(getMissingExcerciseNames(this.excerciseRowsSubject.value));
-  ***REMOVED***);
+  public constructor() ***REMOVED***
+    effect(() => (this.excerciseTypeAhead = this.excerciseLogService.selectedExcerciseLabel().name));
 ***REMOVED***
 ***REMOVED***

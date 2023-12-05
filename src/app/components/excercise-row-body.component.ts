@@ -1,13 +1,13 @@
 import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
-import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
 
 @Component(***REMOVED***
   selector: 'app-excercise-row-body',
   template: `
-    @if (excerciseRow) ***REMOVED***
+    @if (exerciseRow) ***REMOVED***
     <table class="table table-striped table-sm m-0">
       <tbody>
-        @for (serie of excerciseRow.series; track serie.serie) ***REMOVED***
+        @for (serie of exerciseRow.series; track serie.serie) ***REMOVED***
         <tr class="row">
           <td class="fw-bold col">Serie ***REMOVED******REMOVED*** serie.serie ***REMOVED******REMOVED***</td>
           <td class="col text-center">***REMOVED******REMOVED*** serie.reps ***REMOVED******REMOVED*** reps</td>
@@ -15,26 +15,26 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
         </tr>
     ***REMOVED*** 
         
-        @if (excerciseRow.total) ***REMOVED***
+        @if (exerciseRow.total) ***REMOVED***
         <tr class="row">
           <td class="fw-bold col">Total</td>
-          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.total ***REMOVED******REMOVED*** reps</td>
-          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
+          <td class="col text-center">***REMOVED******REMOVED*** exerciseRow.total ***REMOVED******REMOVED*** reps</td>
+          <td class="col text-center">***REMOVED******REMOVED*** exerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
     ***REMOVED*** 
         
-        @if (excerciseRow.average) ***REMOVED***
+        @if (exerciseRow.average) ***REMOVED***
         <tr class="row">
           <td class="fw-bold col">Average</td>
-          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.average ***REMOVED******REMOVED*** reps</td>
-          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
+          <td class="col text-center">***REMOVED******REMOVED*** exerciseRow.average ***REMOVED******REMOVED*** reps</td>
+          <td class="col text-center">***REMOVED******REMOVED*** exerciseRow.series[0]!.weightKg ***REMOVED******REMOVED***kg</td>
         </tr>
     ***REMOVED***
 
         <tr class="row">
           <td class="fw-bold col">Tonnage</td>
           <td class="col text-center">&nbsp;</td>
-          <td class="col text-center">***REMOVED******REMOVED*** excerciseRow.tonnage ***REMOVED******REMOVED***kg</td>
+          <td class="col text-center">***REMOVED******REMOVED*** exerciseRow.tonnage ***REMOVED******REMOVED***kg</td>
         </tr>
       </tbody>
     </table>
@@ -46,5 +46,5 @@ import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.mode
   imports: [],
 ***REMOVED***)
 export class ExcerciseRowBodyComponent ***REMOVED***
-  @Input(***REMOVED*** required: true ***REMOVED***) excerciseRow!: ExcerciseRow;
+  @Input(***REMOVED*** required: true ***REMOVED***) exerciseRow!: ExerciseRow;
 ***REMOVED***

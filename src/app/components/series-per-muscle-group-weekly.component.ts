@@ -6,7 +6,7 @@ import * as R from 'remeda';
 import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
 import ***REMOVED*** getSeriesAmountPerMuscleGroupWeekly, groupByWeek ***REMOVED*** from '@helpers/excercise-log.helper';
-import ***REMOVED*** ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
 import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
 
 @Component(***REMOVED***
@@ -20,7 +20,7 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>***REMOVED******REMOVED*** selectedWeekDropdownValue() ***REMOVED******REMOVED***</button>
-            <div ngbDropdownMenu class="w-100">
+            <div ngbDropdownMenu class="w-100" style="overflow-x: hidden; overflow-y: scroll; max-height: 400px">
               <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">
                 ***REMOVED******REMOVED*** week ***REMOVED******REMOVED***
               </button>
@@ -65,13 +65,13 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
   imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
 ***REMOVED***)
 export class SeriesPerMuscleGroupWeeklyComponent ***REMOVED***
-  @Input(***REMOVED*** required: true ***REMOVED***) public set rows(value: ExcerciseRow[]) ***REMOVED***
+  @Input(***REMOVED*** required: true ***REMOVED***) public set rows(value: ExerciseRow[]) ***REMOVED***
     this.rowsSignal.set(value);
 ***REMOVED***
 
   public readonly muscleGroups = MUSCLE_GROUPS;
 
-  public readonly rowsSignal = signal<ExcerciseRow[]>([]);
+  public readonly rowsSignal = signal<ExerciseRow[]>([]);
   public readonly daysGroupByWeekSignal = computed(() => R.mapValues(groupByWeek(this.rowsSignal()), x => x.length));
   public readonly seriesPerMuscleGroupWeeklySignal = computed(() => getSeriesAmountPerMuscleGroupWeekly(this.rowsSignal()));
   public readonly weeksSignal = computed(() => R.keys(this.seriesPerMuscleGroupWeeklySignal()));

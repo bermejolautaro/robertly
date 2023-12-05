@@ -1,0 +1,27 @@
+@if (exerciseLogService.loaded()) ***REMOVED***
+  <div class="container my-4">
+    <app-series-per-muscle-group-weekly class="mb-4" [rows]="exerciseLogService.exerciseRows()"></app-series-per-muscle-group-weekly>
+    <app-series-per-muscle-group-monthly class="mb-4" [rows]="exerciseLogService.exerciseRows()"></app-series-per-muscle-group-monthly>
+    <div class="card border-0 shadow-material-1">
+      <div class="card-body">
+        <div class="card-title mb-3">
+          <h5>Miscellaneous</h5>
+          <table class="table table-sm m-0 mb-3">
+            <tbody>
+              <tr>
+                <td>Days trained</td>
+                <td>***REMOVED******REMOVED*** amountDaysTrained(exerciseLogService.logs()) ***REMOVED******REMOVED*** days</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+***REMOVED*** @else ***REMOVED***
+  <div class="position-absolute top-50 start-50 translate-middle">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+***REMOVED***

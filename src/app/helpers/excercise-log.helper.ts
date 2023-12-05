@@ -1,11 +1,11 @@
 import ***REMOVED*** parseAndCompare, parseDate ***REMOVED*** from '@helpers/date.helper';
 import ***REMOVED*** type ExcerciseName, MUSCLE_GROUP_PER_EXCERCISE, EXCERCISES_NAMES ***REMOVED*** from '@models/constants';
-import ***REMOVED*** type ExcerciseLog ***REMOVED*** from '@models/excercise-log.model';
-import ***REMOVED*** type ExcerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** type ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
+import ***REMOVED*** type ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
 import ***REMOVED*** type GroupedLog ***REMOVED*** from '@models/grouped-log.model';
 import * as R from 'remeda';
 
-export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] ***REMOVED***
+export function groupExcerciseLogs(excerciseLogs: ExerciseLog[]): GroupedLog[] ***REMOVED***
   return R.pipe(
     excerciseLogs,
     R.groupBy(x => x.date),
@@ -29,12 +29,20 @@ export function groupExcerciseLogs(excerciseLogs: ExcerciseLog[]): GroupedLog[] 
   );
 ***REMOVED***
 
+export function groupExerciseLogsByUser(exerciseLogs: ExerciseLog[]) ***REMOVED***
+  return R.pipe(
+    exerciseLogs,
+    R.groupBy(x => x.user),
+    R.mapValues((logs, user) => (***REMOVED*** user, logs ***REMOVED***)),
+  );
+***REMOVED***
+
 function mapToExcerciseRow(
   date: PropertyKey,
   username: PropertyKey,
   excerciseName: PropertyKey,
-  series: [ExcerciseLog, ...ExcerciseLog[]]
-): ExcerciseRow ***REMOVED***
+  series: [ExerciseLog, ...ExerciseLog[]]
+): ExerciseRow ***REMOVED***
   const total = series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps!) : null;
 
   return ***REMOVED***
@@ -57,7 +65,7 @@ function mapToExcerciseRow(
 ***REMOVED***;
 ***REMOVED***
 
-export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExcerciseRow[] ***REMOVED***
+export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExerciseRow[] ***REMOVED***
   return R.pipe(
     groupedLogs,
     R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv.flatMap(([_, vvv]) => vvv))),
@@ -65,7 +73,7 @@ export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExcerciseR
   );
 ***REMOVED***
 
-export function getMissingExcerciseNames(rows: ExcerciseRow[]): string[] ***REMOVED***
+export function getMissingExerciseNames(rows: ExerciseRow[]): string[] ***REMOVED***
   return R.pipe(
     rows,
     R.map(x => x.excerciseName.toLowerCase()),
@@ -74,7 +82,7 @@ export function getMissingExcerciseNames(rows: ExcerciseRow[]): string[] ***REMO
   );
 ***REMOVED***
 
-export function amountDaysTrained(logs: ExcerciseLog[]): number ***REMOVED***
+export function amountDaysTrained(logs: ExerciseLog[]): number ***REMOVED***
   const result = R.pipe(
     logs,
     R.map(x => x.date),
@@ -84,7 +92,7 @@ export function amountDaysTrained(logs: ExcerciseLog[]): number ***REMOVED***
   return result.length;
 ***REMOVED***
 
-export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, username: string): ExcerciseRow | null ***REMOVED***
+export function getPersonalRecord(rows: ExerciseRow[], excerciseName: string, username: string): ExerciseRow | null ***REMOVED***
   const result = R.pipe(
     rows,
     R.filter(x => x.username === username && x.excerciseName === excerciseName),
@@ -100,14 +108,14 @@ export function getPersonalRecord(rows: ExcerciseRow[], excerciseName: string, u
   return result ?? null;
 ***REMOVED***
 
-function sortByWeightAndRepsDesc(a: ExcerciseLog, b: ExcerciseLog): number ***REMOVED***
+function sortByWeightAndRepsDesc(a: ExerciseLog, b: ExerciseLog): number ***REMOVED***
   const differenceWeight = b.weightKg! - a.weightKg!;
   const differenceReps = b.reps! - a.reps!;
 
   return differenceWeight !== 0 ? differenceWeight : differenceReps;
 ***REMOVED***
 
-export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExcerciseRow[]) ***REMOVED***
+export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
     R.groupBy(row => parseDate(row.date).startOf('isoWeek').format('DD/MM/YYYY')),
@@ -133,7 +141,7 @@ export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExcerciseRow[
   );
 ***REMOVED***
 
-export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExcerciseRow[]) ***REMOVED***
+export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
     R.groupBy(row => parseDate(row.date).startOf('month').format('DD/MM/YYYY')),
@@ -159,7 +167,7 @@ export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExcerciseRow
   );
 ***REMOVED***
 
-export function groupByWeek(excerciseRows: ExcerciseRow[]) ***REMOVED***
+export function groupByWeek(excerciseRows: ExerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('isoWeek').format('DD/MM/YYYY')),
@@ -167,7 +175,7 @@ export function groupByWeek(excerciseRows: ExcerciseRow[]) ***REMOVED***
   );
 ***REMOVED***
 
-export function groupByMonth(excerciseRows: ExcerciseRow[]) ***REMOVED***
+export function groupByMonth(excerciseRows: ExerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('month').format('DD/MM/YYYY')),

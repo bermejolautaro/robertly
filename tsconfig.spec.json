@@ -4,8 +4,7 @@
   "compilerOptions": ***REMOVED***
     "outDir": "./out-tsc/spec",
     "types": [
-      "jasmine",
-      "@angular/localize"
+      "jasmine"
     ]
 ***REMOVED***
   "include": [
