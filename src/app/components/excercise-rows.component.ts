@@ -1,4 +1,4 @@
-import { NgClass, NgFor, NgIf, TitleCasePipe } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
@@ -13,24 +13,22 @@ import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.compon
     <div class="row my-2">
       <div class="col">
         <div ngbAccordion>
-          <div
-            ngbAccordionItem
-            *ngFor="let exerciseRow of filteredRows()"
-            [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
-          >
-            <h2 ngbAccordionHeader>
-              <button ngbAccordionButton>
-                <app-excercise-row-title [exerciseRow]="exerciseRow"></app-excercise-row-title>
-              </button>
-            </h2>
-            <div ngbAccordionCollapse>
-              <div ngbAccordionBody>
-                <ng-template>
-                  <app-excercise-row-body [exerciseRow]="exerciseRow"></app-excercise-row-body>
-                </ng-template>
+          @for (exerciseRow of exerciseRows; track $index) {
+            <div ngbAccordionItem [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null">
+              <h2 ngbAccordionHeader>
+                <button ngbAccordionButton>
+                  <app-excercise-row-title [exerciseRow]="exerciseRow"></app-excercise-row-title>
+                </button>
+              </h2>
+              <div ngbAccordionCollapse>
+                <div ngbAccordionBody>
+                  <ng-template>
+                    <app-excercise-row-body [exerciseRow]="exerciseRow"></app-excercise-row-body>
+                  </ng-template>
+                </div>
               </div>
             </div>
-          </div>
+          }
         </div>
       </div>
     </div>
@@ -38,12 +36,8 @@ import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.compon
   styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgFor, NgIf, TitleCasePipe, NgClass, NgbAccordionModule, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent],
+  imports: [NgClass, NgbAccordionModule, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent],
 })
 export class ExcerciseRowsComponent {
   @Input() public exerciseRows: ExerciseRow[] = [];
-
-  public filteredRows(): ExerciseRow[] {
-    return this.exerciseRows.filter(x => !!x.series.at(0)?.serie);
-  }
 }

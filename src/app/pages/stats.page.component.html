@@ -8,10 +8,13 @@
           <h5>Miscellaneous</h5>
           <table class="table table-sm m-0 mb-3">
             <tbody>
-              <tr>
-                <td>Days trained</td>
-                <td>{{ amountDaysTrained(exerciseLogService.logs()) }} days</td>
-              </tr>
+              <th colspan="2" style="font-weight: 500">Days Trained</th>
+              @for (daysByUser of exerciseLogService.amountDaysTrainedPerUser() | keyvalue; track daysByUser.key) {
+                <tr>
+                  <td>{{ daysByUser.key | titlecase }}</td>
+                  <td>{{ daysByUser.value }}</td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>

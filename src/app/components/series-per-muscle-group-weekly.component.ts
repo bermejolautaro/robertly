@@ -19,7 +19,7 @@ import { MUSCLE_GROUPS } from '@models/constants';
         </div>
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>{{ selectedWeekDropdownValue() }}</button>
+            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>Week from Monday: {{ selectedWeekDropdownValue() }}</button>
             <div ngbDropdownMenu class="w-100" style="overflow-x: hidden; overflow-y: scroll; max-height: 400px">
               <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">
                 {{ week }}

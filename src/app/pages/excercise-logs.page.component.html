@@ -1,9 +1,9 @@
 <!-- #region FILTERS -->
 <div class="container my-4">
   <!-- #region TYPEAHEAD EXERCISE -->
-  <ng-template #rt let-r="result" let-t="term">
-    <div>{{ t }}</div>
-    <div>{{ r | titlecase }}</div>
+  <ng-template #rt let-result="result" let-term="term">
+    <div>{{ term }}</div>
+    <div>{{ result | titlecase }}</div>
   </ng-template>
 
   <div class="col-12">
@@ -19,6 +19,7 @@
       [popupClass]="'exercise-typeahead'"
       [resultFormatter]="formatter"
       [inputFormatter]="formatter"
+      [focusFirst]="false"
       #typeaheadInput
     />
   </div>

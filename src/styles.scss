@@ -4,6 +4,13 @@
 @import 'bootstrap/scss/bootstrap';
 @import 'font-awesome/css/font-awesome.min';
 
+.dropdown {
+  button.btn-outline-primary:hover, button.btn-outline-primary.show {
+    background-color: white;
+    color: var(--bs-btn-color);
+  }
+}
+
 .accordion {
   --bs-accordion-btn-padding-x: .8rem;
   --bs-accordion-btn-padding-y: .6rem;
