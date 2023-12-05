@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { ExcerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/excercise-row.model';
 import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.component';
 import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.component';
 
@@ -15,18 +15,18 @@ import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.compon
         <div ngbAccordion>
           <div
             ngbAccordionItem
-            *ngFor="let excerciseRow of filteredRows()"
-            [ngClass]="excerciseRow.highlighted ? 'accordion-highlight ' + excerciseRow.highlighted : null"
+            *ngFor="let exerciseRow of filteredRows()"
+            [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
           >
             <h2 ngbAccordionHeader>
               <button ngbAccordionButton>
-                <app-excercise-row-title [excerciseRow]="excerciseRow"></app-excercise-row-title>
+                <app-excercise-row-title [exerciseRow]="exerciseRow"></app-excercise-row-title>
               </button>
             </h2>
             <div ngbAccordionCollapse>
               <div ngbAccordionBody>
                 <ng-template>
-                  <app-excercise-row-body [excerciseRow]="excerciseRow"></app-excercise-row-body>
+                  <app-excercise-row-body [exerciseRow]="exerciseRow"></app-excercise-row-body>
                 </ng-template>
               </div>
             </div>
@@ -41,9 +41,9 @@ import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.compon
   imports: [NgFor, NgIf, TitleCasePipe, NgClass, NgbAccordionModule, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent],
 })
 export class ExcerciseRowsComponent {
-  @Input() public excerciseRows: ExcerciseRow[] = [];
+  @Input() public exerciseRows: ExerciseRow[] = [];
 
-  public filteredRows(): ExcerciseRow[] {
-    return this.excerciseRows.filter(x => !!x.series.at(0)?.serie);
+  public filteredRows(): ExerciseRow[] {
+    return this.exerciseRows.filter(x => !!x.series.at(0)?.serie);
   }
 }

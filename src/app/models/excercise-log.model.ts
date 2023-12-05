@@ -1,4 +1,4 @@
-export interface ExcerciseLog {
+export interface ExerciseLog {
   date: string;
   name: string;
   type: string;

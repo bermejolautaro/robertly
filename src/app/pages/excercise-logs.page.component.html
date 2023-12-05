@@ -1,0 +1,75 @@
+<!-- #region FILTERS -->
+<div class="container my-4">
+  <!-- #region TYPEAHEAD EXERCISE -->
+  <ng-template #rt let-r="result" let-t="term">
+    <div>{{ t }}</div>
+    <div>{{ r | titlecase }}</div>
+  </ng-template>
+
+  <div class="col-12">
+    <input
+      type="text"
+      class="form-control mb-2"
+      placeholder="Exercise"
+      [(ngModel)]="excerciseTypeAhead"
+      (selectItem)="onExcerciseTypeaheadChange($event)"
+      [ngbTypeahead]="search"
+      (focus)="focus$.next(excerciseTypeAhead)"
+      (click)="excerciseTypeAhead = ''"
+      [popupClass]="'exercise-typeahead'"
+      [resultFormatter]="formatter"
+      [inputFormatter]="formatter"
+      #typeaheadInput
+    />
+  </div>
+  <!-- #endregion -->
+
+  <div class="row mb-2 gx-2">
+    <!-- #region DROPDOWN TYPE -->
+    <div class="col-12">
+      <div ngbDropdown class="d-flex justify-content-center">
+        <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
+          {{ excerciseLogService.selectedTypeLabel() | titlecase }}
+        </button>
+        <div ngbDropdownMenu class="w-100">
+          <button ngbDropdownItem (click)="excerciseLogService.selectedType$.next(null)">Clear filter</button>
+          @for (type of excerciseLogService.types(); track type) {
+            <button ngbDropdownItem (click)="excerciseLogService.selectedType$.next(type)">
+              {{ type | titlecase }}
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+    <!-- #endregion -->
+  </div>
+
+  <div class="row">
+    <div class="col-12">
+      <div class="form-check form-switch d-flex align-items-center gap-1">
+        <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="isGrouped" />
+        <label class="form-check-label">Grouped</label>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- #endregion -->
+
+@if (excerciseLogService.loaded()) {
+  <div class="container">
+    @if (excerciseLogService.personalRecord(); as personalRecord) {
+      <app-personal-record class="mb-3" [personalRecord]="personalRecord"></app-personal-record>
+    }
+    @if (isGrouped) {
+      <app-grouped-excercise-rows [groupedExcerciseLogs]="excerciseLogService.groupedLogs()"> </app-grouped-excercise-rows>
+    } @else {
+      <app-excercise-rows [exerciseRows]="excerciseLogService.exerciseRows()"></app-excercise-rows>
+    }
+  </div>
+} @else {
+  <div class="position-absolute top-50 start-50 translate-middle">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}

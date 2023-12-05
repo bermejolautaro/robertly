@@ -6,7 +6,7 @@ import * as R from 'remeda';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { getSeriesAmountPerMuscleGroupMonthly, groupByMonth } from '@helpers/excercise-log.helper';
-import { ExcerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/excercise-row.model';
 import { MUSCLE_GROUPS } from '@models/constants';
 import { ParseToMonthPipe } from '@pipes/date.pipe';
 
@@ -71,13 +71,13 @@ import { ParseToMonthPipe } from '@pipes/date.pipe';
   imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, AsyncPipe, ParseToMonthPipe, NgbDropdownModule],
 })
 export class SeriesPerMuscleGroupMonthlyComponent {
-  @Input({ required: true }) public set rows(value: ExcerciseRow[]) {
+  @Input({ required: true }) public set rows(value: ExerciseRow[]) {
     this.rowsSignal.set(value);
   }
 
   public readonly muscleGroups = MUSCLE_GROUPS;
 
-  public readonly rowsSignal = signal<ExcerciseRow[]>([]);
+  public readonly rowsSignal = signal<ExerciseRow[]>([]);
   public readonly daysGroupByMonthSignal = computed(() => R.mapValues(groupByMonth(this.rowsSignal()), x => x.length));
   public readonly seriesPerMuscleGroupMonthlySignal = computed(() => getSeriesAmountPerMuscleGroupMonthly(this.rowsSignal()));
   public readonly monthsSignal = computed(() => R.keys(this.seriesPerMuscleGroupMonthlySignal()));

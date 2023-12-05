@@ -1,12 +1,12 @@
 import { MuscleGroup } from '@models/constants';
-import { ExcerciseLog } from '@models/excercise-log.model';
+import { ExerciseLog } from '@models/excercise-log.model';
 
-export interface ExcerciseRow {
+export interface ExerciseRow {
   date: string;
   excerciseName: string;
   type: string;
   username: string;
-  series: ExcerciseLog[];
+  series: ExerciseLog[];
   highlighted: 'green' | 'yellow' | null;
   total: number | null;
   average: number | null;

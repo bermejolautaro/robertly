@@ -6,7 +6,7 @@ import * as R from 'remeda';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { getSeriesAmountPerMuscleGroupWeekly, groupByWeek } from '@helpers/excercise-log.helper';
-import { ExcerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/excercise-row.model';
 import { MUSCLE_GROUPS } from '@models/constants';
 
 @Component({
@@ -20,7 +20,7 @@ import { MUSCLE_GROUPS } from '@models/constants';
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>{{ selectedWeekDropdownValue() }}</button>
-            <div ngbDropdownMenu class="w-100">
+            <div ngbDropdownMenu class="w-100" style="overflow-x: hidden; overflow-y: scroll; max-height: 400px">
               <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">
                 {{ week }}
               </button>
@@ -65,13 +65,13 @@ import { MUSCLE_GROUPS } from '@models/constants';
   imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
 })
 export class SeriesPerMuscleGroupWeeklyComponent {
-  @Input({ required: true }) public set rows(value: ExcerciseRow[]) {
+  @Input({ required: true }) public set rows(value: ExerciseRow[]) {
     this.rowsSignal.set(value);
   }
 
   public readonly muscleGroups = MUSCLE_GROUPS;
 
-  public readonly rowsSignal = signal<ExcerciseRow[]>([]);
+  public readonly rowsSignal = signal<ExerciseRow[]>([]);
   public readonly daysGroupByWeekSignal = computed(() => R.mapValues(groupByWeek(this.rowsSignal()), x => x.length));
   public readonly seriesPerMuscleGroupWeeklySignal = computed(() => getSeriesAmountPerMuscleGroupWeekly(this.rowsSignal()));
   public readonly weeksSignal = computed(() => R.keys(this.seriesPerMuscleGroupWeeklySignal()));

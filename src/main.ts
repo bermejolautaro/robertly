@@ -3,17 +3,7 @@ import { InjectionToken, isDevMode } from '@angular/core';
 import { Routes, provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
-
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
-import isoWeek from 'dayjs/plugin/isoWeek';
-
 import { AppComponent } from 'src/app/app.component';
-
-dayjs.extend(customParseFormat);
-dayjs.extend(weekOfYear);
-dayjs.extend(isoWeek);
 
 export const LOGS_PATH = '';
 export const STATS_PATH = 'stats';
@@ -28,7 +18,7 @@ const routes = [
     pathMatch: 'full',
     loadComponent: () => import('@pages/excercise-logs.page.component').then(x => x.ExcerciseLogsPageComponent),
   } as const,
-] satisfies Routes
+] satisfies Routes;
 
 export type RoutePath = (typeof routes)[number]['path'];
 
@@ -39,6 +29,6 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(),
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
-    { provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' },
+    { provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' }
   ],
-}).catch(console.error);
+}).catch(err => console.error(err));

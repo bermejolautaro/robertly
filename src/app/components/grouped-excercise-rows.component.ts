@@ -51,14 +51,14 @@ import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.comp
                                     <app-excercise-row-title
                                       [showUsername]="false"
                                       [showDate]="false"
-                                      [excerciseRow]="logByExcercise[1]"
+                                      [exerciseRow]="logByExcercise[1]"
                                     ></app-excercise-row-title>
                                   </button>
                                 </h2>
                                 <div ngbAccordionCollapse>
                                   <div ngbAccordionBody>
                                     <ng-template>
-                                      <app-excercise-row-body [excerciseRow]="logByExcercise[1]"></app-excercise-row-body>
+                                      <app-excercise-row-body [exerciseRow]="logByExcercise[1]"></app-excercise-row-body>
                                     </ng-template>
                                   </div>
                                 </div>

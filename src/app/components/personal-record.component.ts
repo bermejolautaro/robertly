@@ -4,7 +4,7 @@ import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.component';
 import { ExcerciseRowBodyComponent } from '@components//excercise-row-body.component';
-import { ExcerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/excercise-row.model';
 
 @Component({
   selector: 'app-personal-record',
@@ -13,13 +13,13 @@ import { ExcerciseRow } from '@models/excercise-row.model';
       <div ngbAccordionItem class="accordion-highlight light-blue">
         <h2 ngbAccordionHeader>
           <button ngbAccordionButton>
-            <app-excercise-row-title [excerciseRow]="personalRecord" [showStar]="true"></app-excercise-row-title>
+            <app-excercise-row-title [exerciseRow]="personalRecord" [showStar]="true"></app-excercise-row-title>
           </button>
         </h2>
         <div ngbAccordionCollapse>
           <div ngbAccordionBody>
             <ng-template>
-              <app-excercise-row-body [excerciseRow]="personalRecord"></app-excercise-row-body>
+              <app-excercise-row-body [exerciseRow]="personalRecord"></app-excercise-row-body>
             </ng-template>
           </div>
         </div>
@@ -38,5 +38,5 @@ import { ExcerciseRow } from '@models/excercise-row.model';
   imports: [NgIf, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent, NgbAccordionModule],
 })
 export class PersonalRecordComponent {
-  @Input({ required: true }) personalRecord!: ExcerciseRow;
+  @Input({ required: true }) personalRecord!: ExerciseRow;
 }
