@@ -1,5 +1,5 @@
-import ***REMOVED*** AsyncPipe, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, ViewChild, effect, inject ***REMOVED*** from '@angular/core';
+import ***REMOVED*** AsyncPipe, DOCUMENT, TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, effect, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** FormsModule ***REMOVED*** from '@angular/forms';
 
 import ***REMOVED*** NgbDropdownModule, NgbTypeahead, NgbTypeaheadSelectItemEvent ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
@@ -40,8 +40,9 @@ import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-
     NgbTypeahead,
   ],
 ***REMOVED***)
-export class ExcerciseLogsPageComponent ***REMOVED***
+export class ExcerciseLogsPageComponent implements OnInit ***REMOVED***
   private readonly titleCasePipe = inject(TitleCasePipe);
+  private readonly document = inject(DOCUMENT);
   public readonly excerciseLogService = inject(ExerciseLogService);
 
   public isGrouped: boolean = false;
@@ -56,7 +57,7 @@ export class ExcerciseLogsPageComponent ***REMOVED***
 
     return merge(debouncedText$, this.focus$).pipe(
       map(term => ***REMOVED***
-        const excercises = this.excerciseLogService.excercises().map(x => x.name);
+        const excercises = ['Clear Filter', ...this.excerciseLogService.excercises().map(x => x.name)];
         const selectedExcercise = this.excerciseLogService.selectedExcerciseLabel();
 
         return term === '' || term === selectedExcercise.name
@@ -68,18 +69,26 @@ export class ExcerciseLogsPageComponent ***REMOVED***
 
   public readonly formatter = (x: string) => this.titleCasePipe.transform(x);
 
+  public constructor() ***REMOVED***
+    effect(() => (this.excerciseTypeAhead = this.excerciseLogService.selectedExcerciseLabel().name));
+***REMOVED***
+
+  public ngOnInit(): void ***REMOVED***
+    this.document.defaultView?.scroll(***REMOVED*** top: 0, left: 0, behavior: 'smooth' ***REMOVED***);
+***REMOVED***
+
   public onExcerciseTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void ***REMOVED***
-    const selectedExercise =
+    let selectedExercise =
       this.excerciseLogService
         .excercises()
         .filter(x => x.name === event.item)
         .at(0) ?? null;
 
-    this.excerciseLogService.selectedExcercise$.next(selectedExercise);
-    this.typeaheadInput?.nativeElement.blur();
+    if (event.item === 'Clear Filter') ***REMOVED***
+      selectedExercise = null;
 ***REMOVED***
 
-  public constructor() ***REMOVED***
-    effect(() => (this.excerciseTypeAhead = this.excerciseLogService.selectedExcerciseLabel().name));
+    this.excerciseLogService.selectedExcercise$.next(selectedExercise);
+    this.typeaheadInput?.nativeElement.blur();
 ***REMOVED***
 ***REMOVED***
