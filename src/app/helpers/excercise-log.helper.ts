@@ -29,11 +29,11 @@ export function groupExcerciseLogs(excerciseLogs: ExerciseLog[]): GroupedLog[] *
   );
 ***REMOVED***
 
-export function groupExerciseLogsByUser(exerciseLogs: ExerciseLog[]) ***REMOVED***
+export function amountDaysTrainedByUser(exerciseLogs: ExerciseLog[]) ***REMOVED***
   return R.pipe(
     exerciseLogs,
     R.groupBy(x => x.user),
-    R.mapValues((logs, user) => (***REMOVED*** user, logs ***REMOVED***)),
+    R.mapValues(logs => amountDaysTrained(logs))
   );
 ***REMOVED***
 
@@ -55,8 +55,8 @@ function mapToExcerciseRow(
       ? series.every(x => x.reps! >= 12)
         ? ('green' as const)
         : series.every(x => x.reps! >= 8)
-        ? ('yellow' as const)
-        : null
+          ? ('yellow' as const)
+          : null
       : null,
     total,
     tonnage: series.reduce((prev, curr) => prev + curr.reps! * curr.weightKg!, 0),
@@ -141,7 +141,7 @@ export function getSeriesAmountPerMuscleGroupWeekly(excerciseRows: ExerciseRow[]
   );
 ***REMOVED***
 
-export function getSeriesAmountPerMuscleGroupMonthly(excerciseRows: ExerciseRow[]) ***REMOVED***
+export function getSeriesAmountPerUserPerMuscleGroupPerMonth(excerciseRows: ExerciseRow[]) ***REMOVED***
   return R.pipe(
     excerciseRows,
     R.groupBy(row => parseDate(row.date).startOf('month').format('DD/MM/YYYY')),

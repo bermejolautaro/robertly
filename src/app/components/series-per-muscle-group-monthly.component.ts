@@ -1,14 +1,21 @@
-import ***REMOVED*** AsyncPipe, KeyValuePipe, NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** KeyValuePipe, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** ChangeDetectionStrategy, Component, Input, computed, signal ***REMOVED*** from '@angular/core';
 
 import * as R from 'remeda';
 
 import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** getSeriesAmountPerMuscleGroupMonthly, groupByMonth ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED*** getSeriesAmountPerUserPerMuscleGroupPerMonth, groupByMonth ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
 import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
 import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/date.pipe';
+import ***REMOVED*** Subject ***REMOVED*** from 'rxjs';
+import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
+
+type State = ***REMOVED***
+  rows: ExerciseRow[];
+  selectedMonth: string;
+***REMOVED***;
 
 @Component(***REMOVED***
   selector: 'app-series-per-muscle-group-monthly',
@@ -21,12 +28,14 @@ import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/date.pipe';
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
-              ***REMOVED******REMOVED*** selectedWeekDropdownValue() | parseToMonth ***REMOVED******REMOVED***
+              ***REMOVED******REMOVED*** selectedMonthLabel() | parseToMonth ***REMOVED******REMOVED***
             </button>
             <div ngbDropdownMenu class="w-100">
-              <button ngbDropdownItem *ngFor="let month of monthsSignal()" (click)="selectedMonthDropdownSignal.set(month)">
-                ***REMOVED******REMOVED*** month | parseToMonth ***REMOVED******REMOVED***
-              </button>
+              @for (month of months(); track $index) ***REMOVED***
+                <button ngbDropdownItem (click)="selectedMonth$.next(month)">
+                  ***REMOVED******REMOVED*** month | parseToMonth ***REMOVED******REMOVED***
+                </button>
+          ***REMOVED***
             </div>
           </div>
         </div>
@@ -34,23 +43,28 @@ import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/date.pipe';
           <thead>
             <tr>
               <td scope="col" class="fw-semibold">Muscle Group</td>
-              <td
-                class="text-center fw-semibold"
-                *ngFor="let name of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()!] | keyvalue"
-              >
-                ***REMOVED******REMOVED*** name.key | titlecase ***REMOVED******REMOVED***
-              </td>
+              @if (selectedMonth(); as selectedMonth) ***REMOVED***
+                @for (seriesPerMuscleGroup of seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue; track $index) ***REMOVED***
+                  <td class="text-center fw-semibold">***REMOVED******REMOVED*** seriesPerMuscleGroup.key | titlecase ***REMOVED******REMOVED***</td>
+            ***REMOVED***
+          ***REMOVED***
               <td class="text-center fw-semibold">Target</td>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let muscleGroup of muscleGroups">
-              <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
-              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupMonthlySignal()[selectedMonthSignal()!] | keyvalue">
-                ***REMOVED******REMOVED*** x.value[muscleGroup] || 0 ***REMOVED******REMOVED***
-              </td>
-              <td class="text-center">40</td>
-            </tr>
+            @for (muscleGroup of MUSCLE_GROUPS; track $index) ***REMOVED***
+              <tr>
+                <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
+                @if (selectedMonth(); as selectedMonth) ***REMOVED***
+                  @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue; track $index) ***REMOVED***
+                    <td class="text-center">
+                      ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
+                    </td>
+              ***REMOVED***
+            ***REMOVED***
+                <td class="text-center">40</td>
+              </tr>
+        ***REMOVED***
           </tbody>
         </table>
         <div class="fw-semibold">
@@ -68,25 +82,43 @@ import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/date.pipe';
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, AsyncPipe, ParseToMonthPipe, NgbDropdownModule],
+  imports: [TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
 ***REMOVED***)
 export class SeriesPerMuscleGroupMonthlyComponent ***REMOVED***
   @Input(***REMOVED*** required: true ***REMOVED***) public set rows(value: ExerciseRow[]) ***REMOVED***
-    this.rowsSignal.set(value);
+    this.state.update(state => (***REMOVED*** ...state, rows: value ***REMOVED***));
+    this.state.update(state => (***REMOVED*** ...state, selectedMonth: this.months().at(0) ?? 'Month' ***REMOVED***));
 ***REMOVED***
 
-  public readonly muscleGroups = MUSCLE_GROUPS;
+  private readonly state = signal<State>(***REMOVED***
+    rows: [],
+    selectedMonth: 'Month',
+***REMOVED***);
 
-  public readonly rowsSignal = signal<ExerciseRow[]>([]);
-  public readonly daysGroupByMonthSignal = computed(() => R.mapValues(groupByMonth(this.rowsSignal()), x => x.length));
-  public readonly seriesPerMuscleGroupMonthlySignal = computed(() => getSeriesAmountPerMuscleGroupMonthly(this.rowsSignal()));
-  public readonly monthsSignal = computed(() => R.keys(this.seriesPerMuscleGroupMonthlySignal()));
+  public readonly selectedMonth$: Subject<string> = new Subject();
 
-  public readonly selectedMonthDropdownSignal = signal<string | null>(null);
-  public readonly selectedMonthSignal = computed(() => this.selectedMonthDropdownSignal() ?? this.monthsSignal()[0]);
-  public readonly selectedWeekDropdownValue = computed(() => this.selectedMonthSignal() ?? 'Month');
+  public readonly MUSCLE_GROUPS = MUSCLE_GROUPS;
+
+  public readonly selectedMonth = computed(() => this.state().selectedMonth);
+
+  public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => getSeriesAmountPerUserPerMuscleGroupPerMonth(this.state().rows));
+
+  public readonly daysByMonth = computed(() => R.mapValues(groupByMonth(this.state().rows), x => x.length));
+  public readonly months = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerMonth()));
+
+  public readonly selectedMonthLabel = computed(() => this.state().selectedMonth ?? 'Month');
   public readonly daysTrainedMessage = computed(() => ***REMOVED***
-    const daysTrained = this.daysGroupByMonthSignal()[this.selectedMonthSignal()!];
+    const selectedMonth = this.selectedMonth();
+    const daysTrained = selectedMonth ? this.daysByMonth()[selectedMonth] : 0;
     return `$***REMOVED***daysTrained***REMOVED*** $***REMOVED***daysTrained === 1 ? 'day' : 'days'***REMOVED*** trained this month`;
 ***REMOVED***);
+
+  public constructor() ***REMOVED***
+    this.selectedMonth$.pipe(takeUntilDestroyed()).subscribe(selectedMonth => ***REMOVED***
+      this.state.update(state => (***REMOVED***
+        ...state,
+        selectedMonth,
+  ***REMOVED***));
+***REMOVED***);
+***REMOVED***
 ***REMOVED***

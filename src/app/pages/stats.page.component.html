@@ -8,10 +8,13 @@
           <h5>Miscellaneous</h5>
           <table class="table table-sm m-0 mb-3">
             <tbody>
-              <tr>
-                <td>Days trained</td>
-                <td>***REMOVED******REMOVED*** amountDaysTrained(exerciseLogService.logs()) ***REMOVED******REMOVED*** days</td>
-              </tr>
+              <th colspan="2" style="font-weight: 500">Days Trained</th>
+              @for (daysByUser of exerciseLogService.amountDaysTrainedPerUser() | keyvalue; track daysByUser.key) ***REMOVED***
+                <tr>
+                  <td>***REMOVED******REMOVED*** daysByUser.key | titlecase ***REMOVED******REMOVED***</td>
+                  <td>***REMOVED******REMOVED*** daysByUser.value ***REMOVED******REMOVED***</td>
+                </tr>
+          ***REMOVED***
             </tbody>
           </table>
         </div>

@@ -1,11 +1,9 @@
 import ***REMOVED*** ChangeDetectionStrategy, Component, OnInit, inject ***REMOVED*** from '@angular/core';
 
-import ***REMOVED*** amountDaysTrained ***REMOVED*** from '@helpers/excercise-log.helper';
-
 import ***REMOVED*** SeriesPerMuscleGroupWeeklyComponent ***REMOVED*** from '@components/series-per-muscle-group-weekly.component';
 import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-monthly.component';
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
-import ***REMOVED*** DOCUMENT ***REMOVED*** from '@angular/common';
+import ***REMOVED*** DOCUMENT, KeyValuePipe, TitleCasePipe ***REMOVED*** from '@angular/common';
 
 @Component(***REMOVED***
   selector: 'app-stats-page',
@@ -13,13 +11,11 @@ import ***REMOVED*** DOCUMENT ***REMOVED*** from '@angular/common';
   styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SeriesPerMuscleGroupWeeklyComponent, SeriesPerMuscleGroupMonthlyComponent],
+  imports: [TitleCasePipe, KeyValuePipe, SeriesPerMuscleGroupWeeklyComponent, SeriesPerMuscleGroupMonthlyComponent],
 ***REMOVED***)
 export class StatsPageComponent implements OnInit ***REMOVED***
   private readonly document = inject(DOCUMENT);
   public readonly exerciseLogService = inject(ExerciseLogService);
-
-  public amountDaysTrained = amountDaysTrained;
 
   public ngOnInit(): void ***REMOVED***
     this.document.defaultView?.scroll(***REMOVED*** top: 0, left: 0, behavior: 'smooth' ***REMOVED***);

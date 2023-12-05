@@ -4,6 +4,13 @@
 @import 'bootstrap/scss/bootstrap';
 @import 'font-awesome/css/font-awesome.min';
 
+.dropdown ***REMOVED***
+  button.btn-outline-primary:hover, button.btn-outline-primary.show ***REMOVED***
+    background-color: white;
+    color: var(--bs-btn-color);
+***REMOVED***
+***REMOVED***
+
 .accordion ***REMOVED***
   --bs-accordion-btn-padding-x: .8rem;
   --bs-accordion-btn-padding-y: .6rem;

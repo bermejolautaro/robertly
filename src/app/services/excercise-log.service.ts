@@ -4,7 +4,7 @@ import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-i
 
 import * as R from 'remeda';
 import ***REMOVED*** Subject, delay, tap ***REMOVED*** from 'rxjs';
-import ***REMOVED*** getPersonalRecord, groupExcerciseLogs, groupExerciseLogsByUser, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED*** getPersonalRecord, groupExcerciseLogs, amountDaysTrainedByUser, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
 
 interface SelectedExcercise ***REMOVED***
   name: string;
@@ -40,7 +40,12 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly loaded = computed(() => this.state().loaded);
 
-  public readonly logs = computed(() => this.state().logs);
+  public readonly logs = computed(() => ***REMOVED***
+    return R.pipe(
+      this.state().logs,
+      this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity
+    );
+***REMOVED***);
 
   public readonly filteredLogs = computed(() => ***REMOVED***
     return this.state().filteredLogs;
@@ -124,7 +129,7 @@ export class ExerciseLogService ***REMOVED***
 ***REMOVED***);
 
   public readonly amountDaysTrainedPerUser = computed(() => ***REMOVED***
-    const logsGroupedByUser = groupExerciseLogsByUser(this.state().filteredLogs);
+    return amountDaysTrainedByUser(this.logs());
 ***REMOVED***);
 
   public constructor() ***REMOVED***

@@ -1,4 +1,3 @@
-import ***REMOVED*** NgIf ***REMOVED*** from '@angular/common';
 import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
 import ***REMOVED*** NgbAccordionModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
@@ -35,7 +34,7 @@ import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgIf, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent, NgbAccordionModule],
+  imports: [ExcerciseRowTitleComponent, ExcerciseRowBodyComponent, NgbAccordionModule],
 ***REMOVED***)
 export class PersonalRecordComponent ***REMOVED***
   @Input(***REMOVED*** required: true ***REMOVED***) personalRecord!: ExerciseRow;
