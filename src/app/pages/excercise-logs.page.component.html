@@ -35,7 +35,7 @@
         <div ngbDropdownMenu class="w-100">
           <button ngbDropdownItem (click)="excerciseLogService.selectedType$.next(null)">Clear filter</button>
           @for (type of excerciseLogService.types(); track type) {
-            <button ngbDropdownItem (click)="excerciseLogService.selectedType$.next(type)">
+            <button ngbDropdownItem [ngClass]="{ active: type === excerciseLogService.selectedType()}" (click)="excerciseLogService.selectedType$.next(type)">
               {{ type | titlecase }}
             </button>
           }

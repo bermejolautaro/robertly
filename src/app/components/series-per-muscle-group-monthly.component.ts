@@ -1,5 +1,5 @@
-import { KeyValuePipe, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, computed, signal } from '@angular/core';
+import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input, computed, inject, signal } from '@angular/core';
 
 import * as R from 'remeda';
 
@@ -7,10 +7,10 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { getSeriesAmountPerUserPerMuscleGroupPerMonth, groupByMonth } from '@helpers/excercise-log.helper';
 import { ExerciseRow } from '@models/excercise-row.model';
-import { MUSCLE_GROUPS } from '@models/constants';
-import { ParseToMonthPipe } from '@pipes/date.pipe';
+import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
 import { Subject } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ExerciseLogService } from '@services/excercise-log.service';
 
 type State = {
   rows: ExerciseRow[];
@@ -32,7 +32,7 @@ type State = {
             </button>
             <div ngbDropdownMenu class="w-100">
               @for (month of months(); track $index) {
-                <button ngbDropdownItem (click)="selectedMonth$.next(month)">
+                <button ngbDropdownItem [ngClass]="{ active: month === selectedMonth()}" (click)="selectedMonth$.next(month)">
                   {{ month | parseToMonth }}
                 </button>
               }
@@ -52,7 +52,7 @@ type State = {
             </tr>
           </thead>
           <tbody>
-            @for (muscleGroup of MUSCLE_GROUPS; track $index) {
+            @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) {
               <tr>
                 <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
                 @if (selectedMonth(); as selectedMonth) {
@@ -82,13 +82,15 @@ type State = {
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
+  imports: [NgClass, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
 })
 export class SeriesPerMuscleGroupMonthlyComponent {
   @Input({ required: true }) public set rows(value: ExerciseRow[]) {
     this.state.update(state => ({ ...state, rows: value }));
     this.state.update(state => ({ ...state, selectedMonth: this.months().at(0) ?? 'Month' }));
   }
+
+  public readonly exerciseLogService = inject(ExerciseLogService);
 
   private readonly state = signal<State>({
     rows: [],
@@ -97,13 +99,11 @@ export class SeriesPerMuscleGroupMonthlyComponent {
 
   public readonly selectedMonth$: Subject<string> = new Subject();
 
-  public readonly MUSCLE_GROUPS = MUSCLE_GROUPS;
-
   public readonly selectedMonth = computed(() => this.state().selectedMonth);
 
   public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => getSeriesAmountPerUserPerMuscleGroupPerMonth(this.state().rows));
 
-  public readonly daysByMonth = computed(() => R.mapValues(groupByMonth(this.state().rows), x => x.length));
+  public readonly daysByMonth = computed(() => R.mapValues(groupByMonth(this.exerciseLogService.logs()), x => x.length));
   public readonly months = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerMonth()));
 
   public readonly selectedMonthLabel = computed(() => this.state().selectedMonth ?? 'Month');

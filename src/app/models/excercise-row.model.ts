@@ -1,4 +1,3 @@
-import { MuscleGroup } from '@models/constants';
 import { ExerciseLog } from '@models/excercise-log.model';
 
 export interface ExerciseRow {
@@ -11,5 +10,5 @@ export interface ExerciseRow {
   total: number | null;
   average: number | null;
   tonnage: number;
-  muscleGroup: MuscleGroup;
+  muscleGroup: string;
 }

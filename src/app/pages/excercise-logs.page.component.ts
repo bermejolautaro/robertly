@@ -1,4 +1,4 @@
-import { AsyncPipe, DOCUMENT, TitleCasePipe } from '@angular/common';
+import { AsyncPipe, DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, effect, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -29,6 +29,7 @@ import { ExerciseLogService } from '@services/excercise-log.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TitleCasePipe],
   imports: [
+    NgClass,
     FormsModule,
     AsyncPipe,
     TitleCasePipe,

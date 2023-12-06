@@ -1,5 +1,28 @@
 import { ExerciseLog } from '@models/excercise-log.model';
-import { FirstStepResult, SecondStepResult, ThirdStepResult } from '@services/excercise-log-api.service';
+
+type FirstStepResult = {
+  header: boolean;
+  value: string | null;
+  row: number;
+  col: number;
+};
+
+type SecondStepResult = {
+  value: string | null;
+  rowIndex: number;
+  columnIndex: number;
+  type: string;
+};
+
+type ThirdStepResult = {
+  type: string;
+  name: string;
+  date: string;
+  serie: number | null;
+  weightKg: number | null;
+  reps: number | null;
+  user: string;
+};
 
 export function processDataFirstStep(data: string[][]): FirstStepResult[] {
   const result: FirstStepResult[] = [];

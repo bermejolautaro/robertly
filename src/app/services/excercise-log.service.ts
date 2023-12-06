@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import * as R from 'remeda';
 import { Subject, delay, tap } from 'rxjs';
 import { getPersonalRecord, groupExcerciseLogs, amountDaysTrainedByUser, mapGroupedToExcerciseRows } from '@helpers/excercise-log.helper';
+import { Exercise } from '@models/exercise.model';
 
 interface SelectedExcercise {
   name: string;
@@ -14,6 +15,7 @@ interface SelectedExcercise {
 type State = {
   logs: ExerciseLog[];
   filteredLogs: ExerciseLog[];
+  exercises: Exercise[];
   selectedExercise: SelectedExcercise | null;
   selectedUsername: string | null;
   selectedType: string | null;
@@ -26,6 +28,7 @@ export class ExerciseLogService {
   private readonly state = signal<State>({
     logs: [],
     filteredLogs: [],
+    exercises: [],
     selectedExercise: null,
     selectedUsername: null,
     selectedType: null,
@@ -33,6 +36,7 @@ export class ExerciseLogService {
     error: null,
   });
 
+  public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
   public readonly selectedExcercise$: Subject<SelectedExcercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
@@ -41,10 +45,7 @@ export class ExerciseLogService {
   public readonly loaded = computed(() => this.state().loaded);
 
   public readonly logs = computed(() => {
-    return R.pipe(
-      this.state().logs,
-      this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity
-    );
+    return R.pipe(this.state().logs, this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity);
   });
 
   public readonly filteredLogs = computed(() => {
@@ -75,12 +76,15 @@ export class ExerciseLogService {
     );
   });
 
+  public readonly selectedType = computed(() => this.state().selectedType);
+  public readonly selectedUsername = computed(() => this.state().selectedUsername);
+
   public readonly selectedTypeLabel = computed(() => this.state().selectedType ?? 'Type');
   public readonly selectedExcerciseLabel = computed(() => this.state().selectedExercise ?? { name: 'Exercise', type: '' });
   public readonly selectedUsernameLabel = computed(() => this.state().selectedUsername ?? 'All Users');
 
   public readonly groupedLogs = computed(() => {
-    const groups = groupExcerciseLogs(this.state().filteredLogs);
+    const groups = groupExcerciseLogs(this.state().filteredLogs, this.state().exercises);
     const selectedUsername = this.state().selectedUsername;
     const selectedExcercise = this.state().selectedExercise;
     const selectedType = this.state().selectedType;
@@ -130,6 +134,22 @@ export class ExerciseLogService {
 
   public readonly amountDaysTrainedPerUser = computed(() => {
     return amountDaysTrainedByUser(this.logs());
+  });
+
+  public readonly exercisesNames = computed(() => {
+    return R.pipe(
+      this.state().exercises,
+      R.map(x => x.exercise),
+      R.uniqBy(x => x)
+    );
+  });
+
+  public readonly muscleGroups = computed(() => {
+    return R.pipe(
+      this.state().exercises,
+      R.map(x => x.muscleGroup),
+      R.uniqBy(x => x)
+    );
   });
 
   public constructor() {
@@ -182,6 +202,10 @@ export class ExerciseLogService {
           ...state,
           selectedUsername,
         })),
+    });
+
+    this.updateExercises$.pipe(takeUntilDestroyed()).subscribe({
+      next: exercises => this.state.update(state => ({ ...state, exercises })),
     });
   }
 }
