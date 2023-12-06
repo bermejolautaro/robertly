@@ -14,30 +14,6 @@ type GetDataResponse = ***REMOVED***
   peque: string[][];
 ***REMOVED***;
 
-export type FirstStepResult = ***REMOVED***
-  header: boolean;
-  value: string | null;
-  row: number;
-  col: number;
-***REMOVED***;
-
-export type SecondStepResult = ***REMOVED***
-  value: string | null;
-  rowIndex: number;
-  columnIndex: number;
-  type: string;
-***REMOVED***;
-
-export type ThirdStepResult = ***REMOVED***
-  type: string;
-  name: string;
-  date: string;
-  serie: number | null;
-  weightKg: number | null;
-  reps: number | null;
-  user: string;
-***REMOVED***;
-
 @Injectable(***REMOVED***
   providedIn: 'root',
 ***REMOVED***)
@@ -47,7 +23,7 @@ export class ExerciseLogApiService ***REMOVED***
 
   public getExerciseLogs(): Observable<ExerciseLog[]> ***REMOVED***
     return this.http
-      .get<GetDataResponse>(`$***REMOVED***this.url***REMOVED***/get-data`)
+      .get<GetDataResponse>(`$***REMOVED***this.url***REMOVED***/logs`)
       .pipe(
         map(data => [
           ...processData(data.lautaro, 'lautaro'),

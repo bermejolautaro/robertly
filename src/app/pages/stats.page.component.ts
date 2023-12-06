@@ -4,6 +4,7 @@ import ***REMOVED*** SeriesPerMuscleGroupWeeklyComponent ***REMOVED*** from '@co
 import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-monthly.component';
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
 import ***REMOVED*** DOCUMENT, KeyValuePipe, TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** SeriesPerMuscleGroupYearlyComponent ***REMOVED*** from '@components/series-per-muscle-group-yearly.component';
 
 @Component(***REMOVED***
   selector: 'app-stats-page',
@@ -11,7 +12,13 @@ import ***REMOVED*** DOCUMENT, KeyValuePipe, TitleCasePipe ***REMOVED*** from '@
   styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TitleCasePipe, KeyValuePipe, SeriesPerMuscleGroupWeeklyComponent, SeriesPerMuscleGroupMonthlyComponent],
+  imports: [
+    TitleCasePipe,
+    KeyValuePipe,
+    SeriesPerMuscleGroupWeeklyComponent,
+    SeriesPerMuscleGroupMonthlyComponent,
+    SeriesPerMuscleGroupYearlyComponent,
+  ],
 ***REMOVED***)
 export class StatsPageComponent implements OnInit ***REMOVED***
   private readonly document = inject(DOCUMENT);

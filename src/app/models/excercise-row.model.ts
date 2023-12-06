@@ -1,4 +1,3 @@
-import ***REMOVED*** MuscleGroup ***REMOVED*** from '@models/constants';
 import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
 
 export interface ExerciseRow ***REMOVED***
@@ -11,5 +10,5 @@ export interface ExerciseRow ***REMOVED***
   total: number | null;
   average: number | null;
   tonnage: number;
-  muscleGroup: MuscleGroup;
+  muscleGroup: string;
 ***REMOVED***

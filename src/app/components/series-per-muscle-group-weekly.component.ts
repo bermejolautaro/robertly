@@ -1,13 +1,20 @@
-import ***REMOVED*** KeyValuePipe, NgFor, NgIf, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, Input, computed, signal ***REMOVED*** from '@angular/core';
+import ***REMOVED*** KeyValuePipe, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** ChangeDetectionStrategy, Component, Input, computed, inject, signal ***REMOVED*** from '@angular/core';
 
 import * as R from 'remeda';
 
 import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** getSeriesAmountPerMuscleGroupWeekly, groupByWeek ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED*** getSeriesAmountPerMuscleGroupPerWeek, groupByWeek ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
-import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
+import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
+import ***REMOVED*** Subject ***REMOVED*** from 'rxjs';
+import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
+
+type State = ***REMOVED***
+  rows: ExerciseRow[];
+  selectedWeek: string;
+***REMOVED***;
 
 @Component(***REMOVED***
   selector: 'app-series-per-muscle-group-weekly',
@@ -19,11 +26,15 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
         </div>
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
-            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>Week from Monday: ***REMOVED******REMOVED*** selectedWeekDropdownValue() ***REMOVED******REMOVED***</button>
+            <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
+              Week from Monday: ***REMOVED******REMOVED*** selectedWeekLabel() ***REMOVED******REMOVED***
+            </button>
             <div ngbDropdownMenu class="w-100" style="overflow-x: hidden; overflow-y: scroll; max-height: 400px">
-              <button ngbDropdownItem *ngFor="let week of weeksSignal()" (click)="selectedWeekDropdownSignal.set(week)">
-                ***REMOVED******REMOVED*** week ***REMOVED******REMOVED***
-              </button>
+              @for (week of weeks(); track week) ***REMOVED***
+                <button ngbDropdownItem [ngClass]="***REMOVED*** active: week === selectedWeek()***REMOVED***" (click)="selectedWeek$.next(week)">
+                  ***REMOVED******REMOVED*** week ***REMOVED******REMOVED***
+                </button>
+          ***REMOVED***
             </div>
           </div>
         </div>
@@ -31,20 +42,30 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
           <thead>
             <tr>
               <td scope="col" class="fw-semibold">Muscle Group</td>
-              <td class="text-center fw-semibold" *ngFor="let name of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()!] | keyvalue">
-                ***REMOVED******REMOVED*** name.key | titlecase ***REMOVED******REMOVED***
-              </td>
+              @if (selectedWeek(); as selectedWeek) ***REMOVED***
+                @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) ***REMOVED***
+                  <td class="text-center fw-semibold">
+                    ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.key | titlecase ***REMOVED******REMOVED***
+                  </td>
+            ***REMOVED***
+          ***REMOVED***
               <td class="text-center fw-semibold">Target</td>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let muscleGroup of muscleGroups">
-              <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
-              <td class="text-center" *ngFor="let x of seriesPerMuscleGroupWeeklySignal()[selectedWeekSignal()!] | keyvalue">
-                ***REMOVED******REMOVED*** x.value[muscleGroup] || 0 ***REMOVED******REMOVED***
-              </td>
-              <td class="text-center">10</td>
-            </tr>
+            @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) ***REMOVED***
+              <tr>
+                <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
+                @if (selectedWeek(); as selectedWeek) ***REMOVED***
+                  @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) ***REMOVED***
+                    <td class="text-center">
+                      ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
+                    </td>
+              ***REMOVED***
+            ***REMOVED***
+                <td class="text-center">10</td>
+              </tr>
+        ***REMOVED***
           </tbody>
         </table>
         <div class="fw-semibold">
@@ -62,25 +83,43 @@ import ***REMOVED*** MUSCLE_GROUPS ***REMOVED*** from '@models/constants';
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgFor, NgIf, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
+  imports: [NgClass, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
 ***REMOVED***)
 export class SeriesPerMuscleGroupWeeklyComponent ***REMOVED***
   @Input(***REMOVED*** required: true ***REMOVED***) public set rows(value: ExerciseRow[]) ***REMOVED***
-    this.rowsSignal.set(value);
+    this.state.update(state => (***REMOVED*** ...state, rows: value ***REMOVED***));
+    this.state.update(state => (***REMOVED*** ...state, selectedWeek: this.weeks().at(0) ?? 'Week' ***REMOVED***));
 ***REMOVED***
 
-  public readonly muscleGroups = MUSCLE_GROUPS;
+  public readonly exerciseLogService = inject(ExerciseLogService);
 
-  public readonly rowsSignal = signal<ExerciseRow[]>([]);
-  public readonly daysGroupByWeekSignal = computed(() => R.mapValues(groupByWeek(this.rowsSignal()), x => x.length));
-  public readonly seriesPerMuscleGroupWeeklySignal = computed(() => getSeriesAmountPerMuscleGroupWeekly(this.rowsSignal()));
-  public readonly weeksSignal = computed(() => R.keys(this.seriesPerMuscleGroupWeeklySignal()));
-  public readonly selectedWeekDropdownSignal = signal<string | null>(null);
-  public readonly selectedWeekSignal = computed(() => this.selectedWeekDropdownSignal() ?? this.weeksSignal()[0]);
-  public readonly selectedWeekDropdownValue = computed(() => this.selectedWeekSignal() ?? 'Week');
+  private readonly state = signal<State>(***REMOVED***
+    rows: [],
+    selectedWeek: 'Week',
+***REMOVED***);
 
+  public readonly selectedWeek$: Subject<string> = new Subject();
+
+  public readonly selectedWeek = computed(() => this.state().selectedWeek);
+
+  public readonly seriesPerMuscleGroupPerUserPerWeek = computed(() => getSeriesAmountPerMuscleGroupPerWeek(this.state().rows));
+
+  public readonly daysByWeek = computed(() => R.mapValues(groupByWeek(this.exerciseLogService.logs()), x => x.length));
+  public readonly weeks = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerWeek()));
+
+  public readonly selectedWeekLabel = computed(() => this.state().selectedWeek ?? 'Week');
   public readonly daysTrainedMessage = computed(() => ***REMOVED***
-    const daysTrained = this.daysGroupByWeekSignal()[this.selectedWeekSignal()!];
+    const selectedWeek = this.selectedWeek();
+    const daysTrained = selectedWeek ? this.daysByWeek()[selectedWeek] : 0;
     return `$***REMOVED***daysTrained***REMOVED*** $***REMOVED***daysTrained === 1 ? 'day' : 'days'***REMOVED*** trained this week`;
 ***REMOVED***);
+
+  public constructor() ***REMOVED***
+    this.selectedWeek$.pipe(takeUntilDestroyed()).subscribe(selectedWeek => ***REMOVED***
+      this.state.update(state => (***REMOVED***
+        ...state,
+        selectedWeek,
+  ***REMOVED***));
+***REMOVED***);
+***REMOVED***
 ***REMOVED***

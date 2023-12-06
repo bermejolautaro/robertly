@@ -1,9 +1,9 @@
-<nav class="navbar navbar-dark bg-primary bg-gradient fw-bold">
+<nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-3">
   <div class="container-fluid d-flex justify-content-end align-items-center">
     <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
       <button
         type="button"
-        class="btn d-flex justify-content-between align-items-center"
+        class="btn d-flex justify-content-between align-items-center me-3"
         style="outline: none; border: none; color: white; font-weight: 500"
         ngbDropdownToggle
       >
@@ -12,13 +12,17 @@
       <div ngbDropdownMenu>
         <button ngbDropdownItem (click)="exerciseLogService.selectedUsername$.next(null)">All Users</button>
         @for (username of exerciseLogService.usernames(); track username) ***REMOVED***
-          <button ngbDropdownItem (click)="exerciseLogService.selectedUsername$.next(username)">
+          <button
+            ngbDropdownItem
+            [ngClass]="***REMOVED*** active: username === exerciseLogService.selectedUsername() ***REMOVED***"
+            (click)="exerciseLogService.selectedUsername$.next(username)"
+          >
             ***REMOVED******REMOVED*** username | titlecase ***REMOVED******REMOVED***
           </button>
     ***REMOVED***
       </div>
     </div>
-    <button type="button" class="btn" style="outline: none; border: none; padding: 0" (click)="fetchExerciseLogs()">
+    <button type="button" class="btn" style="outline: none; border: none; padding: 0" (click)="fetchData()">
       <i class="fa fa-refresh" style="font-size: 20px; color: white"></i>
     </button>
   </div>

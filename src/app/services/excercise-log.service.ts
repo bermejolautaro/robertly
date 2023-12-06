@@ -5,6 +5,7 @@ import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-i
 import * as R from 'remeda';
 import ***REMOVED*** Subject, delay, tap ***REMOVED*** from 'rxjs';
 import ***REMOVED*** getPersonalRecord, groupExcerciseLogs, amountDaysTrainedByUser, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
 
 interface SelectedExcercise ***REMOVED***
   name: string;
@@ -14,6 +15,7 @@ interface SelectedExcercise ***REMOVED***
 type State = ***REMOVED***
   logs: ExerciseLog[];
   filteredLogs: ExerciseLog[];
+  exercises: Exercise[];
   selectedExercise: SelectedExcercise | null;
   selectedUsername: string | null;
   selectedType: string | null;
@@ -26,6 +28,7 @@ export class ExerciseLogService ***REMOVED***
   private readonly state = signal<State>(***REMOVED***
     logs: [],
     filteredLogs: [],
+    exercises: [],
     selectedExercise: null,
     selectedUsername: null,
     selectedType: null,
@@ -33,6 +36,7 @@ export class ExerciseLogService ***REMOVED***
     error: null,
 ***REMOVED***);
 
+  public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
   public readonly selectedExcercise$: Subject<SelectedExcercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
@@ -41,10 +45,7 @@ export class ExerciseLogService ***REMOVED***
   public readonly loaded = computed(() => this.state().loaded);
 
   public readonly logs = computed(() => ***REMOVED***
-    return R.pipe(
-      this.state().logs,
-      this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity
-    );
+    return R.pipe(this.state().logs, this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity);
 ***REMOVED***);
 
   public readonly filteredLogs = computed(() => ***REMOVED***
@@ -75,12 +76,15 @@ export class ExerciseLogService ***REMOVED***
     );
 ***REMOVED***);
 
+  public readonly selectedType = computed(() => this.state().selectedType);
+  public readonly selectedUsername = computed(() => this.state().selectedUsername);
+
   public readonly selectedTypeLabel = computed(() => this.state().selectedType ?? 'Type');
   public readonly selectedExcerciseLabel = computed(() => this.state().selectedExercise ?? ***REMOVED*** name: 'Exercise', type: '' ***REMOVED***);
   public readonly selectedUsernameLabel = computed(() => this.state().selectedUsername ?? 'All Users');
 
   public readonly groupedLogs = computed(() => ***REMOVED***
-    const groups = groupExcerciseLogs(this.state().filteredLogs);
+    const groups = groupExcerciseLogs(this.state().filteredLogs, this.state().exercises);
     const selectedUsername = this.state().selectedUsername;
     const selectedExcercise = this.state().selectedExercise;
     const selectedType = this.state().selectedType;
@@ -130,6 +134,22 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly amountDaysTrainedPerUser = computed(() => ***REMOVED***
     return amountDaysTrainedByUser(this.logs());
+***REMOVED***);
+
+  public readonly exercisesNames = computed(() => ***REMOVED***
+    return R.pipe(
+      this.state().exercises,
+      R.map(x => x.exercise),
+      R.uniqBy(x => x)
+    );
+***REMOVED***);
+
+  public readonly muscleGroups = computed(() => ***REMOVED***
+    return R.pipe(
+      this.state().exercises,
+      R.map(x => x.muscleGroup),
+      R.uniqBy(x => x)
+    );
 ***REMOVED***);
 
   public constructor() ***REMOVED***
@@ -182,6 +202,10 @@ export class ExerciseLogService ***REMOVED***
           ...state,
           selectedUsername,
     ***REMOVED***)),
+***REMOVED***);
+
+    this.updateExercises$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+      next: exercises => this.state.update(state => (***REMOVED*** ...state, exercises ***REMOVED***)),
 ***REMOVED***);
 ***REMOVED***
 ***REMOVED***

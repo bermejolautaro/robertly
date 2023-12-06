@@ -2,14 +2,13 @@ import ***REMOVED*** Component, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** RouterLinkActive, RouterLinkWithHref, RouterOutlet ***REMOVED*** from '@angular/router';
 import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
 
-import ***REMOVED*** filter, first, tap ***REMOVED*** from 'rxjs';
+import ***REMOVED*** filter, first, forkJoin, map, switchMap, tap ***REMOVED*** from 'rxjs';
 import ***REMOVED*** LOGS_PATH, STATS_PATH ***REMOVED*** from 'src/main';
 
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
 
 import ***REMOVED*** ExerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
-import ***REMOVED*** getMissingExerciseNames ***REMOVED*** from '@helpers/excercise-log.helper';
-import ***REMOVED*** DOCUMENT, TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** DOCUMENT, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -17,9 +16,12 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
 import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import ***REMOVED*** ExerciseApiService ***REMOVED*** from '@services/exercises-api.service';
+import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
 
-const GET_DATA_CACHE_KEY = 'get-data-cache';
-const EXERCISE_CACHE_KEY = 'exercise-logs';
+const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
+const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
+const EXERCISES_CACHE_KEY = 'robertly-exercises';
 
 @Component(***REMOVED***
   selector: 'app-root',
@@ -33,11 +35,12 @@ const EXERCISE_CACHE_KEY = 'exercise-logs';
     `,
   standalone: true,
   providers: [ExerciseLogService],
-  imports: [RouterLinkWithHref, RouterLinkActive, RouterOutlet, TitleCasePipe, NgbDropdownModule],
+  imports: [NgClass, RouterLinkWithHref, RouterLinkActive, RouterOutlet, TitleCasePipe, NgbDropdownModule],
 ***REMOVED***)
 export class AppComponent ***REMOVED***
   public readonly exerciseLogService = inject(ExerciseLogService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
+  private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly document = inject(DOCUMENT);
 
@@ -67,13 +70,13 @@ export class AppComponent ***REMOVED***
 ***REMOVED***
 
     if (shouldFetchExerciseLogs) ***REMOVED***
-      this.fetchExerciseLogs();
+      this.fetchData();
 ***REMOVED*** else ***REMOVED***
-      const exerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_CACHE_KEY) ?? '[]');
+      const exerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
+      const exercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
       this.exerciseLogService.updateLogs$.next(exerciseLogs);
+      this.exerciseLogService.updateExercises$.next(exercises);
 ***REMOVED***
-
-    console.log(getMissingExerciseNames(this.exerciseLogService.exerciseRows()));
 
     this.serviceWorkerUpdates.unrecoverable.subscribe(x => console.error(x));
 
@@ -88,10 +91,14 @@ export class AppComponent ***REMOVED***
   ***REMOVED***);
 ***REMOVED***
 
-  public fetchExerciseLogs(): void ***REMOVED***
-    this.exerciseLogApiService.getExerciseLogs().subscribe(exerciseLogs => ***REMOVED***
-      localStorage.setItem(EXERCISE_CACHE_KEY, JSON.stringify(exerciseLogs));
-      this.exerciseLogService.updateLogs$.next(exerciseLogs);
-***REMOVED***);
+  public fetchData(): void ***REMOVED***
+    forkJoin([this.exerciseLogApiService.getExerciseLogs(), this.exerciseApiService.getExercises()]).subscribe(
+      ([exerciseLogs, exercises]) => ***REMOVED***
+        localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
+        localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));
+        this.exerciseLogService.updateLogs$.next(exerciseLogs);
+        this.exerciseLogService.updateExercises$.next(exercises);
+  ***REMOVED***
+    );
 ***REMOVED***
 ***REMOVED***

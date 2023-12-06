@@ -1,4 +1,4 @@
-import ***REMOVED*** AsyncPipe, DOCUMENT, TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** AsyncPipe, DOCUMENT, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, effect, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** FormsModule ***REMOVED*** from '@angular/forms';
 
@@ -29,6 +29,7 @@ import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TitleCasePipe],
   imports: [
+    NgClass,
     FormsModule,
     AsyncPipe,
     TitleCasePipe,
