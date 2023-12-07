@@ -2,7 +2,7 @@ import ***REMOVED*** Component, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** RouterLinkActive, RouterLinkWithHref, RouterOutlet ***REMOVED*** from '@angular/router';
 import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
 
-import ***REMOVED*** filter, first, forkJoin, map, switchMap, tap ***REMOVED*** from 'rxjs';
+import ***REMOVED*** filter, first, forkJoin, tap ***REMOVED*** from 'rxjs';
 import ***REMOVED*** LOGS_PATH, STATS_PATH ***REMOVED*** from 'src/main';
 
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';

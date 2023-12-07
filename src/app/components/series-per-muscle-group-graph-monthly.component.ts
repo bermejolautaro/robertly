@@ -1,16 +1,13 @@
-import ***REMOVED*** KeyValuePipe, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild, inject, signal ***REMOVED*** from '@angular/core';
+import ***REMOVED*** TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, effect, inject ***REMOVED*** from '@angular/core';
 
-import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
-
-import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
-import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/parse-to-month.pipe';
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
-import ***REMOVED*** Chart, registerables ***REMOVED*** from 'chart.js';
+import ***REMOVED*** Chart ***REMOVED*** from 'chart.js/auto';
+import ***REMOVED*** getSeriesAmountPerUserPerMuscleGroupPerMonth ***REMOVED*** from '@helpers/excercise-log.helper';
 
-type State = ***REMOVED***
-  rows: ExerciseRow[];
-***REMOVED***;
+import * as R from 'remeda';
+
+type ChartDataSetItem = ***REMOVED*** label: string; data: number[]; borderWidth: number ***REMOVED***;
 
 @Component(***REMOVED***
   selector: 'app-series-per-muscle-group-graph-monthly',
@@ -28,34 +25,68 @@ type State = ***REMOVED***
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
+  providers: [TitleCasePipe],
+  imports: [],
 ***REMOVED***)
 export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit ***REMOVED***
-  @ViewChild('chart', ***REMOVED*** static: true ***REMOVED***) chart: ElementRef<HTMLCanvasElement> | null = null;
-  @Input(***REMOVED*** required: true ***REMOVED***) public set rows(value: ExerciseRow[]) ***REMOVED***
-    this.state.update(state => (***REMOVED*** ...state, rows: value ***REMOVED***));
+  @ViewChild('chart', ***REMOVED*** static: true ***REMOVED***) chartCanvasElementRef: ElementRef<HTMLCanvasElement> | null = null;
+  public readonly exerciseLogService = inject(ExerciseLogService);
+  private readonly titleCasePipe = inject(TitleCasePipe);
+
+  private chart: Chart | null = null;
+
+  public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => ***REMOVED***
+    const seriesAmountPerUserPerMuscleGroupPerMonth = getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseLogService.exerciseRows());
+    const muscleGroups = this.exerciseLogService.muscleGroups();
+    const selectedMonth = this.exerciseLogService.selectedMonth();
+
+    if (selectedMonth) ***REMOVED***
+      let seriesAmountPerUserPerMuscleGroup = seriesAmountPerUserPerMuscleGroupPerMonth[selectedMonth];
+
+      if (seriesAmountPerUserPerMuscleGroup) ***REMOVED***
+        const result: ChartDataSetItem[] = [];
+
+        for (const x of R.toPairs(seriesAmountPerUserPerMuscleGroup)) ***REMOVED***
+          const name = x[0];
+          const values = x[1];
+
+          let seriesAmount: number[] = [];
+
+          for (const muscleGroup of muscleGroups) ***REMOVED***
+            const value = values[muscleGroup] || 0;
+            seriesAmount.push(value);
+      ***REMOVED***
+
+          result.push(***REMOVED***
+            label: this.titleCasePipe.transform(name),
+            data: seriesAmount,
+            borderWidth: 1,
+      ***REMOVED***);
+    ***REMOVED***
+
+        return result;
+  ***REMOVED***
 ***REMOVED***
 
-  public readonly exerciseLogService = inject(ExerciseLogService);
-
-  private readonly state = signal<State>(***REMOVED***
-    rows: [],
+    return [];
 ***REMOVED***);
 
+  public constructor() ***REMOVED***
+    effect(() => ***REMOVED***
+      if (this.chart) ***REMOVED***
+        this.chart.data.datasets = this.seriesPerMuscleGroupPerUserPerMonth();
+        this.chart.update();
+  ***REMOVED***
+***REMOVED***);
+***REMOVED***
+
   public ngOnInit(): void ***REMOVED***
-    Chart.register(...registerables);
-    if (this.chart) ***REMOVED***
-      new Chart(this.chart.nativeElement, ***REMOVED***
+    if (this.chartCanvasElementRef) ***REMOVED***
+      this.chart = new Chart(this.chartCanvasElementRef.nativeElement, ***REMOVED***
         type: 'bar',
         data: ***REMOVED***
-          labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-          datasets: [
-            ***REMOVED***
-              label: '# of Votes',
-              data: [12, 19, 3, 5, 2, 3],
-              borderWidth: 1,
-        ***REMOVED***,
-          ],
+          labels: this.exerciseLogService.muscleGroups().map(this.titleCasePipe.transform),
+          datasets: this.seriesPerMuscleGroupPerUserPerMonth(),
     ***REMOVED***,
         options: ***REMOVED***
           scales: ***REMOVED***
@@ -65,6 +96,8 @@ export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit ***REMO
       ***REMOVED***,
     ***REMOVED***,
   ***REMOVED***);
+
+      this.chart.options.animation = false;
 ***REMOVED***
 ***REMOVED***
 ***REMOVED***

@@ -5,8 +5,9 @@ import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@c
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
 import ***REMOVED*** DOCUMENT, KeyValuePipe, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** SeriesPerMuscleGroupYearlyComponent ***REMOVED*** from '@components/series-per-muscle-group-yearly.component';
-import ***REMOVED*** NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import ***REMOVED*** NgbNavModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 import ***REMOVED*** SeriesPerMuscleGroupGraphMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-graph-monthly.component';
+import ***REMOVED*** SeriesPerMuscleGroupSummaryMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-summary-monthly.component';
 
 @Component(***REMOVED***
   selector: 'app-stats-page',
@@ -21,13 +22,14 @@ import ***REMOVED*** SeriesPerMuscleGroupGraphMonthlyComponent ***REMOVED*** fro
     SeriesPerMuscleGroupWeeklyComponent,
     SeriesPerMuscleGroupMonthlyComponent,
     SeriesPerMuscleGroupGraphMonthlyComponent,
+    SeriesPerMuscleGroupSummaryMonthlyComponent,
     SeriesPerMuscleGroupYearlyComponent,
   ],
 ***REMOVED***)
 export class StatsPageComponent implements OnInit ***REMOVED***
   private readonly document = inject(DOCUMENT);
   public readonly exerciseLogService = inject(ExerciseLogService);
-  
+
   public active = 1;
 
   public ngOnInit(): void ***REMOVED***

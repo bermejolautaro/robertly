@@ -7,19 +7,23 @@
       <li [ngbNavItem]="1">
         <button ngbNavLink>Summary</button>
         <ng-template ngbNavContent>
-          <app-series-per-muscle-group-monthly
-            class="mb-4"
-            [rows]="exerciseLogService.exerciseRows()"
-          ></app-series-per-muscle-group-monthly>
+          <app-series-per-muscle-group-monthly class="mb-4">
+            <app-series-per-muscle-group-summary-monthly></app-series-per-muscle-group-summary-monthly>
+            <div class="fw-semibold">
+              ***REMOVED******REMOVED*** exerciseLogService.daysTrainedInSelectedMonthMessage() ***REMOVED******REMOVED***
+            </div>
+          </app-series-per-muscle-group-monthly>
         </ng-template>
       </li>
       <li [ngbNavItem]="2">
-        <button ngbNavLink>Graph</button>
+        <button ngbNavLink>Bar Graph</button>
         <ng-template ngbNavContent>
-          <app-series-per-muscle-group-graph-monthly
-            class="mb-4"
-            [rows]="exerciseLogService.exerciseRows()"
-          ></app-series-per-muscle-group-graph-monthly>
+          <app-series-per-muscle-group-monthly class="mb-4">
+            <app-series-per-muscle-group-graph-monthly></app-series-per-muscle-group-graph-monthly>
+            <div class="fw-semibold">
+              ***REMOVED******REMOVED*** exerciseLogService.daysTrainedInSelectedMonthMessage() ***REMOVED******REMOVED***
+            </div>
+          </app-series-per-muscle-group-monthly>
         </ng-template>
       </li>
     </ul>

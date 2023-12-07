@@ -5,7 +5,7 @@ import * as R from 'remeda';
 
 import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** getSeriesAmountPerUserPerMuscleGroupPerYear, groupByWeek, groupByYear ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED*** getSeriesAmountPerUserPerMuscleGroupPerYear, groupByYear ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
 import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
 import ***REMOVED*** Subject ***REMOVED*** from 'rxjs';

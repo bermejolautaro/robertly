@@ -4,7 +4,14 @@ import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-i
 
 import * as R from 'remeda';
 import ***REMOVED*** Subject, delay, tap ***REMOVED*** from 'rxjs';
-import ***REMOVED*** getPersonalRecord, groupExcerciseLogs, amountDaysTrainedByUser, mapGroupedToExcerciseRows ***REMOVED*** from '@helpers/excercise-log.helper';
+import ***REMOVED***
+  getPersonalRecord,
+  groupExcerciseLogs,
+  amountDaysTrainedByUser,
+  mapGroupedToExcerciseRows,
+  getSeriesAmountPerUserPerMuscleGroupPerMonth,
+  groupByMonth,
+***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
 
 interface SelectedExcercise ***REMOVED***
@@ -19,6 +26,7 @@ type State = ***REMOVED***
   selectedExercise: SelectedExcercise | null;
   selectedUsername: string | null;
   selectedType: string | null;
+  selectedMonth: string | null;
   loaded: boolean;
   error: string | null;
 ***REMOVED***;
@@ -32,6 +40,7 @@ export class ExerciseLogService ***REMOVED***
     selectedExercise: null,
     selectedUsername: null,
     selectedType: null,
+    selectedMonth: null,
     loaded: false,
     error: null,
 ***REMOVED***);
@@ -41,6 +50,7 @@ export class ExerciseLogService ***REMOVED***
   public readonly selectedExcercise$: Subject<SelectedExcercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
   public readonly selectedType$: Subject<string | null> = new Subject();
+  public readonly selectedMonth$: Subject<string | null> = new Subject();
 
   public readonly loaded = computed(() => this.state().loaded);
 
@@ -78,6 +88,7 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly selectedType = computed(() => this.state().selectedType);
   public readonly selectedUsername = computed(() => this.state().selectedUsername);
+  public readonly selectedMonth = computed(() => this.state().selectedMonth);
 
   public readonly selectedTypeLabel = computed(() => this.state().selectedType ?? 'Type');
   public readonly selectedExcerciseLabel = computed(() => this.state().selectedExercise ?? ***REMOVED*** name: 'Exercise', type: '' ***REMOVED***);
@@ -152,6 +163,17 @@ export class ExerciseLogService ***REMOVED***
     );
 ***REMOVED***);
 
+  public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseRows()));
+
+  public readonly daysTrainedByMonth = computed(() => R.mapValues(groupByMonth(this.logs()), x => x.length));
+  public readonly months = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerMonth()));
+
+  public readonly daysTrainedInSelectedMonthMessage = computed(() => ***REMOVED***
+    const selectedMonth = this.selectedMonth();
+    const daysTrained = selectedMonth ? this.daysTrainedByMonth()[selectedMonth] : 0;
+    return `$***REMOVED***daysTrained ?? 0***REMOVED*** $***REMOVED***daysTrained === 1 ? 'day' : 'days'***REMOVED*** trained this month`;
+***REMOVED***);
+
   public constructor() ***REMOVED***
     effect(() => console.log(this.state()));
 
@@ -202,6 +224,13 @@ export class ExerciseLogService ***REMOVED***
           ...state,
           selectedUsername,
     ***REMOVED***)),
+***REMOVED***);
+
+    this.selectedMonth$.pipe(takeUntilDestroyed()).subscribe(selectedMonth => ***REMOVED***
+      this.state.update(state => (***REMOVED***
+        ...state,
+        selectedMonth,
+  ***REMOVED***));
 ***REMOVED***);
 
     this.updateExercises$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
