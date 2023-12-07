@@ -13,6 +13,7 @@ import ***REMOVED***
   groupByMonth,
 ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
+import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
 
 interface SelectedExcercise ***REMOVED***
   name: string;
@@ -164,6 +165,19 @@ export class ExerciseLogService ***REMOVED***
 ***REMOVED***);
 
   public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseRows()));
+
+  public readonly daysAmountByDayInSelectedMonth = computed(() => ***REMOVED***
+    const result = R.toPairs(R.mapValues(groupByMonth(this.logs()), x => x));
+    const daysInMonth = result.filter(x => x[0] === this.selectedMonth()).flatMap(x => x[1].map(x => parseDate(x).format('dddd')));
+
+    const daysAmountByDay = R.pipe(
+      daysInMonth,
+      R.groupBy(x => x),
+      R.mapValues(x => x.length)
+    );
+
+    return daysAmountByDay;
+***REMOVED***);
 
   public readonly daysTrainedByMonth = computed(() => R.mapValues(groupByMonth(this.logs()), x => x.length));
   public readonly months = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerMonth()));

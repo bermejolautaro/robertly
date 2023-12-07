@@ -1,7 +1,7 @@
 import ***REMOVED*** KeyValuePipe, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
 import ***REMOVED*** ChangeDetectionStrategy, Component, OnInit, inject ***REMOVED*** from '@angular/core';
 
-import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import ***REMOVED*** NgbDropdownModule, NgbPopoverModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 
 import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/parse-to-month.pipe';
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
@@ -35,8 +35,28 @@ const DEFAULT_MONTH_LABEL = 'Month';
           </div>
         </div>
         <ng-content></ng-content>
+        <div (click)="popover.open()">
+          <div
+            class="fw-semibold"
+            style="display: inline-block"
+            popoverTitle="Days trained details"
+            [autoClose]="true"
+            [ngbPopover]="popoverTemplate"
+            #popover="ngbPopover"
+          >
+            ***REMOVED******REMOVED*** exerciseLogService.daysTrainedInSelectedMonthMessage() ***REMOVED******REMOVED***
+          </div>
+        </div>
       </div>
     </div>
+
+    <ng-template #popoverTemplate>
+      <div>
+        @for (days of exerciseLogService.daysAmountByDayInSelectedMonth() | keyvalue; track $index) ***REMOVED***
+          <div>***REMOVED******REMOVED*** days.key ***REMOVED******REMOVED***: ***REMOVED******REMOVED*** days.value ***REMOVED******REMOVED***</div>
+    ***REMOVED***
+      </div>
+    </ng-template>
   `,
   styles: [
     `
@@ -47,7 +67,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
+  imports: [NgClass, NgbPopoverModule, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
 ***REMOVED***)
 export class SeriesPerMuscleGroupMonthlyComponent implements OnInit ***REMOVED***
   public readonly exerciseLogService = inject(ExerciseLogService);
