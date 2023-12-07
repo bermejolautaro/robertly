@@ -1,4 +1,3 @@
-// import ***REMOVED*** processDataFirstStep ***REMOVED*** from './excercise-log-api.service';
 import ***REMOVED*** processDataFirstStep ***REMOVED*** from '@helpers/excercise-log-api.helper';
 
 describe('ExcerciseLogApiService', () => ***REMOVED***

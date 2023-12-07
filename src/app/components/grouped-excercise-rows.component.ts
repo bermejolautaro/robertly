@@ -13,12 +13,12 @@ import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/
     <div class="row my-2">
       <div class="col">
         <div ngbAccordion>
-          <div ngbAccordionItem *ngFor="let namesByDate of groupedExcerciseLogs">
+          <div ngbAccordionItem *ngFor="let exerciseLogsPerExerciseNamePerUsernamePerDate of exerciseLogsPerExerciseNamePerUsernamePerDateList">
             <h2 ngbAccordionHeader>
               <button ngbAccordionButton>
                 <div class="row w-100">
                   <div class="col d-flex align-items-center justify-content-center text-center">
-                    ***REMOVED******REMOVED*** namesByDate[0] ***REMOVED******REMOVED***
+                    ***REMOVED******REMOVED*** exerciseLogsPerExerciseNamePerUsernamePerDate[0] ***REMOVED******REMOVED***
                   </div>
                 </div>
               </button>
@@ -27,12 +27,12 @@ import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/
               <div ngbAccordionBody>
                 <ng-template>
                   <div ngbAccordion>
-                    <div ngbAccordionItem *ngFor="let excercisesByUsername of namesByDate[1]">
+                    <div ngbAccordionItem *ngFor="let exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]">
                       <h2 ngbAccordionHeader>
                         <button ngbAccordionButton>
                           <div class="row w-100">
                             <div class="col d-flex align-items-center justify-content-center text-center">
-                              ***REMOVED******REMOVED*** excercisesByUsername[0] | titlecase ***REMOVED******REMOVED***
+                              ***REMOVED******REMOVED*** exerciseLogsPerExerciseNamePerUsername[0] | titlecase ***REMOVED******REMOVED***
                             </div>
                           </div>
                         </button>
@@ -43,22 +43,22 @@ import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/
                             <div ngbAccordion>
                               <div
                                 ngbAccordionItem
-                                *ngFor="let logByExcercise of excercisesByUsername[1]"
-                                [ngClass]="logByExcercise[1].highlighted ? 'accordion-highlight ' + logByExcercise[1].highlighted : null"
+                                *ngFor="let exerciseLogsPerExerciseName of exerciseLogsPerExerciseNamePerUsername[1]"
+                                [ngClass]="exerciseLogsPerExerciseName[1].highlighted ? 'accordion-highlight ' + exerciseLogsPerExerciseName[1].highlighted : null"
                               >
                                 <h2 ngbAccordionHeader>
                                   <button ngbAccordionButton>
                                     <app-excercise-row-title
                                       [showUsername]="false"
                                       [showDate]="false"
-                                      [exerciseRow]="logByExcercise[1]"
+                                      [exerciseRow]="exerciseLogsPerExerciseName[1]"
                                     ></app-excercise-row-title>
                                   </button>
                                 </h2>
                                 <div ngbAccordionCollapse>
                                   <div ngbAccordionBody>
                                     <ng-template>
-                                      <app-excercise-row-body [exerciseRow]="logByExcercise[1]"></app-excercise-row-body>
+                                      <app-excercise-row-body [exerciseRow]="exerciseLogsPerExerciseName[1]"></app-excercise-row-body>
                                     </ng-template>
                                   </div>
                                 </div>
@@ -83,5 +83,9 @@ import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/
   imports: [NgFor, NgbAccordionModule, TitleCasePipe, NgClass, ExcerciseRowBodyComponent, ExcerciseRowTitleComponent],
 ***REMOVED***)
 export class GroupedExcerciseRowsComponent ***REMOVED***
-  @Input() public groupedExcerciseLogs: GroupedLog[] = [];
+  @Input(***REMOVED***alias: 'groupedExcerciseLogs'***REMOVED***) public exerciseLogsPerExerciseNamePerUsernamePerDateList: GroupedLog[] = [];
+
+  public ngOnInit(): void ***REMOVED***
+    console.log(this.exerciseLogsPerExerciseNamePerUsernamePerDateList);
+***REMOVED***
 ***REMOVED***
