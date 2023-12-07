@@ -5,8 +5,9 @@ import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-mus
 import { ExerciseLogService } from '@services/excercise-log.service';
 import { DOCUMENT, KeyValuePipe, TitleCasePipe } from '@angular/common';
 import { SeriesPerMuscleGroupYearlyComponent } from '@components/series-per-muscle-group-yearly.component';
-import { NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { SeriesPerMuscleGroupGraphMonthlyComponent } from '@components/series-per-muscle-group-graph-monthly.component';
+import { SeriesPerMuscleGroupSummaryMonthlyComponent } from '@components/series-per-muscle-group-summary-monthly.component';
 
 @Component({
   selector: 'app-stats-page',
@@ -21,13 +22,14 @@ import { SeriesPerMuscleGroupGraphMonthlyComponent } from '@components/series-pe
     SeriesPerMuscleGroupWeeklyComponent,
     SeriesPerMuscleGroupMonthlyComponent,
     SeriesPerMuscleGroupGraphMonthlyComponent,
+    SeriesPerMuscleGroupSummaryMonthlyComponent,
     SeriesPerMuscleGroupYearlyComponent,
   ],
 })
 export class StatsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   public readonly exerciseLogService = inject(ExerciseLogService);
-  
+
   public active = 1;
 
   public ngOnInit(): void {

@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import { filter, first, forkJoin, map, switchMap, tap } from 'rxjs';
+import { filter, first, forkJoin, tap } from 'rxjs';
 import { LOGS_PATH, STATS_PATH } from 'src/main';
 
 import { ExerciseLogService } from '@services/excercise-log.service';

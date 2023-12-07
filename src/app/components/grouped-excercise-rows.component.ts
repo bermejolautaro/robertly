@@ -86,6 +86,5 @@ export class GroupedExcerciseRowsComponent {
   @Input({alias: 'groupedExcerciseLogs'}) public exerciseLogsPerExerciseNamePerUsernamePerDateList: GroupedLog[] = [];
 
   public ngOnInit(): void {
-    console.log(this.exerciseLogsPerExerciseNamePerUsernamePerDateList);
   }
 }

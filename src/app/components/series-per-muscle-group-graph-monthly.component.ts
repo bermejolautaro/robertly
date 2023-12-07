@@ -1,16 +1,13 @@
-import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, TemplateRef, ViewChild, inject, signal } from '@angular/core';
+import { TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, effect, inject } from '@angular/core';
 
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
-
-import { ExerciseRow } from '@models/excercise-row.model';
-import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
 import { ExerciseLogService } from '@services/excercise-log.service';
-import { Chart, registerables } from 'chart.js';
+import { Chart } from 'chart.js/auto';
+import { getSeriesAmountPerUserPerMuscleGroupPerMonth } from '@helpers/excercise-log.helper';
 
-type State = {
-  rows: ExerciseRow[];
-};
+import * as R from 'remeda';
+
+type ChartDataSetItem = { label: string; data: number[]; borderWidth: number };
 
 @Component({
   selector: 'app-series-per-muscle-group-graph-monthly',
@@ -28,34 +25,68 @@ type State = {
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
+  providers: [TitleCasePipe],
+  imports: [],
 })
 export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit {
-  @ViewChild('chart', { static: true }) chart: ElementRef<HTMLCanvasElement> | null = null;
-  @Input({ required: true }) public set rows(value: ExerciseRow[]) {
-    this.state.update(state => ({ ...state, rows: value }));
-  }
-
+  @ViewChild('chart', { static: true }) chartCanvasElementRef: ElementRef<HTMLCanvasElement> | null = null;
   public readonly exerciseLogService = inject(ExerciseLogService);
+  private readonly titleCasePipe = inject(TitleCasePipe);
 
-  private readonly state = signal<State>({
-    rows: [],
+  private chart: Chart | null = null;
+
+  public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => {
+    const seriesAmountPerUserPerMuscleGroupPerMonth = getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseLogService.exerciseRows());
+    const muscleGroups = this.exerciseLogService.muscleGroups();
+    const selectedMonth = this.exerciseLogService.selectedMonth();
+
+    if (selectedMonth) {
+      let seriesAmountPerUserPerMuscleGroup = seriesAmountPerUserPerMuscleGroupPerMonth[selectedMonth];
+
+      if (seriesAmountPerUserPerMuscleGroup) {
+        const result: ChartDataSetItem[] = [];
+
+        for (const x of R.toPairs(seriesAmountPerUserPerMuscleGroup)) {
+          const name = x[0];
+          const values = x[1];
+
+          let seriesAmount: number[] = [];
+
+          for (const muscleGroup of muscleGroups) {
+            const value = values[muscleGroup] || 0;
+            seriesAmount.push(value);
+          }
+
+          result.push({
+            label: this.titleCasePipe.transform(name),
+            data: seriesAmount,
+            borderWidth: 1,
+          });
+        }
+
+        return result;
+      }
+    }
+
+    return [];
   });
 
+  public constructor() {
+    effect(() => {
+      if (this.chart) {
+        this.chart.data.datasets = this.seriesPerMuscleGroupPerUserPerMonth();
+        this.chart.update();
+      }
+    });
+  }
+
   public ngOnInit(): void {
-    Chart.register(...registerables);
-    if (this.chart) {
-      new Chart(this.chart.nativeElement, {
+    if (this.chartCanvasElementRef) {
+      this.chart = new Chart(this.chartCanvasElementRef.nativeElement, {
         type: 'bar',
         data: {
-          labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-          datasets: [
-            {
-              label: '# of Votes',
-              data: [12, 19, 3, 5, 2, 3],
-              borderWidth: 1,
-            },
-          ],
+          labels: this.exerciseLogService.muscleGroups().map(this.titleCasePipe.transform),
+          datasets: this.seriesPerMuscleGroupPerUserPerMonth(),
         },
         options: {
           scales: {
@@ -65,6 +96,8 @@ export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit {
           },
         },
       });
+
+      this.chart.options.animation = false;
     }
   }
 }

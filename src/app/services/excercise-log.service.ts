@@ -4,7 +4,14 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
 import { Subject, delay, tap } from 'rxjs';
-import { getPersonalRecord, groupExcerciseLogs, amountDaysTrainedByUser, mapGroupedToExcerciseRows } from '@helpers/excercise-log.helper';
+import {
+  getPersonalRecord,
+  groupExcerciseLogs,
+  amountDaysTrainedByUser,
+  mapGroupedToExcerciseRows,
+  getSeriesAmountPerUserPerMuscleGroupPerMonth,
+  groupByMonth,
+} from '@helpers/excercise-log.helper';
 import { Exercise } from '@models/exercise.model';
 
 interface SelectedExcercise {
@@ -19,6 +26,7 @@ type State = {
   selectedExercise: SelectedExcercise | null;
   selectedUsername: string | null;
   selectedType: string | null;
+  selectedMonth: string | null;
   loaded: boolean;
   error: string | null;
 };
@@ -32,6 +40,7 @@ export class ExerciseLogService {
     selectedExercise: null,
     selectedUsername: null,
     selectedType: null,
+    selectedMonth: null,
     loaded: false,
     error: null,
   });
@@ -41,6 +50,7 @@ export class ExerciseLogService {
   public readonly selectedExcercise$: Subject<SelectedExcercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
   public readonly selectedType$: Subject<string | null> = new Subject();
+  public readonly selectedMonth$: Subject<string | null> = new Subject();
 
   public readonly loaded = computed(() => this.state().loaded);
 
@@ -78,6 +88,7 @@ export class ExerciseLogService {
 
   public readonly selectedType = computed(() => this.state().selectedType);
   public readonly selectedUsername = computed(() => this.state().selectedUsername);
+  public readonly selectedMonth = computed(() => this.state().selectedMonth);
 
   public readonly selectedTypeLabel = computed(() => this.state().selectedType ?? 'Type');
   public readonly selectedExcerciseLabel = computed(() => this.state().selectedExercise ?? { name: 'Exercise', type: '' });
@@ -152,6 +163,17 @@ export class ExerciseLogService {
     );
   });
 
+  public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseRows()));
+
+  public readonly daysTrainedByMonth = computed(() => R.mapValues(groupByMonth(this.logs()), x => x.length));
+  public readonly months = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerMonth()));
+
+  public readonly daysTrainedInSelectedMonthMessage = computed(() => {
+    const selectedMonth = this.selectedMonth();
+    const daysTrained = selectedMonth ? this.daysTrainedByMonth()[selectedMonth] : 0;
+    return `${daysTrained ?? 0} ${daysTrained === 1 ? 'day' : 'days'} trained this month`;
+  });
+
   public constructor() {
     effect(() => console.log(this.state()));
 
@@ -202,6 +224,13 @@ export class ExerciseLogService {
           ...state,
           selectedUsername,
         })),
+    });
+
+    this.selectedMonth$.pipe(takeUntilDestroyed()).subscribe(selectedMonth => {
+      this.state.update(state => ({
+        ...state,
+        selectedMonth,
+      }));
     });
 
     this.updateExercises$.pipe(takeUntilDestroyed()).subscribe({
