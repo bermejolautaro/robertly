@@ -22,7 +22,6 @@
     "strictNullChecks": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitAny": true,
     "sourceMap": true,

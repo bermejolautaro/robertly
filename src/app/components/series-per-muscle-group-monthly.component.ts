@@ -1,7 +1,7 @@
 import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 
-import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
 import { ExerciseLogService } from '@services/excercise-log.service';
@@ -35,8 +35,28 @@ const DEFAULT_MONTH_LABEL = 'Month';
           </div>
         </div>
         <ng-content></ng-content>
+        <div (click)="popover.open()">
+          <div
+            class="fw-semibold"
+            style="display: inline-block"
+            popoverTitle="Days trained details"
+            [autoClose]="true"
+            [ngbPopover]="popoverTemplate"
+            #popover="ngbPopover"
+          >
+            {{ exerciseLogService.daysTrainedInSelectedMonthMessage() }}
+          </div>
+        </div>
       </div>
     </div>
+
+    <ng-template #popoverTemplate>
+      <div>
+        @for (days of exerciseLogService.daysAmountByDayInSelectedMonth() | keyvalue; track $index) {
+          <div>{{ days.key }}: {{ days.value }}</div>
+        }
+      </div>
+    </ng-template>
   `,
   styles: [
     `
@@ -47,7 +67,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
+  imports: [NgClass, NgbPopoverModule, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
 })
 export class SeriesPerMuscleGroupMonthlyComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
