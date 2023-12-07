@@ -1,4 +1,3 @@
-// import { processDataFirstStep } from './excercise-log-api.service';
 import { processDataFirstStep } from '@helpers/excercise-log-api.helper';
 
 describe('ExcerciseLogApiService', () => {

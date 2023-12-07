@@ -1,15 +1,19 @@
 import { ExerciseLogService } from '@services/excercise-log.service';
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 
+import dayjs from 'dayjs';
+import isoWeek from 'dayjs/plugin/isoWeek';
+
 describe('ExcerciseLogService', () => {
   let service: ExerciseLogService = null!;
+  dayjs.extend(isoWeek);
 
   beforeEach(() => {
     TestBed.configureTestingModule({ providers: [ExerciseLogService] });
     service = TestBed.inject(ExerciseLogService);
   });
 
-  it('test', fakeAsync(() => {
+  it('amountDaysTrainedPerUser', fakeAsync(() => {
     const input = [
       { date: '1997/10/20', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 },
       { date: '1997/10/21', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 },
@@ -20,8 +24,10 @@ describe('ExcerciseLogService', () => {
 
     tick(300);
 
-    console.log(service.amountDaysTrainedPerUser());
+    const result = service.amountDaysTrainedPerUser();
 
-    expect(69).toBe(69);
+    const expected = { lautaro: 3, matias: 1};
+
+    expect(result).toEqual(expected);
   }));
 });

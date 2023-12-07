@@ -5,6 +5,8 @@ import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-mus
 import { ExerciseLogService } from '@services/excercise-log.service';
 import { DOCUMENT, KeyValuePipe, TitleCasePipe } from '@angular/common';
 import { SeriesPerMuscleGroupYearlyComponent } from '@components/series-per-muscle-group-yearly.component';
+import { NgbNav, NgbNavContent, NgbNavItem, NgbNavLink, NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { SeriesPerMuscleGroupGraphMonthlyComponent } from '@components/series-per-muscle-group-graph-monthly.component';
 
 @Component({
   selector: 'app-stats-page',
@@ -13,16 +15,20 @@ import { SeriesPerMuscleGroupYearlyComponent } from '@components/series-per-musc
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    NgbNavModule,
     TitleCasePipe,
     KeyValuePipe,
     SeriesPerMuscleGroupWeeklyComponent,
     SeriesPerMuscleGroupMonthlyComponent,
+    SeriesPerMuscleGroupGraphMonthlyComponent,
     SeriesPerMuscleGroupYearlyComponent,
   ],
 })
 export class StatsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   public readonly exerciseLogService = inject(ExerciseLogService);
+  
+  public active = 1;
 
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
