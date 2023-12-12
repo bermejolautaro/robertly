@@ -22,7 +22,6 @@
     "strictNullChecks": true,
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
-    "noUnusedParameters": true,
     "noImplicitAny": true,
     "sourceMap": true,
     "declaration": false,

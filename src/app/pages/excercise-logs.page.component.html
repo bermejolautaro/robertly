@@ -1,49 +1,65 @@
 <!-- #region FILTERS -->
 <div class="container my-4">
-  <!-- #region TYPEAHEAD EXERCISE -->
-  <ng-template #rt let-result="result" let-term="term">
-    <div>{{ term }}</div>
-    <div>{{ result | titlecase }}</div>
-  </ng-template>
-
-  <div class="col-12">
-    <input
-      type="text"
-      class="form-control mb-2"
-      placeholder="Exercise"
-      [(ngModel)]="excerciseTypeAhead"
-      (selectItem)="onExcerciseTypeaheadChange($event)"
-      [ngbTypeahead]="search"
-      (focus)="focus$.next(excerciseTypeAhead)"
-      (click)="excerciseTypeAhead = ''"
-      [popupClass]="'exercise-typeahead'"
-      [resultFormatter]="formatter"
-      [inputFormatter]="formatter"
-      [focusFirst]="false"
-      #typeaheadInput
-    />
-  </div>
-  <!-- #endregion -->
-
+  <!-- #region DROPDOWN TYPE -->
   <div class="row mb-2 gx-2">
-    <!-- #region DROPDOWN TYPE -->
     <div class="col-12">
       <div ngbDropdown class="d-flex justify-content-center">
         <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-          {{ excerciseLogService.selectedTypeLabel() | titlecase }}
+          {{ exerciseLogService.selectedTypeLabel() | titlecase }}
         </button>
         <div ngbDropdownMenu class="w-100">
-          <button ngbDropdownItem (click)="excerciseLogService.selectedType$.next(null)">Clear filter</button>
-          @for (type of excerciseLogService.types(); track type) {
-            <button ngbDropdownItem [ngClass]="{ active: type === excerciseLogService.selectedType()}" (click)="excerciseLogService.selectedType$.next(type)">
+          <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
+          @for (type of exerciseLogService.types(); track type) {
+            <button
+              ngbDropdownItem
+              [ngClass]="{ active: type === exerciseLogService.selectedType() }"
+              (click)="exerciseLogService.selectedType$.next(type)"
+            >
               {{ type | titlecase }}
             </button>
           }
         </div>
       </div>
     </div>
-    <!-- #endregion -->
   </div>
+  <!-- #endregion -->
+
+  <!-- #region TYPEAHEAD EXERCISE -->
+  <div class="col-12">
+    <input
+      type="text"
+      class="form-control mb-2"
+      [(ngModel)]="exerciseTypeahead"
+      (selectItem)="onExerciseTypeaheadChange($event)"
+      [ngbTypeahead]="exerciseSearch"
+      (focus)="exerciseTypeahead = ''; exerciseFocus$.next(exerciseTypeahead)"
+      (blur)="exerciseTypeahead = exerciseLogService.selectedExerciseLabel()"
+      [popupClass]="'typeahead'"
+      [resultFormatter]="exerciseFormatter"
+      [inputFormatter]="exerciseFormatter"
+      #exerciseTypeaheadInput
+    />
+  </div>
+  <!-- #endregion -->
+
+  <!-- #region WEIGHT EXERCISE -->
+
+  <div class="col-12">
+    <input
+      type="text"
+      class="form-control mb-2"
+      [(ngModel)]="weightTypeahead"
+      (selectItem)="onWeightTypeaheadChange($event)"
+      [ngbTypeahead]="weightSearch"
+      (focus)="weightTypeahead = ''; weightFocus$.next(weightTypeahead)"
+      (blur)="weightTypeahead = exerciseLogService.selectedWeightLabel()"
+      [popupClass]="'typeahead'"
+      [resultFormatter]="weightFormatter"
+      [inputFormatter]="weightFormatter"
+      #weightTypeaheadInput
+    />
+  </div>
+  <!-- #endregion -->
 
   <div class="row">
     <div class="col-12">
@@ -56,15 +72,15 @@
 </div>
 <!-- #endregion -->
 
-@if (excerciseLogService.loaded()) {
+@if (exerciseLogService.loaded()) {
   <div class="container">
-    @if (excerciseLogService.personalRecord(); as personalRecord) {
+    @if (exerciseLogService.personalRecord(); as personalRecord) {
       <app-personal-record class="mb-3" [personalRecord]="personalRecord"></app-personal-record>
     }
     @if (isGrouped) {
-      <app-grouped-excercise-rows [groupedExcerciseLogs]="excerciseLogService.groupedLogs()"> </app-grouped-excercise-rows>
+      <app-grouped-excercise-rows [groupedExcerciseLogs]="exerciseLogService.groupedLogs()"> </app-grouped-excercise-rows>
     } @else {
-      <app-excercise-rows [exerciseRows]="excerciseLogService.exerciseRows()"></app-excercise-rows>
+      <app-excercise-rows [exerciseRows]="exerciseLogService.exerciseRows()"></app-excercise-rows>
     }
   </div>
 } @else {

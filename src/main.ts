@@ -4,6 +4,7 @@ import { Routes, provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const LOGS_PATH = '';
 export const STATS_PATH = 'stats';
@@ -26,9 +27,11 @@ export const BACKEND_URL = new InjectionToken<string>('BACKEND_URL');
 
 bootstrapApplication(AppComponent, {
   providers: [
+    provideAnimationsAsync(),
     provideHttpClient(),
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
-    { provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' }
+    { provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' },
+    // { provide: BACKEND_URL, useValue: 'http://localhost:3000/api' },
   ],
 }).catch(err => console.error(err));

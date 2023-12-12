@@ -28,9 +28,13 @@ type State = {
   selectedUsername: string | null;
   selectedType: string | null;
   selectedMonth: string | null;
+  selectedWeight: number | null;
   loaded: boolean;
   error: string | null;
 };
+
+export const EXERCISE_DEFAULT_LABEL = 'Exercise';
+export const WEIGHT_DEFAULT_LABEL = 'Weight';
 
 @Injectable()
 export class ExerciseLogService {
@@ -42,16 +46,19 @@ export class ExerciseLogService {
     selectedUsername: null,
     selectedType: null,
     selectedMonth: null,
+    selectedWeight: null,
     loaded: false,
     error: null,
   });
 
+  public readonly startLoading$: Subject<void> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
-  public readonly selectedExcercise$: Subject<SelectedExcercise | null> = new Subject();
+  public readonly selectedExercise$: Subject<SelectedExcercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
   public readonly selectedType$: Subject<string | null> = new Subject();
   public readonly selectedMonth$: Subject<string | null> = new Subject();
+  public readonly selectedWeight$: Subject<number | null> = new Subject();
 
   public readonly loaded = computed(() => this.state().loaded);
 
@@ -79,7 +86,7 @@ export class ExerciseLogService {
     )
   );
 
-  public readonly excercises = computed(() => {
+  public readonly exercises = computed(() => {
     return R.pipe(
       this.state().filteredLogs,
       R.map(x => ({ name: x.name, type: x.type })),
@@ -90,10 +97,13 @@ export class ExerciseLogService {
   public readonly selectedType = computed(() => this.state().selectedType);
   public readonly selectedUsername = computed(() => this.state().selectedUsername);
   public readonly selectedMonth = computed(() => this.state().selectedMonth);
+  public readonly selectedExercise = computed(() => this.state().selectedExercise);
+  public readonly selectedWeight = computed(() => this.state().selectedWeight);
 
   public readonly selectedTypeLabel = computed(() => this.state().selectedType ?? 'Type');
-  public readonly selectedExcerciseLabel = computed(() => this.state().selectedExercise ?? { name: 'Exercise', type: '' });
+  public readonly selectedExerciseLabel = computed(() => this.state().selectedExercise?.name ?? EXERCISE_DEFAULT_LABEL);
   public readonly selectedUsernameLabel = computed(() => this.state().selectedUsername ?? 'All Users');
+  public readonly selectedWeightLabel = computed(() => `${this.state().selectedWeight ?? WEIGHT_DEFAULT_LABEL}`);
 
   public readonly groupedLogs = computed(() => {
     const groups = groupExcerciseLogs(this.state().filteredLogs, this.state().exercises);
@@ -134,7 +144,8 @@ export class ExerciseLogService {
       rows,
       this.state().selectedType ? R.filter(x => x.type === this.state().selectedType) : R.identity,
       this.state().selectedExercise ? R.filter(x => x.excerciseName === this.state().selectedExercise?.name) : R.identity,
-      this.state().selectedUsername ? R.filter(x => x.username === this.state().selectedUsername) : R.identity
+      this.state().selectedUsername ? R.filter(x => x.username === this.state().selectedUsername) : R.identity,
+      this.state().selectedWeight ? R.filter(x => x.series.map(x => x.weightKg).includes(this.state().selectedWeight)) : R.identity
     );
   });
 
@@ -153,6 +164,18 @@ export class ExerciseLogService {
       this.state().exercises,
       R.map(x => x.exercise),
       R.uniqBy(x => x)
+    );
+  });
+
+  public readonly weights = computed(() => {
+    return R.pipe(
+      this.state().filteredLogs,
+      this.state().selectedExercise ? R.filter(x => x.name === this.state().selectedExercise?.name) : R.identity,
+      this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity,
+      R.map(x => x.weightKg),
+      R.uniq(),
+      R.filter(x => !!x),
+      R.sort((a, b) => a! - b!)
     );
   });
 
@@ -191,23 +214,17 @@ export class ExerciseLogService {
   public constructor() {
     effect(() => console.log(this.state()));
 
-    this.updateLogs$
-      .pipe(
-        tap(() => this.state.update(state => ({ ...state, loaded: false }))),
-        delay(300),
-        takeUntilDestroyed()
-      )
-      .subscribe({
-        next: logs =>
-          this.state.update(state => ({
-            ...state,
-            logs: logs,
-            filteredLogs: logs.filter(x => !!x.name),
-            loaded: true,
-          })),
-      });
+    this.updateLogs$.pipe(takeUntilDestroyed()).subscribe({
+      next: logs =>
+        this.state.update(state => ({
+          ...state,
+          logs,
+          filteredLogs: logs.filter(x => !!x.name),
+          loaded: true,
+        })),
+    });
 
-    this.selectedExcercise$.pipe(takeUntilDestroyed()).subscribe({
+    this.selectedExercise$.pipe(takeUntilDestroyed()).subscribe({
       next: selectedExcercise =>
         this.state.update(state => ({
           ...state,
@@ -219,15 +236,18 @@ export class ExerciseLogService {
     this.selectedType$.pipe(takeUntilDestroyed()).subscribe({
       next: selectedType => {
         let selectedExercise = this.state().selectedExercise;
+        let selectedWeight = this.state().selectedWeight;
 
         if (selectedType && selectedExercise?.type && selectedType !== selectedExercise.type) {
           selectedExercise = null;
+          selectedWeight = null;
         }
 
         this.state.update(state => ({
           ...state,
           selectedType,
           selectedExercise,
+          selectedWeight
         }));
       },
     });
@@ -247,8 +267,17 @@ export class ExerciseLogService {
       }));
     });
 
-    this.updateExercises$.pipe(takeUntilDestroyed()).subscribe({
-      next: exercises => this.state.update(state => ({ ...state, exercises })),
+    this.selectedWeight$.pipe(takeUntilDestroyed()).subscribe(selectedWeight => {
+      this.state.update(state => ({
+        ...state,
+        selectedWeight,
+      }));
     });
+
+    this.updateExercises$.pipe(takeUntilDestroyed()).subscribe({
+      next: exercises => this.state.update(state => ({ ...state, exercises, loaded: true })),
+    });
+
+    this.startLoading$.pipe(takeUntilDestroyed()).subscribe({ next: () => this.state.update(state => ({ ...state, loaded: false })) });
   }
 }

@@ -6,12 +6,32 @@ import { Observable, map } from 'rxjs';
 import { ExerciseLog } from 'src/app/models/excercise-log.model';
 import { BACKEND_URL } from 'src/main';
 
-type GetDataResponse = {
+type GetExerciseLogsResponse = {
   lautaro: string[][];
   roberto: string[][];
   nikito: string[][];
   matias: string[][];
   peque: string[][];
+};
+
+type GetExerciseLogsV2Response = {
+  data: {
+    user: string;
+    exercise: string;
+    date: string;
+    payload: {
+      series: { reps: number; weightInKg: number }[];
+    };
+  }[];
+};
+
+type CreateExerciseLogRequest = {
+  user: string;
+  exercise: string;
+  date: string;
+  payload: {
+    series: { reps: number; weightInKg: number }[];
+  };
 };
 
 @Injectable({
@@ -23,7 +43,7 @@ export class ExerciseLogApiService {
 
   public getExerciseLogs(): Observable<ExerciseLog[]> {
     return this.http
-      .get<GetDataResponse>(`${this.url}/logs`)
+      .get<GetExerciseLogsResponse>(`${this.url}/logs/get-logs`)
       .pipe(
         map(data => [
           ...processData(data.lautaro, 'lautaro'),
@@ -33,5 +53,30 @@ export class ExerciseLogApiService {
           ...processData(data.peque, 'peque'),
         ])
       );
+  }
+
+  public getExerciseLogsv2(): Observable<ExerciseLog[]> {
+    return this.http.get<GetExerciseLogsV2Response>(`${this.url}/logs`).pipe(
+      map(x => {
+        return x.data.flatMap(y => {
+          return y.payload.series.map(
+            (s, i) =>
+              ({
+                date: y.date,
+                name: y.exercise,
+                reps: s.reps,
+                serie: i + 1,
+                type: '',
+                user: y.user,
+                weightKg: s.weightInKg,
+              })
+          );
+        });
+      })
+    );
+  }
+
+  public createExerciseLog(request: CreateExerciseLogRequest): Observable<void> {
+    return this.http.post<void>(`${this.url}/logs`, request);
   }
 }

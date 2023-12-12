@@ -11,14 +11,16 @@ import { IfNullEmptyArrayPipe } from '@pipes/if-null-empty-array.pipe';
 import { ExcerciseRowsComponent } from '@components/excercise-rows.component';
 import { GroupedExcerciseRowsComponent } from '@components/grouped-excercise-rows.component';
 import { PersonalRecordComponent } from '@components/personal-record.component';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService, EXERCISE_DEFAULT_LABEL, WEIGHT_DEFAULT_LABEL } from '@services/excercise-log.service';
+
+const CLEAR_FILTER_LABEL = 'Clear Filter';
 
 @Component({
   selector: 'app-excercise-logs-page',
   templateUrl: 'excercise-logs.page.component.html',
   styles: `
     ::ng-deep {
-      .exercise-typeahead {
+      .typeahead {
         overflow-y: scroll; 
         overflow-x: hidden; 
         max-height: 400px;
@@ -44,52 +46,104 @@ import { ExerciseLogService } from '@services/excercise-log.service';
 export class ExcerciseLogsPageComponent implements OnInit {
   private readonly titleCasePipe = inject(TitleCasePipe);
   private readonly document = inject(DOCUMENT);
-  public readonly excerciseLogService = inject(ExerciseLogService);
+  public readonly exerciseLogService = inject(ExerciseLogService);
+
+  public readonly EXERCISE_PLACEHOLDER = EXERCISE_DEFAULT_LABEL;
+  public readonly WEIGHT_PLACEHOLDER = WEIGHT_DEFAULT_LABEL;
 
   public isGrouped: boolean = false;
 
-  public excerciseTypeAhead: string = '';
+  public exerciseTypeahead: string = '';
 
-  @ViewChild('typeaheadInput', { static: true }) typeaheadInput: ElementRef<HTMLInputElement> | null = null;
-  public readonly focus$: Subject<string> = new Subject<string>();
+  @ViewChild('exerciseTypeaheadInput', { static: true }) exerciseTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly exerciseFocus$: Subject<string> = new Subject<string>();
 
-  public readonly search: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+  public readonly exerciseSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
     const debouncedText$ = text$.pipe(distinctUntilChanged());
 
-    return merge(debouncedText$, this.focus$).pipe(
-      map(term => {
-        const excercises = ['Clear Filter', ...this.excerciseLogService.excercises().map(x => x.name)];
-        const selectedExcercise = this.excerciseLogService.selectedExcerciseLabel();
+    return merge(debouncedText$, this.exerciseFocus$).pipe(
+      map(() => {
+        const exercises = this.exerciseLogService.exercises().map(x => x.name);
 
-        return term === '' || term === selectedExcercise.name
-          ? excercises
-          : excercises.filter(x => !!x).filter(v => v.toLowerCase().includes(term.toLowerCase()));
+        if (this.exerciseLogService.selectedExercise()) {
+          exercises.unshift(CLEAR_FILTER_LABEL);
+        }
+
+        return this.exerciseTypeahead === '' || this.exerciseTypeahead === EXERCISE_DEFAULT_LABEL
+          ? exercises
+          : exercises.filter(x => !!x).filter(v => v.toLowerCase().includes(this.exerciseTypeahead.toLowerCase()));
       })
     );
   };
 
-  public readonly formatter = (x: string) => this.titleCasePipe.transform(x);
+  public weightTypeahead: string = '';
+
+  @ViewChild('weightTypeaheadInput', { static: true }) weightTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly weightFocus$: Subject<string> = new Subject<string>();
+
+  public readonly weightSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+
+    return merge(debouncedText$, this.weightFocus$).pipe(
+      map(() => {
+        const weights = this.exerciseLogService.weights().map(x => `${x}`);
+
+        if (this.exerciseLogService.selectedWeight()) {
+          weights.unshift(CLEAR_FILTER_LABEL);
+        }
+
+        return this.weightTypeahead === '' || this.weightTypeahead === WEIGHT_DEFAULT_LABEL
+          ? weights
+          : weights.filter(x => !!x).filter(x => x.includes(this.weightTypeahead));
+      })
+    );
+  };
+
+  public readonly exerciseFormatter = (x: string) => {
+    return this.titleCasePipe.transform(x);
+  };
+  public readonly weightFormatter = (x: string) => (!isNaN(parseInt(x)) ? `${x}kg` : x);
 
   public constructor() {
-    effect(() => (this.excerciseTypeAhead = this.excerciseLogService.selectedExcerciseLabel().name));
+    effect(() => (this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel()));
+    effect(() => (this.weightTypeahead = this.exerciseLogService.selectedWeightLabel()));
   }
 
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
   }
 
-  public onExcerciseTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void {
+  public onExerciseTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void {
     let selectedExercise =
-      this.excerciseLogService
-        .excercises()
+      this.exerciseLogService
+        .exercises()
         .filter(x => x.name === event.item)
         .at(0) ?? null;
 
-    if (event.item === 'Clear Filter') {
+    if (event.item === CLEAR_FILTER_LABEL) {
       selectedExercise = null;
     }
 
-    this.excerciseLogService.selectedExcercise$.next(selectedExercise);
-    this.typeaheadInput?.nativeElement.blur();
+    this.exerciseLogService.selectedExercise$.next(selectedExercise);
+    this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel();
+    this.exerciseTypeaheadInput?.nativeElement.blur();
+
+    this.exerciseLogService.selectedWeight$.next(null);
+    this.weightTypeahead = this.exerciseLogService.selectedWeightLabel();
+  }
+
+  public onWeightTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void {
+    let selectedWeight =
+      this.exerciseLogService
+        .weights()
+        .filter(x => `${x}` === event.item)
+        .at(0) ?? null;
+
+    if (event.item === CLEAR_FILTER_LABEL) {
+      selectedWeight = null;
+    }
+
+    this.exerciseLogService.selectedWeight$.next(selectedWeight);
+    this.weightTypeaheadInput?.nativeElement.blur();
   }
 }
