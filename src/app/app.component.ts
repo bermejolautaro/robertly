@@ -196,25 +196,28 @@ export class AppComponent ***REMOVED***
   public open(content: TemplateRef<any>): void ***REMOVED***
     this.modalService
       .open(content, ***REMOVED*** centered: true ***REMOVED***)
-      .result.then(() => ***REMOVED***
-        const request = ***REMOVED***
-          date: dayjs().format('DD/MM/YYYY'),
-          exercise: this.formGroup.value.exercise!.toLowerCase(),
-          user: this.formGroup.value.user!.toLowerCase(),
-          payload: ***REMOVED***
-            series: (this.formGroup.value.series ?? [])
-              .filter(x => !!x.reps && !!x.weightInKg)
-              .map(x => (***REMOVED*** reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) ***REMOVED***)),
-      ***REMOVED***,
-    ***REMOVED***;
+      .result.then(
+        () => ***REMOVED***
+          const request = ***REMOVED***
+            date: dayjs().format('DD/MM/YYYY'),
+            exercise: this.formGroup.value.exercise!.toLowerCase(),
+            user: this.formGroup.value.user!.toLowerCase(),
+            payload: ***REMOVED***
+              series: (this.formGroup.value.series ?? [])
+                .filter(x => !!x.reps && !!x.weightInKg)
+                .map(x => (***REMOVED*** reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) ***REMOVED***)),
+        ***REMOVED***,
+      ***REMOVED***;
 
-        this.exerciseLogService.startLoading$.next();
-        this.exerciseLogApiService.createExerciseLog(request).subscribe(***REMOVED***
-          next: () => ***REMOVED***
-            this.fetchData();
-      ***REMOVED***,
-    ***REMOVED***);
-  ***REMOVED***)
+          this.exerciseLogService.startLoading$.next();
+          this.exerciseLogApiService.createExerciseLog(request).subscribe(***REMOVED***
+            next: () => ***REMOVED***
+              this.fetchData();
+        ***REMOVED***,
+      ***REMOVED***);
+    ***REMOVED***,
+        () => ***REMOVED******REMOVED***
+      )
       .then(() => this.formGroup.reset());
 ***REMOVED***
 
