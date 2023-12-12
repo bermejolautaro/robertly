@@ -99,7 +99,7 @@ const createLogFormValidator =
         border-radius: 100%;
         position: fixed;
         right: 25px;
-        bottom: 75px;
+        bottom: max(75px, env(safe-area-inset-bottom) + 30px);
         z-index: 4;
       }
     `,
