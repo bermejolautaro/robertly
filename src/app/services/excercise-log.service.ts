@@ -28,9 +28,13 @@ type State = ***REMOVED***
   selectedUsername: string | null;
   selectedType: string | null;
   selectedMonth: string | null;
+  selectedWeight: number | null;
   loaded: boolean;
   error: string | null;
 ***REMOVED***;
+
+export const EXERCISE_DEFAULT_LABEL = 'Exercise';
+export const WEIGHT_DEFAULT_LABEL = 'Weight';
 
 @Injectable()
 export class ExerciseLogService ***REMOVED***
@@ -42,16 +46,19 @@ export class ExerciseLogService ***REMOVED***
     selectedUsername: null,
     selectedType: null,
     selectedMonth: null,
+    selectedWeight: null,
     loaded: false,
     error: null,
 ***REMOVED***);
 
+  public readonly startLoading$: Subject<void> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
-  public readonly selectedExcercise$: Subject<SelectedExcercise | null> = new Subject();
+  public readonly selectedExercise$: Subject<SelectedExcercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
   public readonly selectedType$: Subject<string | null> = new Subject();
   public readonly selectedMonth$: Subject<string | null> = new Subject();
+  public readonly selectedWeight$: Subject<number | null> = new Subject();
 
   public readonly loaded = computed(() => this.state().loaded);
 
@@ -79,7 +86,7 @@ export class ExerciseLogService ***REMOVED***
     )
   );
 
-  public readonly excercises = computed(() => ***REMOVED***
+  public readonly exercises = computed(() => ***REMOVED***
     return R.pipe(
       this.state().filteredLogs,
       R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
@@ -90,10 +97,13 @@ export class ExerciseLogService ***REMOVED***
   public readonly selectedType = computed(() => this.state().selectedType);
   public readonly selectedUsername = computed(() => this.state().selectedUsername);
   public readonly selectedMonth = computed(() => this.state().selectedMonth);
+  public readonly selectedExercise = computed(() => this.state().selectedExercise);
+  public readonly selectedWeight = computed(() => this.state().selectedWeight);
 
   public readonly selectedTypeLabel = computed(() => this.state().selectedType ?? 'Type');
-  public readonly selectedExcerciseLabel = computed(() => this.state().selectedExercise ?? ***REMOVED*** name: 'Exercise', type: '' ***REMOVED***);
+  public readonly selectedExerciseLabel = computed(() => this.state().selectedExercise?.name ?? EXERCISE_DEFAULT_LABEL);
   public readonly selectedUsernameLabel = computed(() => this.state().selectedUsername ?? 'All Users');
+  public readonly selectedWeightLabel = computed(() => `$***REMOVED***this.state().selectedWeight ?? WEIGHT_DEFAULT_LABEL***REMOVED***`);
 
   public readonly groupedLogs = computed(() => ***REMOVED***
     const groups = groupExcerciseLogs(this.state().filteredLogs, this.state().exercises);
@@ -134,7 +144,8 @@ export class ExerciseLogService ***REMOVED***
       rows,
       this.state().selectedType ? R.filter(x => x.type === this.state().selectedType) : R.identity,
       this.state().selectedExercise ? R.filter(x => x.excerciseName === this.state().selectedExercise?.name) : R.identity,
-      this.state().selectedUsername ? R.filter(x => x.username === this.state().selectedUsername) : R.identity
+      this.state().selectedUsername ? R.filter(x => x.username === this.state().selectedUsername) : R.identity,
+      this.state().selectedWeight ? R.filter(x => x.series.map(x => x.weightKg).includes(this.state().selectedWeight)) : R.identity
     );
 ***REMOVED***);
 
@@ -153,6 +164,18 @@ export class ExerciseLogService ***REMOVED***
       this.state().exercises,
       R.map(x => x.exercise),
       R.uniqBy(x => x)
+    );
+***REMOVED***);
+
+  public readonly weights = computed(() => ***REMOVED***
+    return R.pipe(
+      this.state().filteredLogs,
+      this.state().selectedExercise ? R.filter(x => x.name === this.state().selectedExercise?.name) : R.identity,
+      this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity,
+      R.map(x => x.weightKg),
+      R.uniq(),
+      R.filter(x => !!x),
+      R.sort((a, b) => a! - b!)
     );
 ***REMOVED***);
 
@@ -191,23 +214,17 @@ export class ExerciseLogService ***REMOVED***
   public constructor() ***REMOVED***
     effect(() => console.log(this.state()));
 
-    this.updateLogs$
-      .pipe(
-        tap(() => this.state.update(state => (***REMOVED*** ...state, loaded: false ***REMOVED***))),
-        delay(300),
-        takeUntilDestroyed()
-      )
-      .subscribe(***REMOVED***
-        next: logs =>
-          this.state.update(state => (***REMOVED***
-            ...state,
-            logs: logs,
-            filteredLogs: logs.filter(x => !!x.name),
-            loaded: true,
-      ***REMOVED***)),
-  ***REMOVED***);
+    this.updateLogs$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+      next: logs =>
+        this.state.update(state => (***REMOVED***
+          ...state,
+          logs,
+          filteredLogs: logs.filter(x => !!x.name),
+          loaded: true,
+    ***REMOVED***)),
+***REMOVED***);
 
-    this.selectedExcercise$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+    this.selectedExercise$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
       next: selectedExcercise =>
         this.state.update(state => (***REMOVED***
           ...state,
@@ -219,15 +236,18 @@ export class ExerciseLogService ***REMOVED***
     this.selectedType$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
       next: selectedType => ***REMOVED***
         let selectedExercise = this.state().selectedExercise;
+        let selectedWeight = this.state().selectedWeight;
 
         if (selectedType && selectedExercise?.type && selectedType !== selectedExercise.type) ***REMOVED***
           selectedExercise = null;
+          selectedWeight = null;
     ***REMOVED***
 
         this.state.update(state => (***REMOVED***
           ...state,
           selectedType,
           selectedExercise,
+          selectedWeight
     ***REMOVED***));
   ***REMOVED***,
 ***REMOVED***);
@@ -247,8 +267,17 @@ export class ExerciseLogService ***REMOVED***
   ***REMOVED***));
 ***REMOVED***);
 
-    this.updateExercises$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
-      next: exercises => this.state.update(state => (***REMOVED*** ...state, exercises ***REMOVED***)),
+    this.selectedWeight$.pipe(takeUntilDestroyed()).subscribe(selectedWeight => ***REMOVED***
+      this.state.update(state => (***REMOVED***
+        ...state,
+        selectedWeight,
+  ***REMOVED***));
 ***REMOVED***);
+
+    this.updateExercises$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+      next: exercises => this.state.update(state => (***REMOVED*** ...state, exercises, loaded: true ***REMOVED***)),
+***REMOVED***);
+
+    this.startLoading$.pipe(takeUntilDestroyed()).subscribe(***REMOVED*** next: () => this.state.update(state => (***REMOVED*** ...state, loaded: false ***REMOVED***)) ***REMOVED***);
 ***REMOVED***
 ***REMOVED***

@@ -1,49 +1,65 @@
 <!-- #region FILTERS -->
 <div class="container my-4">
-  <!-- #region TYPEAHEAD EXERCISE -->
-  <ng-template #rt let-result="result" let-term="term">
-    <div>***REMOVED******REMOVED*** term ***REMOVED******REMOVED***</div>
-    <div>***REMOVED******REMOVED*** result | titlecase ***REMOVED******REMOVED***</div>
-  </ng-template>
-
-  <div class="col-12">
-    <input
-      type="text"
-      class="form-control mb-2"
-      placeholder="Exercise"
-      [(ngModel)]="excerciseTypeAhead"
-      (selectItem)="onExcerciseTypeaheadChange($event)"
-      [ngbTypeahead]="search"
-      (focus)="focus$.next(excerciseTypeAhead)"
-      (click)="excerciseTypeAhead = ''"
-      [popupClass]="'exercise-typeahead'"
-      [resultFormatter]="formatter"
-      [inputFormatter]="formatter"
-      [focusFirst]="false"
-      #typeaheadInput
-    />
-  </div>
-  <!-- #endregion -->
-
+  <!-- #region DROPDOWN TYPE -->
   <div class="row mb-2 gx-2">
-    <!-- #region DROPDOWN TYPE -->
     <div class="col-12">
       <div ngbDropdown class="d-flex justify-content-center">
         <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-          ***REMOVED******REMOVED*** excerciseLogService.selectedTypeLabel() | titlecase ***REMOVED******REMOVED***
+          ***REMOVED******REMOVED*** exerciseLogService.selectedTypeLabel() | titlecase ***REMOVED******REMOVED***
         </button>
         <div ngbDropdownMenu class="w-100">
-          <button ngbDropdownItem (click)="excerciseLogService.selectedType$.next(null)">Clear filter</button>
-          @for (type of excerciseLogService.types(); track type) ***REMOVED***
-            <button ngbDropdownItem [ngClass]="***REMOVED*** active: type === excerciseLogService.selectedType()***REMOVED***" (click)="excerciseLogService.selectedType$.next(type)">
+          <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
+          @for (type of exerciseLogService.types(); track type) ***REMOVED***
+            <button
+              ngbDropdownItem
+              [ngClass]="***REMOVED*** active: type === exerciseLogService.selectedType() ***REMOVED***"
+              (click)="exerciseLogService.selectedType$.next(type)"
+            >
               ***REMOVED******REMOVED*** type | titlecase ***REMOVED******REMOVED***
             </button>
       ***REMOVED***
         </div>
       </div>
     </div>
-    <!-- #endregion -->
   </div>
+  <!-- #endregion -->
+
+  <!-- #region TYPEAHEAD EXERCISE -->
+  <div class="col-12">
+    <input
+      type="text"
+      class="form-control mb-2"
+      [(ngModel)]="exerciseTypeahead"
+      (selectItem)="onExerciseTypeaheadChange($event)"
+      [ngbTypeahead]="exerciseSearch"
+      (focus)="exerciseTypeahead = ''; exerciseFocus$.next(exerciseTypeahead)"
+      (blur)="exerciseTypeahead = exerciseLogService.selectedExerciseLabel()"
+      [popupClass]="'typeahead'"
+      [resultFormatter]="exerciseFormatter"
+      [inputFormatter]="exerciseFormatter"
+      #exerciseTypeaheadInput
+    />
+  </div>
+  <!-- #endregion -->
+
+  <!-- #region WEIGHT EXERCISE -->
+
+  <div class="col-12">
+    <input
+      type="text"
+      class="form-control mb-2"
+      [(ngModel)]="weightTypeahead"
+      (selectItem)="onWeightTypeaheadChange($event)"
+      [ngbTypeahead]="weightSearch"
+      (focus)="weightTypeahead = ''; weightFocus$.next(weightTypeahead)"
+      (blur)="weightTypeahead = exerciseLogService.selectedWeightLabel()"
+      [popupClass]="'typeahead'"
+      [resultFormatter]="weightFormatter"
+      [inputFormatter]="weightFormatter"
+      #weightTypeaheadInput
+    />
+  </div>
+  <!-- #endregion -->
 
   <div class="row">
     <div class="col-12">
@@ -56,15 +72,15 @@
 </div>
 <!-- #endregion -->
 
-@if (excerciseLogService.loaded()) ***REMOVED***
+@if (exerciseLogService.loaded()) ***REMOVED***
   <div class="container">
-    @if (excerciseLogService.personalRecord(); as personalRecord) ***REMOVED***
+    @if (exerciseLogService.personalRecord(); as personalRecord) ***REMOVED***
       <app-personal-record class="mb-3" [personalRecord]="personalRecord"></app-personal-record>
 ***REMOVED***
     @if (isGrouped) ***REMOVED***
-      <app-grouped-excercise-rows [groupedExcerciseLogs]="excerciseLogService.groupedLogs()"> </app-grouped-excercise-rows>
+      <app-grouped-excercise-rows [groupedExcerciseLogs]="exerciseLogService.groupedLogs()"> </app-grouped-excercise-rows>
 ***REMOVED*** @else ***REMOVED***
-      <app-excercise-rows [exerciseRows]="excerciseLogService.exerciseRows()"></app-excercise-rows>
+      <app-excercise-rows [exerciseRows]="exerciseLogService.exerciseRows()"></app-excercise-rows>
 ***REMOVED***
   </div>
 ***REMOVED*** @else ***REMOVED***

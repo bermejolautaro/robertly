@@ -1,3 +1,55 @@
+<!-- #region MODAL -->
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">New Log</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
+  </div>
+  <div class="modal-body">
+    <form class="needs-validation" novalidate>
+      <div class="mb-3 has-validation">
+        <input type="text" class="form-control" placeholder="Username" [formControl]="formGroup.controls.user" />
+        @if (!formGroup.controls.user.pristine && formGroup.errors && formGroup.errors['userRequired']) ***REMOVED***
+          <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['userRequired'] ***REMOVED******REMOVED***</div>
+    ***REMOVED***
+        @if (!formGroup.controls.user.pristine && formGroup.errors && formGroup.errors['userInvalidPeron']) ***REMOVED***
+          <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['userInvalidPeron'] ***REMOVED******REMOVED***</div>
+    ***REMOVED***
+      </div>
+
+      <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Exercise" [formControl]="formGroup.controls.exercise" />
+        @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseRequired']) ***REMOVED***
+          <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['exerciseRequired'] ***REMOVED******REMOVED***</div>
+    ***REMOVED***
+        @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseInvalidPeron']) ***REMOVED***
+          <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['exerciseInvalidPeron'] ***REMOVED******REMOVED***</div>
+    ***REMOVED***
+        @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseDoesNotExist']) ***REMOVED***
+          <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['exerciseDoesNotExist'] ***REMOVED******REMOVED***</div>
+    ***REMOVED***
+      </div>
+
+      @for (serieControl of formGroup.controls.series.controls; track $index) ***REMOVED***
+        <div class="input-group mb-3 align-items-center">
+          <span class="input-group-text">Serie ***REMOVED******REMOVED*** $index + 1 ***REMOVED******REMOVED***</span>
+          <input type="number" class="form-control" placeholder="Reps" [formControl]="serieControl.controls.reps" />
+          <input type="number" class="form-control" placeholder="Kg" [formControl]="serieControl.controls.weightInKg" />
+        </div>
+  ***REMOVED***
+      @if (!formGroup.controls.series.pristine && formGroup.errors && formGroup.errors['seriesAllSeriesAreEmpty']) ***REMOVED***
+        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['seriesAllSeriesAreEmpty'] ***REMOVED******REMOVED***</div>
+  ***REMOVED***
+      @if (!formGroup.controls.series.pristine && formGroup.errors && formGroup.errors['seriesRepsMustBeInteger']) ***REMOVED***
+        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['seriesRepsMustBeInteger'] ***REMOVED******REMOVED***</div>
+  ***REMOVED***
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="modal.close('Save click')" [disabled]="formGroup.invalid">Save</button>
+  </div>
+</ng-template>
+<!-- #endregion -->
+
 <nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-3">
   <div class="container-fluid d-flex justify-content-end align-items-center">
     <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
@@ -22,8 +74,14 @@
     ***REMOVED***
       </div>
     </div>
-    <button type="button" class="btn" style="outline: none; border: none; padding: 0" (click)="fetchData()">
-      <i class="fa fa-refresh" style="font-size: 20px; color: white"></i>
+    <button type="button" class="btn" style="outline: none; border: none; padding: 0">
+      <i
+        class="fa fa-refresh"
+        style="font-size: 20px; color: white"
+        [ngClass]="***REMOVED*** spin: isSpinning ***REMOVED***"
+        (click)="isSpinning = true; fetchData()"
+        (animationend)="isSpinning = false"
+      ></i>
     </button>
   </div>
 </nav>
@@ -31,6 +89,10 @@
 <div [style.marginBottom.rem]="6">
   <router-outlet></router-outlet>
 </div>
+
+<button class="btn btn-lg btn-primary" (click)="open(content)">
+  <i class="fa fa-plus"></i>
+</button>
 
 <nav class="navbar navbar-dark bg-primary bg-gradient fixed-bottom fw-bold">
   <div class="container-fluid">
