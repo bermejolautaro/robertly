@@ -99,7 +99,12 @@ const createLogFormValidator =
         border-radius: 100%;
         position: fixed;
         right: 25px;
-        bottom: max(75px, env(safe-area-inset-bottom) + 30px);
+        bottom: 75px;
+
+        @supports (-webkit-hyphens: none) {
+          bottom: 100px;
+        }
+
         z-index: 4;
       }
     `,
@@ -191,27 +196,25 @@ export class AppComponent {
   public open(content: TemplateRef<any>): void {
     this.modalService
       .open(content, { centered: true })
-      .result.then(
-        () => {
-          const request = {
-            date: dayjs().format('DD/MM/YYYY'),
-            exercise: this.formGroup.value.exercise!.toLowerCase(),
-            user: this.formGroup.value.user!.toLowerCase(),
-            payload: {
-              series: (this.formGroup.value.series ?? [])
-                .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
-            },
-          };
+      .result.then(() => {
+        const request = {
+          date: dayjs().format('DD/MM/YYYY'),
+          exercise: this.formGroup.value.exercise!.toLowerCase(),
+          user: this.formGroup.value.user!.toLowerCase(),
+          payload: {
+            series: (this.formGroup.value.series ?? [])
+              .filter(x => !!x.reps && !!x.weightInKg)
+              .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+          },
+        };
 
-          this.exerciseLogService.startLoading$.next();
-          this.exerciseLogApiService.createExerciseLog(request).subscribe({
-            next: () => {
-              this.fetchData();
-            },
-          });
-        }
-      )
+        this.exerciseLogService.startLoading$.next();
+        this.exerciseLogApiService.createExerciseLog(request).subscribe({
+          next: () => {
+            this.fetchData();
+          },
+        });
+      })
       .then(() => this.formGroup.reset());
   }
 
