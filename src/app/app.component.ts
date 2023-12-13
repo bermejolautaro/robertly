@@ -1,8 +1,21 @@
-import { Component, ElementRef, TemplateRef, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import { Observable, OperatorFunction, Subject, distinctUntilChanged, filter, first, forkJoin, map, merge, switchMap, tap } from 'rxjs';
+import {
+  Observable,
+  OperatorFunction,
+  Subject,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  first,
+  forkJoin,
+  map,
+  merge,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { LOGS_PATH, STATS_PATH } from 'src/main';
 
 import { ExerciseLogService } from '@services/excercise-log.service';
@@ -24,6 +37,7 @@ import { parseDate } from '@helpers/date.helper';
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
 const EXERCISES_CACHE_KEY = 'robertly-exercises';
+const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
 
 type CreateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
@@ -123,7 +137,7 @@ const createLogFormValidator =
     NgbTypeaheadModule,
   ],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
@@ -227,9 +241,21 @@ export class AppComponent {
       .subscribe(() => {
         this.document.location.reload();
       });
+
+    this.formGroup.valueChanges
+      .pipe(debounceTime(1000))
+      .subscribe(value => localStorage.setItem(CREATE_LOG_VALUE_CACHE_KEY, JSON.stringify(value)));
   }
 
-  public open(content: TemplateRef<any>): void {
+  public ngOnInit(): void {
+    const formGroupValue = JSON.parse(localStorage.getItem(CREATE_LOG_VALUE_CACHE_KEY) ?? 'null');
+
+    if (formGroupValue) {
+      this.formGroup.patchValue(formGroupValue);
+    }
+  }
+
+  public open(content: TemplateRef<unknown>): void {
     this.modalService.open(content, { centered: true }).result.then(
       () => {
         const request = {
@@ -257,9 +283,12 @@ export class AppComponent {
         this.exerciseLogApiService.createExerciseLog(request).subscribe({
           next: () => {
             this.formGroup.reset();
+            localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
             this.fetchData(false);
           },
-          error: () => {},
+          error: () => {
+            this.fetchData();
+          },
         });
       },
       () => {}
