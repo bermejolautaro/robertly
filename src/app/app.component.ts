@@ -1,8 +1,8 @@
-import ***REMOVED*** Component, TemplateRef, inject ***REMOVED*** from '@angular/core';
+import ***REMOVED*** Component, ElementRef, TemplateRef, ViewChild, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** RouterLinkActive, RouterLinkWithHref, RouterOutlet ***REMOVED*** from '@angular/router';
 import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
 
-import ***REMOVED*** filter, first, forkJoin, map, switchMap, tap ***REMOVED*** from 'rxjs';
+import ***REMOVED*** Observable, OperatorFunction, Subject, distinctUntilChanged, filter, first, forkJoin, map, merge, switchMap, tap ***REMOVED*** from 'rxjs';
 import ***REMOVED*** LOGS_PATH, STATS_PATH ***REMOVED*** from 'src/main';
 
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
@@ -15,10 +15,11 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
-import ***REMOVED*** NgbDropdownModule, NgbModal ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import ***REMOVED*** NgbDropdownModule, NgbModal, NgbTypeaheadModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 import ***REMOVED*** ExerciseApiService ***REMOVED*** from '@services/exercises-api.service';
 import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
 import ***REMOVED*** FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators ***REMOVED*** from '@angular/forms';
+import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -119,6 +120,7 @@ const createLogFormValidator =
     NgbDropdownModule,
     FormsModule,
     ReactiveFormsModule,
+    NgbTypeaheadModule,
   ],
 ***REMOVED***)
 export class AppComponent ***REMOVED***
@@ -129,11 +131,47 @@ export class AppComponent ***REMOVED***
   private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
 
+  @ViewChild('usernameTypeaheadInput', ***REMOVED*** static: true ***REMOVED***) usernameTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly usernameFocus$: Subject<string> = new Subject<string>();
+
+  public readonly usernameSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => ***REMOVED***
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+
+    return merge(debouncedText$, this.usernameFocus$).pipe(
+      map(() => ***REMOVED***
+        const usernames = this.exerciseLogService.usernames().map(x => x);
+
+        return this.formGroup.value.user === ''
+          ? usernames
+          : usernames.filter(x => !!x).filter(v => v.toLowerCase().includes(this.formGroup.value.user?.toLowerCase() ?? ''));
+  ***REMOVED***)
+    );
+***REMOVED***;
+
+  @ViewChild('exerciseTypeaheadInput', ***REMOVED*** static: true ***REMOVED***) exerciseTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly exerciseFocus$: Subject<string> = new Subject<string>();
+
+  public readonly exerciseSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => ***REMOVED***
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+
+    return merge(debouncedText$, this.exerciseFocus$).pipe(
+      map(() => ***REMOVED***
+        const exercises = this.exerciseLogService.exercises().map(x => x.name);
+
+        return this.formGroup.value.exercise === ''
+          ? exercises
+          : exercises.filter(x => !!x).filter(v => v.toLowerCase().includes(this.formGroup.value.exercise?.toLowerCase() ?? ''));
+  ***REMOVED***)
+    );
+***REMOVED***;
+
   public readonly formGroup: CreateLogFormGroup = new FormGroup(
     ***REMOVED***
       user: new FormControl(''),
       exercise: new FormControl(''),
       series: new FormArray([
+        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
+        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
         new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
         new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
         new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
@@ -151,8 +189,6 @@ export class AppComponent ***REMOVED***
     dayjs.extend(customParseFormat);
     dayjs.extend(weekOfYear);
     dayjs.extend(isoWeek);
-
-    this.formGroup.statusChanges.subscribe(x => console.log(this.formGroup.controls));
 
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
@@ -194,35 +230,46 @@ export class AppComponent ***REMOVED***
 ***REMOVED***
 
   public open(content: TemplateRef<any>): void ***REMOVED***
-    this.modalService
-      .open(content, ***REMOVED*** centered: true ***REMOVED***)
-      .result.then(
-        () => ***REMOVED***
-          const request = ***REMOVED***
-            date: dayjs().format('DD/MM/YYYY'),
-            exercise: this.formGroup.value.exercise!.toLowerCase(),
-            user: this.formGroup.value.user!.toLowerCase(),
-            payload: ***REMOVED***
-              series: (this.formGroup.value.series ?? [])
-                .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => (***REMOVED*** reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) ***REMOVED***)),
-        ***REMOVED***,
-      ***REMOVED***;
+    this.modalService.open(content, ***REMOVED*** centered: true ***REMOVED***).result.then(
+      () => ***REMOVED***
+        const request = ***REMOVED***
+          date: dayjs().format('DD-MM-YYYY'),
+          exercise: this.formGroup.value.exercise!.toLowerCase(),
+          user: this.formGroup.value.user!.toLowerCase(),
+          payload: ***REMOVED***
+            series: (this.formGroup.value.series ?? [])
+              .filter(x => !!x.reps && !!x.weightInKg)
+              .map(x => (***REMOVED*** reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) ***REMOVED***)),
+      ***REMOVED***,
+    ***REMOVED***;
 
-          this.exerciseLogService.startLoading$.next();
-          this.exerciseLogApiService.createExerciseLog(request).subscribe(***REMOVED***
-            next: () => ***REMOVED***
-              this.fetchData();
-        ***REMOVED***,
-      ***REMOVED***);
-    ***REMOVED***,
-        () => ***REMOVED******REMOVED***
-      )
-      .then(() => this.formGroup.reset());
+        const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => (***REMOVED***
+          date: parseDate(request.date).format('DD/MM/YYYY'),
+          name: request.exercise,
+          reps: s.reps,
+          serie: i + 1,
+          type: '',
+          user: request.user,
+          weightKg: s.weightInKg,
+    ***REMOVED***));
+
+        this.exerciseLogService.appendLogs$.next(exerciseLogs);
+        this.exerciseLogApiService.createExerciseLog(request).subscribe(***REMOVED***
+          next: () => ***REMOVED***
+            this.formGroup.reset();
+            this.fetchData(false);
+      ***REMOVED***,
+          error: () => ***REMOVED******REMOVED***,
+    ***REMOVED***);
+  ***REMOVED***,
+      () => ***REMOVED******REMOVED***
+    );
 ***REMOVED***
 
-  public fetchData(): void ***REMOVED***
-    this.exerciseLogService.startLoading$.next();
+  public fetchData(showLoading: boolean = true): void ***REMOVED***
+    if (showLoading) ***REMOVED***
+      this.exerciseLogService.startLoading$.next();
+***REMOVED***
     const exerciseLogs$ = forkJoin([this.exerciseLogApiService.getExerciseLogs(), this.exerciseLogApiService.getExerciseLogsv2()]).pipe(
       map(([a, b]) => a.concat(b))
     );

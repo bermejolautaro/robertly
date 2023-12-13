@@ -5,15 +5,16 @@
 @import 'font-awesome/css/font-awesome.min';
 
 .dropdown ***REMOVED***
-  button.btn-outline-primary:hover, button.btn-outline-primary.show ***REMOVED***
+  button.btn-outline-primary:hover,
+  button.btn-outline-primary.show ***REMOVED***
     background-color: white;
     color: var(--bs-btn-color);
 ***REMOVED***
 ***REMOVED***
 
 .accordion ***REMOVED***
-  --bs-accordion-btn-padding-x: .8rem;
-  --bs-accordion-btn-padding-y: .6rem;
+  --bs-accordion-btn-padding-x: 0.8rem;
+  --bs-accordion-btn-padding-y: 0.6rem;
 ***REMOVED***
 
 .accordion-highlight ***REMOVED***
@@ -77,5 +78,14 @@
 ***REMOVED***
 
 .shadow-material-1 ***REMOVED***
-  box-shadow: 0px 3px 1px -2px rgba(0, 0, 0, 0.2), 0px 2px 2px 0px rgba(0, 0, 0, 0.14), 0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0px 3px 1px -2px rgba(0, 0, 0, 0.2),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
+    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
+***REMOVED***
+
+.typeahead ***REMOVED***
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 400px;
 ***REMOVED***

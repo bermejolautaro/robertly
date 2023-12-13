@@ -53,6 +53,7 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly startLoading$: Subject<void> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
+  public readonly appendLogs$: Subject<ExerciseLog[]> = new Subject();
   public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
   public readonly selectedExercise$: Subject<SelectedExcercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
@@ -224,6 +225,15 @@ export class ExerciseLogService ***REMOVED***
     ***REMOVED***)),
 ***REMOVED***);
 
+    this.appendLogs$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
+      next: logs =>
+        this.state.update(state => (***REMOVED***
+          ...state,
+          logs: [...state.logs, ...logs],
+          filteredLogs: [...state.filteredLogs, ...logs],
+    ***REMOVED***)),
+***REMOVED***);
+
     this.selectedExercise$.pipe(takeUntilDestroyed()).subscribe(***REMOVED***
       next: selectedExcercise =>
         this.state.update(state => (***REMOVED***
@@ -247,7 +257,7 @@ export class ExerciseLogService ***REMOVED***
           ...state,
           selectedType,
           selectedExercise,
-          selectedWeight
+          selectedWeight,
     ***REMOVED***));
   ***REMOVED***,
 ***REMOVED***);

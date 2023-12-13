@@ -5,9 +5,20 @@
     <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
   </div>
   <div class="modal-body">
-    <form class="needs-validation" novalidate>
-      <div class="mb-3 has-validation">
-        <input type="text" class="form-control" placeholder="Username" [formControl]="formGroup.controls.user" />
+    <form>
+      <!-- #region USERNAME EXERCISE -->
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control mb-2"
+          placeholder="Username"
+          [formControl]="formGroup.controls.user"
+          (selectItem)="formGroup.controls.user.patchValue($event.item)"
+          [ngbTypeahead]="usernameSearch"
+          [popupClass]="'typeahead'"
+          (focus)="usernameFocus$.next(formGroup.value.user || '')"
+          #usernameTypeaheadInput
+        />
         @if (!formGroup.controls.user.pristine && formGroup.errors && formGroup.errors['userRequired']) ***REMOVED***
           <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['userRequired'] ***REMOVED******REMOVED***</div>
     ***REMOVED***
@@ -15,9 +26,21 @@
           <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['userInvalidPeron'] ***REMOVED******REMOVED***</div>
     ***REMOVED***
       </div>
+      <!-- #endregion -->
 
+      <!-- #region TYPEAHEAD EXERCISE -->
       <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Exercise" [formControl]="formGroup.controls.exercise" />
+        <input
+          type="text"
+          class="form-control mb-2"
+          placeholder="Exercise"
+          [formControl]="formGroup.controls.exercise"
+          (selectItem)="formGroup.controls.exercise.patchValue($event.item)"
+          [ngbTypeahead]="exerciseSearch"
+          [popupClass]="'typeahead'"
+          (focus)="exerciseFocus$.next(formGroup.value.exercise || '')"
+          #exerciseTypeaheadInput
+        />
         @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseRequired']) ***REMOVED***
           <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['exerciseRequired'] ***REMOVED******REMOVED***</div>
     ***REMOVED***
@@ -28,6 +51,7 @@
           <div class="d-block invalid-feedback">***REMOVED******REMOVED*** formGroup.errors['exerciseDoesNotExist'] ***REMOVED******REMOVED***</div>
     ***REMOVED***
       </div>
+      <!-- #endregion -->
 
       @for (serieControl of formGroup.controls.series.controls; track $index) ***REMOVED***
         <div class="input-group mb-3 align-items-center">

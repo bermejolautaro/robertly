@@ -38,36 +38,38 @@ type State = ***REMOVED***
             </div>
           </div>
         </div>
-        <table class="table table-sm m-0 mb-3">
-          <thead>
-            <tr>
-              <td scope="col" class="fw-semibold">Muscle Group</td>
-              @if (selectedWeek(); as selectedWeek) ***REMOVED***
-                @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) ***REMOVED***
-                  <td class="text-center fw-semibold">
-                    ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.key | titlecase ***REMOVED******REMOVED***
-                  </td>
-            ***REMOVED***
-          ***REMOVED***
-              <td class="text-center fw-semibold">Target</td>
-            </tr>
-          </thead>
-          <tbody>
-            @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) ***REMOVED***
+        <div class="table-responsive">
+          <table class="table table-sm m-0 mb-3">
+            <thead>
               <tr>
-                <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
+                <td scope="col" class="fw-semibold">Muscle Group</td>
                 @if (selectedWeek(); as selectedWeek) ***REMOVED***
                   @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) ***REMOVED***
-                    <td class="text-center">
-                      ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
+                    <td class="text-center fw-semibold">
+                      ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.key | titlecase ***REMOVED******REMOVED***
                     </td>
               ***REMOVED***
             ***REMOVED***
-                <td class="text-center">10</td>
+                <td class="text-center fw-semibold">Target</td>
               </tr>
-        ***REMOVED***
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) ***REMOVED***
+                <tr>
+                  <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
+                  @if (selectedWeek(); as selectedWeek) ***REMOVED***
+                    @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) ***REMOVED***
+                      <td class="text-center">
+                        ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
+                      </td>
+                ***REMOVED***
+              ***REMOVED***
+                  <td class="text-center">10</td>
+                </tr>
+          ***REMOVED***
+            </tbody>
+          </table>
+        </div>
         <div class="fw-semibold">
           ***REMOVED******REMOVED*** daysTrainedMessage() ***REMOVED******REMOVED***
         </div>

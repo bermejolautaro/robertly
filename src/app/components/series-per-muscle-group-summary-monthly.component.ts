@@ -9,40 +9,42 @@ import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-
 @Component(***REMOVED***
   selector: 'app-series-per-muscle-group-summary-monthly',
   template: `
-    <table class="table table-sm m-0 mb-3">
-      <thead>
-        <tr>
-          <td scope="col" class="fw-semibold">Muscle Group</td>
-          @if (this.exerciseLogService.selectedMonth(); as selectedMonth) ***REMOVED***
-            @for (
-              seriesPerMuscleGroup of exerciseLogService.seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue;
-              track $index
-            ) ***REMOVED***
-              <td class="text-center fw-semibold">***REMOVED******REMOVED*** seriesPerMuscleGroup.key | titlecase ***REMOVED******REMOVED***</td>
-        ***REMOVED***
-      ***REMOVED***
-          <td class="text-center fw-semibold">Target</td>
-        </tr>
-      </thead>
-      <tbody>
-        @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) ***REMOVED***
+    <div class="table-responsive">
+      <table class="table table-sm m-0 mb-3">
+        <thead>
           <tr>
-            <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
+            <td scope="col" class="fw-semibold">Muscle Group</td>
             @if (this.exerciseLogService.selectedMonth(); as selectedMonth) ***REMOVED***
               @for (
-                seriesPerMuscleGroupPerUser of exerciseLogService.seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue;
+                seriesPerMuscleGroup of exerciseLogService.seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue;
                 track $index
               ) ***REMOVED***
-                <td class="text-center">
-                  ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
-                </td>
+                <td class="text-center fw-semibold">***REMOVED******REMOVED*** seriesPerMuscleGroup.key | titlecase ***REMOVED******REMOVED***</td>
           ***REMOVED***
         ***REMOVED***
-            <td class="text-center">40</td>
+            <td class="text-center fw-semibold">Target</td>
           </tr>
-    ***REMOVED***
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) ***REMOVED***
+            <tr>
+              <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
+              @if (this.exerciseLogService.selectedMonth(); as selectedMonth) ***REMOVED***
+                @for (
+                  seriesPerMuscleGroupPerUser of exerciseLogService.seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue;
+                  track $index
+                ) ***REMOVED***
+                  <td class="text-center">
+                    ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
+                  </td>
+            ***REMOVED***
+          ***REMOVED***
+              <td class="text-center">40</td>
+            </tr>
+      ***REMOVED***
+        </tbody>
+      </table>
+    </div>
   `,
   styles: [
     `

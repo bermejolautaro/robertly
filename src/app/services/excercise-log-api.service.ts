@@ -1,5 +1,6 @@
 import ***REMOVED*** HttpClient ***REMOVED*** from '@angular/common/http';
 import ***REMOVED*** Injectable, inject ***REMOVED*** from '@angular/core';
+import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
 import ***REMOVED*** processData ***REMOVED*** from '@helpers/excercise-log-api.helper';
 import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
 
@@ -56,13 +57,13 @@ export class ExerciseLogApiService ***REMOVED***
 ***REMOVED***
 
   public getExerciseLogsv2(): Observable<ExerciseLog[]> ***REMOVED***
-    return this.http.get<GetExerciseLogsV2Response>(`$***REMOVED***this.url***REMOVED***/logs`).pipe(
+    return this.http.get<GetExerciseLogsV2Response>(`$***REMOVED***this.url***REMOVED***/firebase-logs`).pipe(
       map(x => ***REMOVED***
         return x.data.flatMap(y => ***REMOVED***
           return y.payload.series.map(
             (s, i) =>
               (***REMOVED***
-                date: y.date,
+                date: parseDate(y.date).format('DD/MM/YYYY'),
                 name: y.exercise,
                 reps: s.reps,
                 serie: i + 1,
@@ -77,6 +78,6 @@ export class ExerciseLogApiService ***REMOVED***
 ***REMOVED***
 
   public createExerciseLog(request: CreateExerciseLogRequest): Observable<void> ***REMOVED***
-    return this.http.post<void>(`$***REMOVED***this.url***REMOVED***/logs`, request);
+    return this.http.post<void>(`$***REMOVED***this.url***REMOVED***/firebase-logs`, request);
 ***REMOVED***
 ***REMOVED***

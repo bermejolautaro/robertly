@@ -18,15 +18,7 @@ const CLEAR_FILTER_LABEL = 'Clear Filter';
 @Component(***REMOVED***
   selector: 'app-excercise-logs-page',
   templateUrl: 'excercise-logs.page.component.html',
-  styles: `
-    ::ng-deep ***REMOVED***
-      .typeahead ***REMOVED***
-        overflow-y: scroll; 
-        overflow-x: hidden; 
-        max-height: 400px;
-  ***REMOVED***
-***REMOVED***
-  `,
+  styles: ``,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [TitleCasePipe],
