@@ -8,17 +8,22 @@
     <form>
       <!-- #region USERNAME EXERCISE -->
       <div class="mb-3">
-        <input
-          type="text"
-          class="form-control mb-2"
-          placeholder="Username"
-          [formControl]="formGroup.controls.user"
-          (selectItem)="formGroup.controls.user.patchValue($event.item)"
-          [ngbTypeahead]="usernameSearch"
-          [popupClass]="'typeahead'"
-          (focus)="usernameFocus$.next(formGroup.value.user || '')"
-          #usernameTypeaheadInput
-        />
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Username"
+            [formControl]="formGroup.controls.user"
+            (selectItem)="formGroup.controls.user.patchValue($event.item)"
+            [ngbTypeahead]="usernameSearch"
+            [popupClass]="'typeahead'"
+            (focus)="usernameFocus$.next(formGroup.value.user || '')"
+            #usernameTypeaheadInput
+          />
+          <button class="btn btn-outline-secondary" type="button" (click)="formGroup.controls.user.patchValue('')">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
         @if (!formGroup.controls.user.pristine && formGroup.errors && formGroup.errors['userRequired']) {
           <div class="d-block invalid-feedback">{{ formGroup.errors['userRequired'] }}</div>
         }
@@ -30,17 +35,22 @@
 
       <!-- #region TYPEAHEAD EXERCISE -->
       <div class="mb-3">
-        <input
-          type="text"
-          class="form-control mb-2"
-          placeholder="Exercise"
-          [formControl]="formGroup.controls.exercise"
-          (selectItem)="formGroup.controls.exercise.patchValue($event.item)"
-          [ngbTypeahead]="exerciseSearch"
-          [popupClass]="'typeahead'"
-          (focus)="exerciseFocus$.next(formGroup.value.exercise || '')"
-          #exerciseTypeaheadInput
-        />
+        <div class="input-group">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Exercise"
+            [formControl]="formGroup.controls.exercise"
+            (selectItem)="formGroup.controls.exercise.patchValue($event.item)"
+            [ngbTypeahead]="exerciseSearch"
+            [popupClass]="'typeahead'"
+            (focus)="exerciseFocus$.next(formGroup.value.exercise || '')"
+            #exerciseTypeaheadInput
+          />
+          <button class="btn btn-outline-secondary" type="button" (click)="formGroup.controls.exercise.patchValue('')">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
         @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseRequired']) {
           <div class="d-block invalid-feedback">{{ formGroup.errors['exerciseRequired'] }}</div>
         }
