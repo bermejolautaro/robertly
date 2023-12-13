@@ -258,6 +258,10 @@ export class AppComponent implements OnInit {
   public open(content: TemplateRef<unknown>): void {
     this.modalService.open(content, { centered: true }).result.then(
       () => {
+        if (this.formGroup.invalid) {
+          return;
+        }
+
         const request = {
           date: dayjs().format('DD-MM-YYYY'),
           exercise: this.formGroup.value.exercise!.toLowerCase(),
@@ -291,7 +295,9 @@ export class AppComponent implements OnInit {
           },
         });
       },
-      () => {}
+      () => {
+        this.formGroup.markAsPristine();
+      }
     );
   }
 

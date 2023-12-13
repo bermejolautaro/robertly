@@ -79,7 +79,15 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="modal.close('Save click')" [disabled]="formGroup.invalid">Save</button>
+    <button
+      type="button"
+      class="btn"
+      [ngClass]="{ 'btn-primary': formGroup.valid, 'btn-secondary': formGroup.invalid }"
+      (click)="modal.close('Save click')"
+      [disabled]="formGroup.invalid"
+    >
+      Save
+    </button>
   </div>
 </ng-template>
 <!-- #endregion -->
