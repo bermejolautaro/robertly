@@ -258,6 +258,10 @@ export class AppComponent implements OnInit ***REMOVED***
   public open(content: TemplateRef<unknown>): void ***REMOVED***
     this.modalService.open(content, ***REMOVED*** centered: true ***REMOVED***).result.then(
       () => ***REMOVED***
+        if (this.formGroup.invalid) ***REMOVED***
+          return;
+    ***REMOVED***
+
         const request = ***REMOVED***
           date: dayjs().format('DD-MM-YYYY'),
           exercise: this.formGroup.value.exercise!.toLowerCase(),
@@ -291,7 +295,9 @@ export class AppComponent implements OnInit ***REMOVED***
       ***REMOVED***,
     ***REMOVED***);
   ***REMOVED***,
-      () => ***REMOVED******REMOVED***
+      () => ***REMOVED***
+        this.formGroup.markAsPristine();
+  ***REMOVED***
     );
 ***REMOVED***
 
