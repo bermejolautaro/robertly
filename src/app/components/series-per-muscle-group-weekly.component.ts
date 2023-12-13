@@ -38,36 +38,38 @@ type State = {
             </div>
           </div>
         </div>
-        <table class="table table-sm m-0 mb-3">
-          <thead>
-            <tr>
-              <td scope="col" class="fw-semibold">Muscle Group</td>
-              @if (selectedWeek(); as selectedWeek) {
-                @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) {
-                  <td class="text-center fw-semibold">
-                    {{ seriesPerMuscleGroupPerUser.key | titlecase }}
-                  </td>
-                }
-              }
-              <td class="text-center fw-semibold">Target</td>
-            </tr>
-          </thead>
-          <tbody>
-            @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) {
+        <div class="table-responsive">
+          <table class="table table-sm m-0 mb-3">
+            <thead>
               <tr>
-                <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
+                <td scope="col" class="fw-semibold">Muscle Group</td>
                 @if (selectedWeek(); as selectedWeek) {
                   @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) {
-                    <td class="text-center">
-                      {{ seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 }}
+                    <td class="text-center fw-semibold">
+                      {{ seriesPerMuscleGroupPerUser.key | titlecase }}
                     </td>
                   }
                 }
-                <td class="text-center">10</td>
+                <td class="text-center fw-semibold">Target</td>
               </tr>
-            }
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) {
+                <tr>
+                  <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
+                  @if (selectedWeek(); as selectedWeek) {
+                    @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) {
+                      <td class="text-center">
+                        {{ seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 }}
+                      </td>
+                    }
+                  }
+                  <td class="text-center">10</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
         <div class="fw-semibold">
           {{ daysTrainedMessage() }}
         </div>

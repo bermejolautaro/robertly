@@ -1,8 +1,8 @@
-import { Component, TemplateRef, inject } from '@angular/core';
+import { Component, ElementRef, TemplateRef, ViewChild, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import { filter, first, forkJoin, map, switchMap, tap } from 'rxjs';
+import { Observable, OperatorFunction, Subject, distinctUntilChanged, filter, first, forkJoin, map, merge, switchMap, tap } from 'rxjs';
 import { LOGS_PATH, STATS_PATH } from 'src/main';
 
 import { ExerciseLogService } from '@services/excercise-log.service';
@@ -15,10 +15,11 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import { ExerciseLog } from '@models/excercise-log.model';
-import { NgbDropdownModule, NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { parseDate } from '@helpers/date.helper';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -119,6 +120,7 @@ const createLogFormValidator =
     NgbDropdownModule,
     FormsModule,
     ReactiveFormsModule,
+    NgbTypeaheadModule,
   ],
 })
 export class AppComponent {
@@ -129,11 +131,47 @@ export class AppComponent {
   private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
 
+  @ViewChild('usernameTypeaheadInput', { static: true }) usernameTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly usernameFocus$: Subject<string> = new Subject<string>();
+
+  public readonly usernameSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+
+    return merge(debouncedText$, this.usernameFocus$).pipe(
+      map(() => {
+        const usernames = this.exerciseLogService.usernames().map(x => x);
+
+        return this.formGroup.value.user === ''
+          ? usernames
+          : usernames.filter(x => !!x).filter(v => v.toLowerCase().includes(this.formGroup.value.user?.toLowerCase() ?? ''));
+      })
+    );
+  };
+
+  @ViewChild('exerciseTypeaheadInput', { static: true }) exerciseTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly exerciseFocus$: Subject<string> = new Subject<string>();
+
+  public readonly exerciseSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+
+    return merge(debouncedText$, this.exerciseFocus$).pipe(
+      map(() => {
+        const exercises = this.exerciseLogService.exercises().map(x => x.name);
+
+        return this.formGroup.value.exercise === ''
+          ? exercises
+          : exercises.filter(x => !!x).filter(v => v.toLowerCase().includes(this.formGroup.value.exercise?.toLowerCase() ?? ''));
+      })
+    );
+  };
+
   public readonly formGroup: CreateLogFormGroup = new FormGroup(
     {
       user: new FormControl(''),
       exercise: new FormControl(''),
       series: new FormArray([
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
@@ -151,8 +189,6 @@ export class AppComponent {
     dayjs.extend(customParseFormat);
     dayjs.extend(weekOfYear);
     dayjs.extend(isoWeek);
-
-    this.formGroup.statusChanges.subscribe(x => console.log(this.formGroup.controls));
 
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
@@ -194,35 +230,46 @@ export class AppComponent {
   }
 
   public open(content: TemplateRef<any>): void {
-    this.modalService
-      .open(content, { centered: true })
-      .result.then(
-        () => {
-          const request = {
-            date: dayjs().format('DD/MM/YYYY'),
-            exercise: this.formGroup.value.exercise!.toLowerCase(),
-            user: this.formGroup.value.user!.toLowerCase(),
-            payload: {
-              series: (this.formGroup.value.series ?? [])
-                .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
-            },
-          };
+    this.modalService.open(content, { centered: true }).result.then(
+      () => {
+        const request = {
+          date: dayjs().format('DD-MM-YYYY'),
+          exercise: this.formGroup.value.exercise!.toLowerCase(),
+          user: this.formGroup.value.user!.toLowerCase(),
+          payload: {
+            series: (this.formGroup.value.series ?? [])
+              .filter(x => !!x.reps && !!x.weightInKg)
+              .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+          },
+        };
 
-          this.exerciseLogService.startLoading$.next();
-          this.exerciseLogApiService.createExerciseLog(request).subscribe({
-            next: () => {
-              this.fetchData();
-            },
-          });
-        },
-        () => {}
-      )
-      .then(() => this.formGroup.reset());
+        const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => ({
+          date: parseDate(request.date).format('DD/MM/YYYY'),
+          name: request.exercise,
+          reps: s.reps,
+          serie: i + 1,
+          type: '',
+          user: request.user,
+          weightKg: s.weightInKg,
+        }));
+
+        this.exerciseLogService.appendLogs$.next(exerciseLogs);
+        this.exerciseLogApiService.createExerciseLog(request).subscribe({
+          next: () => {
+            this.formGroup.reset();
+            this.fetchData(false);
+          },
+          error: () => {},
+        });
+      },
+      () => {}
+    );
   }
 
-  public fetchData(): void {
-    this.exerciseLogService.startLoading$.next();
+  public fetchData(showLoading: boolean = true): void {
+    if (showLoading) {
+      this.exerciseLogService.startLoading$.next();
+    }
     const exerciseLogs$ = forkJoin([this.exerciseLogApiService.getExerciseLogs(), this.exerciseLogApiService.getExerciseLogsv2()]).pipe(
       map(([a, b]) => a.concat(b))
     );

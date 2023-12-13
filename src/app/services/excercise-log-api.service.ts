@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { parseDate } from '@helpers/date.helper';
 import { processData } from '@helpers/excercise-log-api.helper';
 import { Observable, map } from 'rxjs';
 
@@ -56,13 +57,13 @@ export class ExerciseLogApiService {
   }
 
   public getExerciseLogsv2(): Observable<ExerciseLog[]> {
-    return this.http.get<GetExerciseLogsV2Response>(`${this.url}/logs`).pipe(
+    return this.http.get<GetExerciseLogsV2Response>(`${this.url}/firebase-logs`).pipe(
       map(x => {
         return x.data.flatMap(y => {
           return y.payload.series.map(
             (s, i) =>
               ({
-                date: y.date,
+                date: parseDate(y.date).format('DD/MM/YYYY'),
                 name: y.exercise,
                 reps: s.reps,
                 serie: i + 1,
@@ -77,6 +78,6 @@ export class ExerciseLogApiService {
   }
 
   public createExerciseLog(request: CreateExerciseLogRequest): Observable<void> {
-    return this.http.post<void>(`${this.url}/logs`, request);
+    return this.http.post<void>(`${this.url}/firebase-logs`, request);
   }
 }
