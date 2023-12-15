@@ -25,7 +25,6 @@ type ChartDataSetItem = ***REMOVED*** label: string; data: number[]; borderWidth
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [TitleCasePipe],
   imports: [],
 ***REMOVED***)
 export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit ***REMOVED***

@@ -1,12 +1,8 @@
 import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
 import ***REMOVED*** TestBed, fakeAsync, tick ***REMOVED*** from '@angular/core/testing';
 
-import dayjs from 'dayjs';
-import isoWeek from 'dayjs/plugin/isoWeek';
-
 describe('ExcerciseLogService', () => ***REMOVED***
   let service: ExerciseLogService = null!;
-  dayjs.extend(isoWeek);
 
   beforeEach(() => ***REMOVED***
     TestBed.configureTestingModule(***REMOVED*** providers: [ExerciseLogService] ***REMOVED***);
@@ -26,7 +22,7 @@ describe('ExcerciseLogService', () => ***REMOVED***
 
     const result = service.amountDaysTrainedPerUser();
 
-    const expected = ***REMOVED*** lautaro: 3, matias: 1***REMOVED***;
+    const expected = ***REMOVED*** lautaro: 3, matias: 1 ***REMOVED***;
 
     expect(result).toEqual(expected);
 ***REMOVED***));

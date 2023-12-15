@@ -1,4 +1,4 @@
-import ***REMOVED*** NgClass ***REMOVED*** from '@angular/common';
+import ***REMOVED*** NgClass, NgTemplateOutlet ***REMOVED*** from '@angular/common';
 import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
 
 import ***REMOVED*** NgbAccordionModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
@@ -36,7 +36,7 @@ import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from '@components/e
   styles: [``],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, NgbAccordionModule, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent],
+  imports: [NgClass, NgTemplateOutlet, NgbAccordionModule, ExcerciseRowTitleComponent, ExcerciseRowBodyComponent],
 ***REMOVED***)
 export class ExcerciseRowsComponent ***REMOVED***
   @Input() public exerciseRows: ExerciseRow[] = [];

@@ -1,9 +1,9 @@
-import ***REMOVED*** Injectable, computed, signal, effect ***REMOVED*** from '@angular/core';
+import ***REMOVED*** Injectable, computed, signal, effect, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
 import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
-import ***REMOVED*** Subject, delay, tap ***REMOVED*** from 'rxjs';
+import ***REMOVED*** Subject ***REMOVED*** from 'rxjs';
 import ***REMOVED***
   getPersonalRecord,
   groupExcerciseLogs,
@@ -13,7 +13,7 @@ import ***REMOVED***
   groupByMonth,
 ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
-import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
+import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
 
 interface SelectedExcercise ***REMOVED***
   name: string;
@@ -22,7 +22,6 @@ interface SelectedExcercise ***REMOVED***
 
 type State = ***REMOVED***
   logs: ExerciseLog[];
-  filteredLogs: ExerciseLog[];
   exercises: Exercise[];
   selectedExercise: SelectedExcercise | null;
   selectedUsername: string | null;
@@ -38,9 +37,10 @@ export const WEIGHT_DEFAULT_LABEL = 'Weight';
 
 @Injectable()
 export class ExerciseLogService ***REMOVED***
+  private readonly dayjsService = inject(DayjsService);
+
   private readonly state = signal<State>(***REMOVED***
     logs: [],
-    filteredLogs: [],
     exercises: [],
     selectedExercise: null,
     selectedUsername: null,
@@ -68,12 +68,12 @@ export class ExerciseLogService ***REMOVED***
 ***REMOVED***);
 
   public readonly filteredLogs = computed(() => ***REMOVED***
-    return this.state().filteredLogs;
+    return this.state().logs.filter(x => !!x.name);
 ***REMOVED***);
 
   public readonly types = computed(() =>
     R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       R.map(x => x.type),
       R.uniq()
     )
@@ -81,7 +81,7 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly usernames = computed(() =>
     R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       R.map(x => x.user),
       R.uniq()
     )
@@ -89,7 +89,7 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly exercises = computed(() => ***REMOVED***
     return R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
       R.uniqBy(x => x.name)
     );
@@ -107,7 +107,7 @@ export class ExerciseLogService ***REMOVED***
   public readonly selectedWeightLabel = computed(() => `$***REMOVED***this.state().selectedWeight ?? WEIGHT_DEFAULT_LABEL***REMOVED***`);
 
   public readonly groupedLogs = computed(() => ***REMOVED***
-    const groups = groupExcerciseLogs(this.state().filteredLogs, this.state().exercises);
+    const groups = groupExcerciseLogs(this.filteredLogs(), this.state().exercises);
     const selectedUsername = this.state().selectedUsername;
     const selectedExcercise = this.state().selectedExercise;
     const selectedType = this.state().selectedType;
@@ -170,7 +170,7 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly weights = computed(() => ***REMOVED***
     return R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       this.state().selectedExercise ? R.filter(x => x.name === this.state().selectedExercise?.name) : R.identity,
       this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity,
       R.map(x => x.weightKg),
@@ -192,7 +192,9 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly daysAmountByDayInSelectedMonth = computed(() => ***REMOVED***
     const result = R.toPairs(R.mapValues(groupByMonth(this.logs()), x => x));
-    const daysInMonth = result.filter(x => x[0] === this.selectedMonth()).flatMap(x => x[1].map(x => parseDate(x).format('dddd')));
+    const daysInMonth = result
+      .filter(x => x[0] === this.selectedMonth())
+      .flatMap(x => x[1].map(x => this.dayjsService.parseDate(x).format('dddd')));
 
     const daysAmountByDay = R.pipe(
       daysInMonth,
@@ -220,7 +222,6 @@ export class ExerciseLogService ***REMOVED***
         this.state.update(state => (***REMOVED***
           ...state,
           logs,
-          filteredLogs: logs.filter(x => !!x.name),
           loaded: true,
     ***REMOVED***)),
 ***REMOVED***);
@@ -230,7 +231,6 @@ export class ExerciseLogService ***REMOVED***
         this.state.update(state => (***REMOVED***
           ...state,
           logs: [...state.logs, ...logs],
-          filteredLogs: [...state.filteredLogs, ...logs],
     ***REMOVED***)),
 ***REMOVED***);
 

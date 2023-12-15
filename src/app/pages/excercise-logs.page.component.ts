@@ -9,7 +9,7 @@ import ***REMOVED*** distinctUntilChanged, map ***REMOVED*** from 'rxjs/operator
 
 import ***REMOVED*** IfNullEmptyArrayPipe ***REMOVED*** from '@pipes/if-null-empty-array.pipe';
 import ***REMOVED*** ExcerciseRowsComponent ***REMOVED*** from '@components/excercise-rows.component';
-import ***REMOVED*** GroupedExcerciseRowsComponent ***REMOVED*** from '@components/grouped-excercise-rows.component';
+import ***REMOVED*** GroupedExerciseRowsComponent ***REMOVED*** from '@components/grouped-exercise-rows.component';
 import ***REMOVED*** PersonalRecordComponent ***REMOVED*** from '@components/personal-record.component';
 import ***REMOVED*** ExerciseLogService, EXERCISE_DEFAULT_LABEL, WEIGHT_DEFAULT_LABEL ***REMOVED*** from '@services/excercise-log.service';
 
@@ -21,7 +21,6 @@ const CLEAR_FILTER_LABEL = 'Clear Filter';
   styles: ``,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [TitleCasePipe],
   imports: [
     NgClass,
     FormsModule,
@@ -29,7 +28,7 @@ const CLEAR_FILTER_LABEL = 'Clear Filter';
     TitleCasePipe,
     IfNullEmptyArrayPipe,
     PersonalRecordComponent,
-    GroupedExcerciseRowsComponent,
+    GroupedExerciseRowsComponent,
     ExcerciseRowsComponent,
     NgbDropdownModule,
     NgbTypeahead,

@@ -1,7 +1,7 @@
 import ***REMOVED*** HttpClient ***REMOVED*** from '@angular/common/http';
 import ***REMOVED*** Injectable, inject ***REMOVED*** from '@angular/core';
-import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
 import ***REMOVED*** processData ***REMOVED*** from '@helpers/excercise-log-api.helper';
+import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
 import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
 
 import ***REMOVED*** ExerciseLog ***REMOVED*** from 'src/app/models/excercise-log.model';
@@ -41,6 +41,7 @@ type CreateExerciseLogRequest = ***REMOVED***
 export class ExerciseLogApiService ***REMOVED***
   private readonly http = inject(HttpClient);
   private readonly url = inject(BACKEND_URL);
+  private readonly dayjsService = inject(DayjsService);
 
   public getExerciseLogs(): Observable<ExerciseLog[]> ***REMOVED***
     return this.http
@@ -63,7 +64,7 @@ export class ExerciseLogApiService ***REMOVED***
           return y.payload.series.map(
             (s, i) =>
               (***REMOVED***
-                date: parseDate(y.date).format('DD/MM/YYYY'),
+                date: this.dayjsService.parseDate(y.date).format('DD/MM/YYYY'),
                 name: y.exercise,
                 reps: s.reps,
                 serie: i + 1,

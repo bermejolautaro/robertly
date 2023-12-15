@@ -1,0 +1,107 @@
+<div class="row my-2">
+  <div class="col">
+    <!-- DATE -->
+    <div ngbAccordion>
+      <div ngbAccordionItem *ngFor="let exerciseLogsPerExerciseNamePerUsernamePerDate of exerciseLogService.groupedLogs()">
+        <h2 ngbAccordionHeader>
+          <button ngbAccordionButton>
+            <div class="row w-100">
+              <div class="col d-flex align-items-center justify-content-center text-center">
+                ***REMOVED******REMOVED*** exerciseLogsPerExerciseNamePerUsernamePerDate[0] | parseToDate ***REMOVED******REMOVED***
+              </div>
+            </div>
+          </button>
+        </h2>
+        <div ngbAccordionCollapse>
+          <div ngbAccordionBody [ngClass]="***REMOVED*** 'p-0': exerciseLogService.selectedUsername() ***REMOVED***">
+            <ng-template>
+              @if (exerciseLogService.selectedUsername()) ***REMOVED***
+                <div class="table-responsive">
+                  <table class="table table-bordered m-0 table-slim">
+                    <tbody>
+                      @for (exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]; track $index) ***REMOVED***
+                        @for (exerciseLogsPerExerciseName of exerciseLogsPerExerciseNamePerUsername[1]; track $index) ***REMOVED***
+                          <tr
+                            [ngClass]="
+                              exerciseLogsPerExerciseName[1].highlighted
+                                ? 'accordion-highlight ' + exerciseLogsPerExerciseName[1].highlighted
+                                : null
+                            "
+                          >
+                            <td class="table-slim-cell" style="width: 20%; font-weight: 500; vertical-align: middle">
+                              ***REMOVED******REMOVED*** exerciseLogsPerExerciseName[1].excerciseName | titlecase ***REMOVED******REMOVED***
+                            </td>
+                            @for (serie of exerciseLogsPerExerciseName[1].series; track $index) ***REMOVED***
+                              <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
+                                <div>***REMOVED******REMOVED*** serie.reps ***REMOVED******REMOVED*** reps</div>
+                                <div>***REMOVED******REMOVED*** serie.weightKg ***REMOVED******REMOVED***kg</div>
+                              </td>
+                        ***REMOVED***
+                          </tr>
+                    ***REMOVED***
+                  ***REMOVED***
+                    </tbody>
+                  </table>
+                </div>
+          ***REMOVED*** @else ***REMOVED***
+                <!-- #region USER -->
+                <div ngbAccordion>
+                  <div
+                    ngbAccordionItem
+                    *ngFor="let exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]"
+                  >
+                    <h2 ngbAccordionHeader>
+                      <button ngbAccordionButton>
+                        <div class="row w-100">
+                          <div class="col d-flex align-items-center justify-content-center text-center">
+                            ***REMOVED******REMOVED*** exerciseLogsPerExerciseNamePerUsername[0] | titlecase ***REMOVED******REMOVED***
+                          </div>
+                        </div>
+                      </button>
+                    </h2>
+                    <div ngbAccordionCollapse>
+                      <div ngbAccordionBody>
+                        <ng-template>
+                          <!-- EXERCISE -->
+                          <div ngbAccordion>
+                            <div
+                              ngbAccordionItem
+                              *ngFor="let exerciseLogsPerExerciseName of exerciseLogsPerExerciseNamePerUsername[1]"
+                              [ngClass]="
+                                exerciseLogsPerExerciseName[1].highlighted
+                                  ? 'accordion-highlight ' + exerciseLogsPerExerciseName[1].highlighted
+                                  : null
+                              "
+                            >
+                              <h2 ngbAccordionHeader>
+                                <button ngbAccordionButton>
+                                  <app-excercise-row-title
+                                    [showUsername]="false"
+                                    [showDate]="false"
+                                    [exerciseRow]="exerciseLogsPerExerciseName[1]"
+                                  ></app-excercise-row-title>
+                                </button>
+                              </h2>
+                              <div ngbAccordionCollapse>
+                                <div ngbAccordionBody>
+                                  <ng-template>
+                                    <app-excercise-row-body [exerciseRow]="exerciseLogsPerExerciseName[1]"></app-excercise-row-body>
+                                  </ng-template>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </ng-template>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- #endregion -->
+          ***REMOVED***
+            </ng-template>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

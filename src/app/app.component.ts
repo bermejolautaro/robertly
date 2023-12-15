@@ -13,6 +13,7 @@ import ***REMOVED***
   forkJoin,
   map,
   merge,
+  of,
   switchMap,
   tap,
 ***REMOVED*** from 'rxjs';
@@ -23,16 +24,13 @@ import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-
 import ***REMOVED*** ExerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
 import ***REMOVED*** DOCUMENT, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
 
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
-import isoWeek from 'dayjs/plugin/isoWeek';
 import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
 import ***REMOVED*** NgbDropdownModule, NgbModal, NgbTypeaheadModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
 import ***REMOVED*** ExerciseApiService ***REMOVED*** from '@services/exercises-api.service';
 import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
 import ***REMOVED*** FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators ***REMOVED*** from '@angular/forms';
 import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
+import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -144,6 +142,7 @@ export class AppComponent implements OnInit ***REMOVED***
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
+  private readonly dayjs = inject(DayjsService).instance;
 
   @ViewChild('usernameTypeaheadInput', ***REMOVED*** static: true ***REMOVED***) usernameTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
   public readonly usernameFocus$: Subject<string> = new Subject<string>();
@@ -200,24 +199,20 @@ export class AppComponent implements OnInit ***REMOVED***
   public readonly LOGS_PATH = LOGS_PATH;
 
   public constructor() ***REMOVED***
-    dayjs.extend(customParseFormat);
-    dayjs.extend(weekOfYear);
-    dayjs.extend(isoWeek);
-
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
     let shouldFetchExerciseLogs = false;
 
     if (!cacheTimestamp) ***REMOVED***
-      localStorage.setItem(GET_DATA_CACHE_KEY, dayjs().unix().toString());
+      localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
       shouldFetchExerciseLogs = true;
 ***REMOVED*** else ***REMOVED***
-      const x = dayjs.unix(+cacheTimestamp);
-      const difference = dayjs().diff(x, 'seconds');
+      const x = this.dayjs.unix(+cacheTimestamp);
+      const difference = this.dayjs().diff(x, 'seconds');
 
       if (difference > 5 * 60) ***REMOVED***
         shouldFetchExerciseLogs = true;
-        localStorage.setItem(GET_DATA_CACHE_KEY, dayjs().unix().toString());
+        localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
   ***REMOVED***
 ***REMOVED***
 
@@ -263,7 +258,7 @@ export class AppComponent implements OnInit ***REMOVED***
     ***REMOVED***
 
         const request = ***REMOVED***
-          date: dayjs().format('DD-MM-YYYY'),
+          date: this.dayjs().format('DD-MM-YYYY'),
           exercise: this.formGroup.value.exercise!.toLowerCase(),
           user: this.formGroup.value.user!.toLowerCase(),
           payload: ***REMOVED***
@@ -288,10 +283,10 @@ export class AppComponent implements OnInit ***REMOVED***
           next: () => ***REMOVED***
             this.formGroup.reset();
             localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-            this.fetchData(false);
+            this.fetchData(false, false);
       ***REMOVED***,
           error: () => ***REMOVED***
-            this.fetchData();
+            this.fetchData(true, false);
       ***REMOVED***,
     ***REMOVED***);
   ***REMOVED***,
@@ -301,14 +296,23 @@ export class AppComponent implements OnInit ***REMOVED***
     );
 ***REMOVED***
 
-  public fetchData(showLoading: boolean = true): void ***REMOVED***
+  public fetchData(showLoading: boolean = true, fetchExercises: boolean = true): void ***REMOVED***
     if (showLoading) ***REMOVED***
       this.exerciseLogService.startLoading$.next();
 ***REMOVED***
+
+    const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
+    let exercises$ = this.exerciseApiService.getExercises();
+
+    if (!fetchExercises && cachedExercises.length) ***REMOVED***
+      exercises$ = of(cachedExercises);
+***REMOVED***
+
     const exerciseLogs$ = forkJoin([this.exerciseLogApiService.getExerciseLogs(), this.exerciseLogApiService.getExerciseLogsv2()]).pipe(
       map(([a, b]) => a.concat(b))
     );
-    const logsAndExercises$ = this.exerciseApiService.getExercises().pipe(
+
+    const logsAndExercises$ = exercises$.pipe(
       switchMap(exercises => exerciseLogs$.pipe(map(logs => [logs, exercises] as const))),
       tap(([logs, exercises]) => ***REMOVED***
         for (const log of logs) ***REMOVED***
@@ -318,6 +322,7 @@ export class AppComponent implements OnInit ***REMOVED***
     ***REMOVED***
   ***REMOVED***)
     );
+
     logsAndExercises$.subscribe(([exerciseLogs, exercises]) => ***REMOVED***
       localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
       localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));

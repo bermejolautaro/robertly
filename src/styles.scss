@@ -49,12 +49,22 @@
     --bs-accordion-btn-bg: hsl(120 70% 85%);
     --bs-accordion-active-bg: hsl(120 70% 85%);
     --bs-accordion-border-color: hsl(120 70% 75%);
+
+    td.table-slim-cell ***REMOVED***
+      background-color: var(--bs-accordion-active-bg);
+      --bs-table-bg-type: transparent !important;
+***REMOVED***
 ***REMOVED***
 
   &.yellow ***REMOVED***
     --bs-accordion-btn-bg: hsl(50, 100%, 85%);
     --bs-accordion-active-bg: hsl(50 100% 85%);
     --bs-accordion-border-color: hsl(50 100% 75%);
+
+    td.table-slim-cell ***REMOVED***
+      background-color: var(--bs-accordion-active-bg);
+      --bs-table-bg-type: transparent !important;
+***REMOVED***
 ***REMOVED***
 
   &.light-blue ***REMOVED***

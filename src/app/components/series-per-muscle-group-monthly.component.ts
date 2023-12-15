@@ -53,7 +53,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
     <ng-template #popoverTemplate>
       <div>
         @for (days of exerciseLogService.daysAmountByDayInSelectedMonth() | keyvalue; track $index) ***REMOVED***
-          <div>***REMOVED******REMOVED*** days.key ***REMOVED******REMOVED***: ***REMOVED******REMOVED*** days.value ***REMOVED******REMOVED***</div>
+          <div>***REMOVED******REMOVED*** days.key | titlecase ***REMOVED******REMOVED***: ***REMOVED******REMOVED*** days.value ***REMOVED******REMOVED***</div>
     ***REMOVED***
       </div>
     </ng-template>
