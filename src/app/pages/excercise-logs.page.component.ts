@@ -9,7 +9,7 @@ import { distinctUntilChanged, map } from 'rxjs/operators';
 
 import { IfNullEmptyArrayPipe } from '@pipes/if-null-empty-array.pipe';
 import { ExcerciseRowsComponent } from '@components/excercise-rows.component';
-import { GroupedExcerciseRowsComponent } from '@components/grouped-excercise-rows.component';
+import { GroupedExerciseRowsComponent } from '@components/grouped-exercise-rows.component';
 import { PersonalRecordComponent } from '@components/personal-record.component';
 import { ExerciseLogService, EXERCISE_DEFAULT_LABEL, WEIGHT_DEFAULT_LABEL } from '@services/excercise-log.service';
 
@@ -21,7 +21,6 @@ const CLEAR_FILTER_LABEL = 'Clear Filter';
   styles: ``,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [TitleCasePipe],
   imports: [
     NgClass,
     FormsModule,
@@ -29,7 +28,7 @@ const CLEAR_FILTER_LABEL = 'Clear Filter';
     TitleCasePipe,
     IfNullEmptyArrayPipe,
     PersonalRecordComponent,
-    GroupedExcerciseRowsComponent,
+    GroupedExerciseRowsComponent,
     ExcerciseRowsComponent,
     NgbDropdownModule,
     NgbTypeahead,

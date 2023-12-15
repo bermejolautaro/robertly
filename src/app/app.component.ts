@@ -13,6 +13,7 @@ import {
   forkJoin,
   map,
   merge,
+  of,
   switchMap,
   tap,
 } from 'rxjs';
@@ -23,16 +24,13 @@ import { ExerciseLogService } from '@services/excercise-log.service';
 import { ExerciseLogApiService } from '@services/excercise-log-api.service';
 import { DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
 
-import dayjs from 'dayjs';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
-import weekOfYear from 'dayjs/plugin/weekOfYear';
-import isoWeek from 'dayjs/plugin/isoWeek';
 import { ExerciseLog } from '@models/excercise-log.model';
 import { NgbDropdownModule, NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { parseDate } from '@helpers/date.helper';
+import { DayjsService } from '@services/dayjs.service';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -144,6 +142,7 @@ export class AppComponent implements OnInit {
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
+  private readonly dayjs = inject(DayjsService).instance;
 
   @ViewChild('usernameTypeaheadInput', { static: true }) usernameTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
   public readonly usernameFocus$: Subject<string> = new Subject<string>();
@@ -200,24 +199,20 @@ export class AppComponent implements OnInit {
   public readonly LOGS_PATH = LOGS_PATH;
 
   public constructor() {
-    dayjs.extend(customParseFormat);
-    dayjs.extend(weekOfYear);
-    dayjs.extend(isoWeek);
-
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
     let shouldFetchExerciseLogs = false;
 
     if (!cacheTimestamp) {
-      localStorage.setItem(GET_DATA_CACHE_KEY, dayjs().unix().toString());
+      localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
       shouldFetchExerciseLogs = true;
     } else {
-      const x = dayjs.unix(+cacheTimestamp);
-      const difference = dayjs().diff(x, 'seconds');
+      const x = this.dayjs.unix(+cacheTimestamp);
+      const difference = this.dayjs().diff(x, 'seconds');
 
       if (difference > 5 * 60) {
         shouldFetchExerciseLogs = true;
-        localStorage.setItem(GET_DATA_CACHE_KEY, dayjs().unix().toString());
+        localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
       }
     }
 
@@ -263,7 +258,7 @@ export class AppComponent implements OnInit {
         }
 
         const request = {
-          date: dayjs().format('DD-MM-YYYY'),
+          date: this.dayjs().format('DD-MM-YYYY'),
           exercise: this.formGroup.value.exercise!.toLowerCase(),
           user: this.formGroup.value.user!.toLowerCase(),
           payload: {
@@ -288,10 +283,10 @@ export class AppComponent implements OnInit {
           next: () => {
             this.formGroup.reset();
             localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-            this.fetchData(false);
+            this.fetchData(false, false);
           },
           error: () => {
-            this.fetchData();
+            this.fetchData(true, false);
           },
         });
       },
@@ -301,14 +296,23 @@ export class AppComponent implements OnInit {
     );
   }
 
-  public fetchData(showLoading: boolean = true): void {
+  public fetchData(showLoading: boolean = true, fetchExercises: boolean = true): void {
     if (showLoading) {
       this.exerciseLogService.startLoading$.next();
     }
+
+    const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
+    let exercises$ = this.exerciseApiService.getExercises();
+
+    if (!fetchExercises && cachedExercises.length) {
+      exercises$ = of(cachedExercises);
+    }
+
     const exerciseLogs$ = forkJoin([this.exerciseLogApiService.getExerciseLogs(), this.exerciseLogApiService.getExerciseLogsv2()]).pipe(
       map(([a, b]) => a.concat(b))
     );
-    const logsAndExercises$ = this.exerciseApiService.getExercises().pipe(
+
+    const logsAndExercises$ = exercises$.pipe(
       switchMap(exercises => exerciseLogs$.pipe(map(logs => [logs, exercises] as const))),
       tap(([logs, exercises]) => {
         for (const log of logs) {
@@ -318,6 +322,7 @@ export class AppComponent implements OnInit {
         }
       })
     );
+
     logsAndExercises$.subscribe(([exerciseLogs, exercises]) => {
       localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
       localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));

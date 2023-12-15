@@ -91,7 +91,6 @@
   </div>
 </ng-template>
 <!-- #endregion -->
-
 <nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-3">
   <div class="container-fluid d-flex justify-content-end align-items-center">
     <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
@@ -128,13 +127,15 @@
   </div>
 </nav>
 
-<div [style.marginBottom.rem]="6">
+<div [style.marginBottom.rem]="8">
   <router-outlet></router-outlet>
 </div>
 
-<button class="btn btn-lg btn-primary" (click)="open(content)">
-  <i class="fa fa-plus"></i>
-</button>
+@if (exerciseLogService.loaded()) {
+  <button class="btn btn-lg btn-primary" (click)="open(content)">
+    <i class="fa fa-plus"></i>
+  </button>
+}
 
 <nav class="navbar navbar-dark bg-primary bg-gradient fixed-bottom fw-bold">
   <div class="container-fluid">

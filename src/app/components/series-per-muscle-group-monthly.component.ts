@@ -53,7 +53,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
     <ng-template #popoverTemplate>
       <div>
         @for (days of exerciseLogService.daysAmountByDayInSelectedMonth() | keyvalue; track $index) {
-          <div>{{ days.key }}: {{ days.value }}</div>
+          <div>{{ days.key | titlecase }}: {{ days.value }}</div>
         }
       </div>
     </ng-template>

@@ -5,6 +5,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { TitleCasePipe } from '@angular/common';
 
 export const LOGS_PATH = '';
 export const STATS_PATH = 'stats';
@@ -27,6 +28,7 @@ export const BACKEND_URL = new InjectionToken<string>('BACKEND_URL');
 
 bootstrapApplication(AppComponent, {
   providers: [
+    TitleCasePipe,
     provideAnimationsAsync(),
     provideHttpClient(),
     provideRouter(routes),

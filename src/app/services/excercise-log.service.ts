@@ -1,9 +1,9 @@
-import { Injectable, computed, signal, effect } from '@angular/core';
+import { Injectable, computed, signal, effect, inject } from '@angular/core';
 import { ExerciseLog } from '@models/excercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
-import { Subject, delay, tap } from 'rxjs';
+import { Subject } from 'rxjs';
 import {
   getPersonalRecord,
   groupExcerciseLogs,
@@ -13,7 +13,7 @@ import {
   groupByMonth,
 } from '@helpers/excercise-log.helper';
 import { Exercise } from '@models/exercise.model';
-import { parseDate } from '@helpers/date.helper';
+import { DayjsService } from '@services/dayjs.service';
 
 interface SelectedExcercise {
   name: string;
@@ -22,7 +22,6 @@ interface SelectedExcercise {
 
 type State = {
   logs: ExerciseLog[];
-  filteredLogs: ExerciseLog[];
   exercises: Exercise[];
   selectedExercise: SelectedExcercise | null;
   selectedUsername: string | null;
@@ -38,9 +37,10 @@ export const WEIGHT_DEFAULT_LABEL = 'Weight';
 
 @Injectable()
 export class ExerciseLogService {
+  private readonly dayjsService = inject(DayjsService);
+
   private readonly state = signal<State>({
     logs: [],
-    filteredLogs: [],
     exercises: [],
     selectedExercise: null,
     selectedUsername: null,
@@ -68,12 +68,12 @@ export class ExerciseLogService {
   });
 
   public readonly filteredLogs = computed(() => {
-    return this.state().filteredLogs;
+    return this.state().logs.filter(x => !!x.name);
   });
 
   public readonly types = computed(() =>
     R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       R.map(x => x.type),
       R.uniq()
     )
@@ -81,7 +81,7 @@ export class ExerciseLogService {
 
   public readonly usernames = computed(() =>
     R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       R.map(x => x.user),
       R.uniq()
     )
@@ -89,7 +89,7 @@ export class ExerciseLogService {
 
   public readonly exercises = computed(() => {
     return R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       R.map(x => ({ name: x.name, type: x.type })),
       R.uniqBy(x => x.name)
     );
@@ -107,7 +107,7 @@ export class ExerciseLogService {
   public readonly selectedWeightLabel = computed(() => `${this.state().selectedWeight ?? WEIGHT_DEFAULT_LABEL}`);
 
   public readonly groupedLogs = computed(() => {
-    const groups = groupExcerciseLogs(this.state().filteredLogs, this.state().exercises);
+    const groups = groupExcerciseLogs(this.filteredLogs(), this.state().exercises);
     const selectedUsername = this.state().selectedUsername;
     const selectedExcercise = this.state().selectedExercise;
     const selectedType = this.state().selectedType;
@@ -170,7 +170,7 @@ export class ExerciseLogService {
 
   public readonly weights = computed(() => {
     return R.pipe(
-      this.state().filteredLogs,
+      this.filteredLogs(),
       this.state().selectedExercise ? R.filter(x => x.name === this.state().selectedExercise?.name) : R.identity,
       this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity,
       R.map(x => x.weightKg),
@@ -192,7 +192,9 @@ export class ExerciseLogService {
 
   public readonly daysAmountByDayInSelectedMonth = computed(() => {
     const result = R.toPairs(R.mapValues(groupByMonth(this.logs()), x => x));
-    const daysInMonth = result.filter(x => x[0] === this.selectedMonth()).flatMap(x => x[1].map(x => parseDate(x).format('dddd')));
+    const daysInMonth = result
+      .filter(x => x[0] === this.selectedMonth())
+      .flatMap(x => x[1].map(x => this.dayjsService.parseDate(x).format('dddd')));
 
     const daysAmountByDay = R.pipe(
       daysInMonth,
@@ -220,7 +222,6 @@ export class ExerciseLogService {
         this.state.update(state => ({
           ...state,
           logs,
-          filteredLogs: logs.filter(x => !!x.name),
           loaded: true,
         })),
     });
@@ -230,7 +231,6 @@ export class ExerciseLogService {
         this.state.update(state => ({
           ...state,
           logs: [...state.logs, ...logs],
-          filteredLogs: [...state.filteredLogs, ...logs],
         })),
     });
 
