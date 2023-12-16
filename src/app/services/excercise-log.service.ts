@@ -89,9 +89,9 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly exercises = computed(() => ***REMOVED***
     return R.pipe(
-      this.filteredLogs(),
-      R.map(x => (***REMOVED*** name: x.name, type: x.type ***REMOVED***)),
-      R.uniqBy(x => x.name)
+      this.state().exercises,
+      R.map(x => x),
+      R.uniqBy(x => x)
     );
 ***REMOVED***);
 
@@ -158,14 +158,6 @@ export class ExerciseLogService ***REMOVED***
 
   public readonly amountDaysTrainedPerUser = computed(() => ***REMOVED***
     return amountDaysTrainedByUser(this.logs());
-***REMOVED***);
-
-  public readonly exercisesNames = computed(() => ***REMOVED***
-    return R.pipe(
-      this.state().exercises,
-      R.map(x => x.exercise),
-      R.uniqBy(x => x)
-    );
 ***REMOVED***);
 
   public readonly weights = computed(() => ***REMOVED***

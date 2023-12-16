@@ -72,7 +72,9 @@ const createLogFormValidator =
       errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** exerciseInvalidPeron: 'Peron is not allowed' ***REMOVED*** ***REMOVED***;
 ***REMOVED***
 
-    const exerciseExists = exerciseLogService.exercises().find(x => x.name.toLowerCase() === typedControl.value.exercise?.toLowerCase());
+    const exerciseExists = exerciseLogService
+      .exercises()
+      .find(x => x.exercise.toLowerCase() === typedControl.value.exercise?.toLowerCase());
 
     if (!exerciseExists) ***REMOVED***
       errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** exerciseDoesNotExist: 'Exercise does not exists' ***REMOVED*** ***REMOVED***;
@@ -169,11 +171,11 @@ export class AppComponent implements OnInit ***REMOVED***
 
     return merge(debouncedText$, this.exerciseFocus$).pipe(
       map(() => ***REMOVED***
-        const exercises = this.exerciseLogService.exercises().map(x => x.name);
+        const exercises = this.exerciseLogService.exercises().map(x => x.exercise);
 
         return this.formGroup.value.exercise === ''
           ? exercises
-          : exercises.filter(x => !!x).filter(v => v.toLowerCase().includes(this.formGroup.value.exercise?.toLowerCase() ?? ''));
+          : exercises.filter(x => !!x).filter(x => x.toLowerCase().includes(this.formGroup.value.exercise?.toLowerCase() ?? ''));
   ***REMOVED***)
     );
 ***REMOVED***;

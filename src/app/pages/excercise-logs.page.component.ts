@@ -54,7 +54,7 @@ export class ExcerciseLogsPageComponent implements OnInit ***REMOVED***
 
     return merge(debouncedText$, this.exerciseFocus$).pipe(
       map(() => ***REMOVED***
-        const exercises = this.exerciseLogService.exercises().map(x => x.name);
+        const exercises = this.exerciseLogService.exercises().map(x => x.exercise);
 
         if (this.exerciseLogService.selectedExercise()) ***REMOVED***
           exercises.unshift(CLEAR_FILTER_LABEL);
@@ -62,7 +62,7 @@ export class ExcerciseLogsPageComponent implements OnInit ***REMOVED***
 
         return this.exerciseTypeahead === '' || this.exerciseTypeahead === EXERCISE_DEFAULT_LABEL
           ? exercises
-          : exercises.filter(x => !!x).filter(v => v.toLowerCase().includes(this.exerciseTypeahead.toLowerCase()));
+          : exercises.filter(x => !!x).filter(x => x.toLowerCase().includes(this.exerciseTypeahead.toLowerCase()));
   ***REMOVED***)
     );
 ***REMOVED***;
@@ -108,14 +108,16 @@ export class ExcerciseLogsPageComponent implements OnInit ***REMOVED***
     let selectedExercise =
       this.exerciseLogService
         .exercises()
-        .filter(x => x.name === event.item)
+        .filter(x => x.exercise === event.item)
         .at(0) ?? null;
 
     if (event.item === CLEAR_FILTER_LABEL) ***REMOVED***
       selectedExercise = null;
 ***REMOVED***
 
-    this.exerciseLogService.selectedExercise$.next(selectedExercise);
+    this.exerciseLogService.selectedExercise$.next(
+      selectedExercise ? ***REMOVED*** name: selectedExercise.exercise, type: selectedExercise.type ***REMOVED*** : null
+    );
     this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel();
     this.exerciseTypeaheadInput?.nativeElement.blur();
 
