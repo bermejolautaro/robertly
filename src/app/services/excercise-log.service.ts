@@ -14,6 +14,7 @@ import ***REMOVED***
 ***REMOVED*** from '@helpers/excercise-log.helper';
 import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
 import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
+import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
 
 interface SelectedExcercise ***REMOVED***
   name: string;
@@ -51,6 +52,8 @@ export class ExerciseLogService ***REMOVED***
     error: null,
 ***REMOVED***);
 
+  public readonly logClicked$: Subject<ExerciseRow> = new Subject();
+  public readonly deleteLog$: Subject<ExerciseRow> = new Subject();
   public readonly startLoading$: Subject<void> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly appendLogs$: Subject<ExerciseLog[]> = new Subject();

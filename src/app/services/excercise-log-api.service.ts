@@ -26,13 +26,19 @@ type GetExerciseLogsV2Response = ***REMOVED***
 ***REMOVED***[];
 ***REMOVED***;
 
-type CreateExerciseLogRequest = ***REMOVED***
+type CreateOrUpdateExerciseLogRequest = ***REMOVED***
   user: string;
   exercise: string;
   date: string;
   payload: ***REMOVED***
     series: ***REMOVED*** reps: number; weightInKg: number ***REMOVED***[];
 ***REMOVED***;
+***REMOVED***;
+
+export type DeleteLogRequest = ***REMOVED***
+  user: string;
+  exercise: string;
+  date: string;
 ***REMOVED***;
 
 @Injectable(***REMOVED***
@@ -61,24 +67,29 @@ export class ExerciseLogApiService ***REMOVED***
     return this.http.get<GetExerciseLogsV2Response>(`$***REMOVED***this.url***REMOVED***/firebase-logs`).pipe(
       map(x => ***REMOVED***
         return x.data.flatMap(y => ***REMOVED***
-          return y.payload.series.map(
-            (s, i) =>
-              (***REMOVED***
-                date: this.dayjsService.parseDate(y.date).format('DD/MM/YYYY'),
-                name: y.exercise,
-                reps: s.reps,
-                serie: i + 1,
-                type: '',
-                user: y.user,
-                weightKg: s.weightInKg,
-          ***REMOVED***)
-          );
+          return y.payload.series.map((s, i) => (***REMOVED***
+            date: this.dayjsService.parseDate(y.date).format('DD/MM/YYYY'),
+            name: y.exercise,
+            reps: s.reps,
+            serie: i + 1,
+            type: '',
+            user: y.user,
+            weightKg: s.weightInKg,
+      ***REMOVED***));
     ***REMOVED***);
   ***REMOVED***)
     );
 ***REMOVED***
 
-  public createExerciseLog(request: CreateExerciseLogRequest): Observable<void> ***REMOVED***
+  public createExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> ***REMOVED***
     return this.http.post<void>(`$***REMOVED***this.url***REMOVED***/firebase-logs`, request);
+***REMOVED***
+
+  public updateExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> ***REMOVED***
+    return this.http.put<void>(`$***REMOVED***this.url***REMOVED***/firebase-logs`, request);
+***REMOVED***
+
+  public deleteExerciseLog(request: DeleteLogRequest): Observable<void> ***REMOVED***
+    return this.http.delete<void>(`$***REMOVED***this.url***REMOVED***/firebase-logs`, ***REMOVED*** body: request ***REMOVED***);
 ***REMOVED***
 ***REMOVED***

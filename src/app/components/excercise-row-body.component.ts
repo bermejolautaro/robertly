@@ -1,11 +1,12 @@
-import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
+import ***REMOVED*** ChangeDetectionStrategy, Component, Input, inject ***REMOVED*** from '@angular/core';
 import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
 
 @Component(***REMOVED***
   selector: 'app-excercise-row-body',
   template: `
     @if (exerciseRow) ***REMOVED***
-      <table class="table table-striped table-sm m-0">
+      <table class="table table-striped table-sm m-0" (click)="exerciseLogService.logClicked$.next(exerciseRow)">
         <tbody>
           @for (serie of exerciseRow.series; track serie.serie) ***REMOVED***
             <tr class="row">
@@ -46,5 +47,6 @@ import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model
   imports: [],
 ***REMOVED***)
 export class ExcerciseRowBodyComponent ***REMOVED***
+  public readonly exerciseLogService = inject(ExerciseLogService);
   @Input(***REMOVED*** required: true ***REMOVED***) exerciseRow!: ExerciseRow;
 ***REMOVED***
