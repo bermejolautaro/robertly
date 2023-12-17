@@ -14,6 +14,7 @@ import {
 } from '@helpers/excercise-log.helper';
 import { Exercise } from '@models/exercise.model';
 import { DayjsService } from '@services/dayjs.service';
+import { ExerciseRow } from '@models/excercise-row.model';
 
 interface SelectedExcercise {
   name: string;
@@ -51,6 +52,8 @@ export class ExerciseLogService {
     error: null,
   });
 
+  public readonly logClicked$: Subject<ExerciseRow> = new Subject();
+  public readonly deleteLog$: Subject<ExerciseRow> = new Subject();
   public readonly startLoading$: Subject<void> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly appendLogs$: Subject<ExerciseLog[]> = new Subject();

@@ -1,0 +1,102 @@
+<div class="modal-header">
+  <h4 class="modal-title" id="modal-basic-title">{{ mode === 'update' ? 'Edit' : 'Create' }} Log</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+</div>
+<div class="modal-body">
+  <form>
+    <!-- #region TYPEAHEAD USERNAME -->
+    <div class="mb-3">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Username"
+          [formControl]="createLogFormGroup.controls.user"
+          (selectItem)="createLogFormGroup.controls.user.patchValue($event.item)"
+          [ngbTypeahead]="usernameSearch"
+          [popupClass]="'typeahead'"
+          (focus)="usernameFocus$.next(createLogFormGroup.value.user || '')"
+          #usernameTypeaheadInput
+        />
+        <button class="btn btn-outline-secondary" type="button" (click)="createLogFormGroup.controls.user.patchValue('')">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      @if (!createLogFormGroup.controls.user.pristine && createLogFormGroup.errors && createLogFormGroup.errors['userRequired']) {
+        <div class="d-block invalid-feedback">{{ createLogFormGroup.errors['userRequired'] }}</div>
+      }
+      @if (!createLogFormGroup.controls.user.pristine && createLogFormGroup.errors && createLogFormGroup.errors['userInvalidPeron']) {
+        <div class="d-block invalid-feedback">{{ createLogFormGroup.errors['userInvalidPeron'] }}</div>
+      }
+    </div>
+    <!-- #endregion -->
+
+    <!-- #region TYPEAHEAD EXERCISE -->
+    <div class="mb-3">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Exercise"
+          [formControl]="createLogFormGroup.controls.exercise"
+          (selectItem)="createLogFormGroup.controls.exercise.patchValue($event.item)"
+          [ngbTypeahead]="exerciseSearch"
+          [popupClass]="'typeahead'"
+          (focus)="exerciseFocus$.next(createLogFormGroup.value.exercise || '')"
+          #exerciseTypeaheadInput
+        />
+        <button class="btn btn-outline-secondary" type="button" (click)="createLogFormGroup.controls.exercise.patchValue('')">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      @if (!createLogFormGroup.controls.exercise.pristine && createLogFormGroup.errors && createLogFormGroup.errors['exerciseRequired']) {
+        <div class="d-block invalid-feedback">{{ createLogFormGroup.errors['exerciseRequired'] }}</div>
+      }
+      @if (
+        !createLogFormGroup.controls.exercise.pristine && createLogFormGroup.errors && createLogFormGroup.errors['exerciseInvalidPeron']
+      ) {
+        <div class="d-block invalid-feedback">{{ createLogFormGroup.errors['exerciseInvalidPeron'] }}</div>
+      }
+      @if (
+        !createLogFormGroup.controls.exercise.pristine && createLogFormGroup.errors && createLogFormGroup.errors['exerciseDoesNotExist']
+      ) {
+        <div class="d-block invalid-feedback">{{ createLogFormGroup.errors['exerciseDoesNotExist'] }}</div>
+      }
+    </div>
+    <!-- #endregion -->
+
+    @for (serieControl of createLogFormGroup.controls.series.controls; track $index) {
+      <div class="input-group mb-3 align-items-center">
+        <span class="input-group-text">Serie {{ $index + 1 }}</span>
+        <input type="number" class="form-control" placeholder="Reps" [formControl]="serieControl.controls.reps" />
+        <input type="number" class="form-control" placeholder="Kg" [formControl]="serieControl.controls.weightInKg" />
+      </div>
+    }
+    @if (
+      !createLogFormGroup.controls.series.pristine && createLogFormGroup.errors && createLogFormGroup.errors['seriesAllSeriesAreEmpty']
+    ) {
+      <div class="d-block invalid-feedback">{{ createLogFormGroup.errors['seriesAllSeriesAreEmpty'] }}</div>
+    }
+    @if (
+      !createLogFormGroup.controls.series.pristine && createLogFormGroup.errors && createLogFormGroup.errors['seriesRepsMustBeInteger']
+    ) {
+      <div class="d-block invalid-feedback">{{ createLogFormGroup.errors['seriesRepsMustBeInteger'] }}</div>
+    }
+  </form>
+</div>
+<div class="modal-footer" [ngClass]="{ 'justify-content-between': mode === 'update' }">
+  @if (mode === 'update') {
+    <button type="button" class="btn btn-danger" (click)="exerciseLogService.deleteLog$.next(originalValue); modal.dismiss()">
+      Delete
+    </button>
+  }
+  <button
+    type="button"
+    class="btn"
+    [ngClass]="{ 'btn-primary': createLogFormGroup.valid, 'btn-secondary': createLogFormGroup.invalid }"
+    (click)="modal.close()"
+    [disabled]="createLogFormGroup.invalid"
+  >
+    Save
+  </button>
+</div>

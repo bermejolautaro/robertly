@@ -1,11 +1,12 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { ExerciseRow } from '@models/excercise-row.model';
+import { ExerciseLogService } from '@services/excercise-log.service';
 
 @Component({
   selector: 'app-excercise-row-body',
   template: `
     @if (exerciseRow) {
-      <table class="table table-striped table-sm m-0">
+      <table class="table table-striped table-sm m-0" (click)="exerciseLogService.logClicked$.next(exerciseRow)">
         <tbody>
           @for (serie of exerciseRow.series; track serie.serie) {
             <tr class="row">
@@ -46,5 +47,6 @@ import { ExerciseRow } from '@models/excercise-row.model';
   imports: [],
 })
 export class ExcerciseRowBodyComponent {
+  public readonly exerciseLogService = inject(ExerciseLogService);
   @Input({ required: true }) exerciseRow!: ExerciseRow;
 }

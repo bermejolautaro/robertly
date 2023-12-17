@@ -1,98 +1,6 @@
-<!-- #region MODAL -->
-<ng-template #content let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">New Log</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss('Cross click')"></button>
-  </div>
-  <div class="modal-body">
-    <form>
-      <!-- #region TYPEAHEAD USERNAME -->
-      <div class="mb-3">
-        <div class="input-group">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Username"
-            [formControl]="formGroup.controls.user"
-            (selectItem)="formGroup.controls.user.patchValue($event.item)"
-            [ngbTypeahead]="usernameSearch"
-            [popupClass]="'typeahead'"
-            (focus)="usernameFocus$.next(formGroup.value.user || '')"
-            #usernameTypeaheadInput
-          />
-          <button class="btn btn-outline-secondary" type="button" (click)="formGroup.controls.user.patchValue('')">
-            <i class="fa fa-times"></i>
-          </button>
-        </div>
-        @if (!formGroup.controls.user.pristine && formGroup.errors && formGroup.errors['userRequired']) {
-          <div class="d-block invalid-feedback">{{ formGroup.errors['userRequired'] }}</div>
-        }
-        @if (!formGroup.controls.user.pristine && formGroup.errors && formGroup.errors['userInvalidPeron']) {
-          <div class="d-block invalid-feedback">{{ formGroup.errors['userInvalidPeron'] }}</div>
-        }
-      </div>
-      <!-- #endregion -->
-
-      <!-- #region TYPEAHEAD EXERCISE -->
-      <div class="mb-3">
-        <div class="input-group">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Exercise"
-            [formControl]="formGroup.controls.exercise"
-            (selectItem)="formGroup.controls.exercise.patchValue($event.item)"
-            [ngbTypeahead]="exerciseSearch"
-            [popupClass]="'typeahead'"
-            (focus)="exerciseFocus$.next(formGroup.value.exercise || '')"
-            #exerciseTypeaheadInput
-          />
-          <button class="btn btn-outline-secondary" type="button" (click)="formGroup.controls.exercise.patchValue('')">
-            <i class="fa fa-times"></i>
-          </button>
-        </div>
-        @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseRequired']) {
-          <div class="d-block invalid-feedback">{{ formGroup.errors['exerciseRequired'] }}</div>
-        }
-        @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseInvalidPeron']) {
-          <div class="d-block invalid-feedback">{{ formGroup.errors['exerciseInvalidPeron'] }}</div>
-        }
-        @if (!formGroup.controls.exercise.pristine && formGroup.errors && formGroup.errors['exerciseDoesNotExist']) {
-          <div class="d-block invalid-feedback">{{ formGroup.errors['exerciseDoesNotExist'] }}</div>
-        }
-      </div>
-      <!-- #endregion -->
-
-      @for (serieControl of formGroup.controls.series.controls; track $index) {
-        <div class="input-group mb-3 align-items-center">
-          <span class="input-group-text">Serie {{ $index + 1 }}</span>
-          <input type="number" class="form-control" placeholder="Reps" [formControl]="serieControl.controls.reps" />
-          <input type="number" class="form-control" placeholder="Kg" [formControl]="serieControl.controls.weightInKg" />
-        </div>
-      }
-      @if (!formGroup.controls.series.pristine && formGroup.errors && formGroup.errors['seriesAllSeriesAreEmpty']) {
-        <div class="d-block invalid-feedback">{{ formGroup.errors['seriesAllSeriesAreEmpty'] }}</div>
-      }
-      @if (!formGroup.controls.series.pristine && formGroup.errors && formGroup.errors['seriesRepsMustBeInteger']) {
-        <div class="d-block invalid-feedback">{{ formGroup.errors['seriesRepsMustBeInteger'] }}</div>
-      }
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button
-      type="button"
-      class="btn"
-      [ngClass]="{ 'btn-primary': formGroup.valid, 'btn-secondary': formGroup.invalid }"
-      (click)="modal.close('Save click')"
-      [disabled]="formGroup.invalid"
-    >
-      Save
-    </button>
-  </div>
-</ng-template>
-<!-- #endregion -->
 <nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-3">
   <div class="container-fluid d-flex justify-content-end align-items-center">
+    <!-- #region USERNAME DROPDOWN -->
     <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
       <button
         type="button"
@@ -115,6 +23,7 @@
         }
       </div>
     </div>
+    <!-- #endregion -->
     <button type="button" class="btn" style="outline: none; border: none; padding: 0">
       <i
         class="fa fa-refresh"
@@ -132,7 +41,7 @@
 </div>
 
 @if (exerciseLogService.loaded()) {
-  <button class="btn btn-lg btn-primary" (click)="open(content)">
+  <button class="btn btn-lg btn-primary" (click)="open('create')">
     <i class="fa fa-plus"></i>
   </button>
 }

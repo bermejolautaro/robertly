@@ -26,13 +26,19 @@ type GetExerciseLogsV2Response = {
   }[];
 };
 
-type CreateExerciseLogRequest = {
+type CreateOrUpdateExerciseLogRequest = {
   user: string;
   exercise: string;
   date: string;
   payload: {
     series: { reps: number; weightInKg: number }[];
   };
+};
+
+export type DeleteLogRequest = {
+  user: string;
+  exercise: string;
+  date: string;
 };
 
 @Injectable({
@@ -61,24 +67,29 @@ export class ExerciseLogApiService {
     return this.http.get<GetExerciseLogsV2Response>(`${this.url}/firebase-logs`).pipe(
       map(x => {
         return x.data.flatMap(y => {
-          return y.payload.series.map(
-            (s, i) =>
-              ({
-                date: this.dayjsService.parseDate(y.date).format('DD/MM/YYYY'),
-                name: y.exercise,
-                reps: s.reps,
-                serie: i + 1,
-                type: '',
-                user: y.user,
-                weightKg: s.weightInKg,
-              })
-          );
+          return y.payload.series.map((s, i) => ({
+            date: this.dayjsService.parseDate(y.date).format('DD/MM/YYYY'),
+            name: y.exercise,
+            reps: s.reps,
+            serie: i + 1,
+            type: '',
+            user: y.user,
+            weightKg: s.weightInKg,
+          }));
         });
       })
     );
   }
 
-  public createExerciseLog(request: CreateExerciseLogRequest): Observable<void> {
+  public createExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> {
     return this.http.post<void>(`${this.url}/firebase-logs`, request);
+  }
+
+  public updateExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> {
+    return this.http.put<void>(`${this.url}/firebase-logs`, request);
+  }
+
+  public deleteExerciseLog(request: DeleteLogRequest): Observable<void> {
+    return this.http.delete<void>(`${this.url}/firebase-logs`, { body: request });
   }
 }

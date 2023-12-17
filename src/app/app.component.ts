@@ -1,22 +1,8 @@
-import { Component, ElementRef, OnInit, TemplateRef, ViewChild, inject } from '@angular/core';
+import { Component, Injector, OnInit, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import {
-  Observable,
-  OperatorFunction,
-  Subject,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  first,
-  forkJoin,
-  map,
-  merge,
-  of,
-  switchMap,
-  tap,
-} from 'rxjs';
+import { debounceTime, filter, first, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { LOGS_PATH, STATS_PATH } from 'src/main';
 
 import { ExerciseLogService } from '@services/excercise-log.service';
@@ -31,13 +17,16 @@ import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { parseDate } from '@helpers/date.helper';
 import { DayjsService } from '@services/dayjs.service';
+import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ExerciseRow } from '@models/excercise-row.model';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
 const EXERCISES_CACHE_KEY = 'robertly-exercises';
 const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
 
-type CreateLogFormGroup = FormGroup<{
+export type CreateOrUpdateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
   exercise: FormControl<string | null>;
   series: FormArray<
@@ -48,10 +37,10 @@ type CreateLogFormGroup = FormGroup<{
   >;
 }>;
 
-const createLogFormValidator =
+const createOrUpdateLogFormValidator =
   (exerciseLogService: ExerciseLogService): ValidatorFn =>
   control => {
-    const typedControl = control as CreateLogFormGroup;
+    const typedControl = control as CreateOrUpdateLogFormGroup;
     let errors: Record<string, string> | null = null;
 
     const userRequiredErrors = Validators.required(typedControl.controls.user);
@@ -144,43 +133,11 @@ export class AppComponent implements OnInit {
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
-  private readonly dayjs = inject(DayjsService).instance;
+  private readonly dayjsService = inject(DayjsService);
+  private readonly dayjs = this.dayjsService.instance;
+  private readonly injector = inject(Injector);
 
-  @ViewChild('usernameTypeaheadInput', { static: true }) usernameTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
-  public readonly usernameFocus$: Subject<string> = new Subject<string>();
-
-  public readonly usernameSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
-    const debouncedText$ = text$.pipe(distinctUntilChanged());
-
-    return merge(debouncedText$, this.usernameFocus$).pipe(
-      map(() => {
-        const usernames = this.exerciseLogService.usernames().map(x => x);
-
-        return this.formGroup.value.user === ''
-          ? usernames
-          : usernames.filter(x => !!x).filter(v => v.toLowerCase().includes(this.formGroup.value.user?.toLowerCase() ?? ''));
-      })
-    );
-  };
-
-  @ViewChild('exerciseTypeaheadInput', { static: true }) exerciseTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
-  public readonly exerciseFocus$: Subject<string> = new Subject<string>();
-
-  public readonly exerciseSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
-    const debouncedText$ = text$.pipe(distinctUntilChanged());
-
-    return merge(debouncedText$, this.exerciseFocus$).pipe(
-      map(() => {
-        const exercises = this.exerciseLogService.exercises().map(x => x.exercise);
-
-        return this.formGroup.value.exercise === ''
-          ? exercises
-          : exercises.filter(x => !!x).filter(x => x.toLowerCase().includes(this.formGroup.value.exercise?.toLowerCase() ?? ''));
-      })
-    );
-  };
-
-  public readonly formGroup: CreateLogFormGroup = new FormGroup(
+  public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
     {
       user: new FormControl(''),
       exercise: new FormControl(''),
@@ -192,7 +149,22 @@ export class AppComponent implements OnInit {
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
       ]),
     },
-    [createLogFormValidator(this.exerciseLogService)]
+    [createOrUpdateLogFormValidator(this.exerciseLogService)]
+  );
+
+  public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
+    {
+      user: new FormControl(''),
+      exercise: new FormControl(''),
+      series: new FormArray([
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+      ]),
+    },
+    [createOrUpdateLogFormValidator(this.exerciseLogService)]
   );
 
   public isSpinning: boolean = false;
@@ -227,7 +199,7 @@ export class AppComponent implements OnInit {
       this.exerciseLogService.updateExercises$.next(exercises);
     }
 
-    this.serviceWorkerUpdates.unrecoverable.subscribe(x => console.error(x));
+    this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
     this.serviceWorkerUpdates.versionUpdates
       .pipe(
@@ -239,61 +211,122 @@ export class AppComponent implements OnInit {
         this.document.location.reload();
       });
 
-    this.formGroup.valueChanges
-      .pipe(debounceTime(1000))
+    this.createLogFormGroup.valueChanges
+      .pipe(takeUntilDestroyed(), debounceTime(1000))
       .subscribe(value => localStorage.setItem(CREATE_LOG_VALUE_CACHE_KEY, JSON.stringify(value)));
+
+    this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseRow => {
+      this.updateLogFormGroup.patchValue({
+        exercise: exerciseRow.excerciseName,
+        user: exerciseRow.username,
+        series: exerciseRow.series.map(x => ({
+          reps: x.reps,
+          weightInKg: x.weightKg,
+        })),
+      });
+      this.open('update', exerciseRow);
+    });
+
+    this.exerciseLogService.deleteLog$.pipe(takeUntilDestroyed()).subscribe(x => {
+      const request = {
+        date: this.dayjsService.parseDate(x.date).format('DD-MM-YYYY'),
+        exercise: x.excerciseName,
+        user: x.username,
+      };
+
+      this.exerciseLogApiService.deleteExerciseLog(request).subscribe(() => {
+        this.fetchData(false, false);
+      });
+    });
   }
 
   public ngOnInit(): void {
     const formGroupValue = JSON.parse(localStorage.getItem(CREATE_LOG_VALUE_CACHE_KEY) ?? 'null');
 
     if (formGroupValue) {
-      this.formGroup.patchValue(formGroupValue);
+      this.createLogFormGroup.patchValue(formGroupValue);
     }
   }
 
-  public open(content: TemplateRef<unknown>): void {
-    this.modalService.open(content, { centered: true }).result.then(
+  public open(mode: 'update' | 'create', exerciseRow?: ExerciseRow): void {
+    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, { centered: true, injector: this.injector });
+    modalRef.componentInstance.createLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
+    modalRef.componentInstance.mode = mode;
+
+    if (exerciseRow) {
+      modalRef.componentInstance.originalValue = exerciseRow;
+    }
+
+    modalRef.result.then(
       () => {
-        if (this.formGroup.invalid) {
-          return;
+        if (mode === 'create') {
+          if (this.createLogFormGroup.invalid) {
+            return;
+          }
+
+          const request = {
+            date: this.dayjs().format('DD-MM-YYYY'),
+            exercise: this.createLogFormGroup.value.exercise!.toLowerCase(),
+            user: this.createLogFormGroup.value.user!.toLowerCase(),
+            payload: {
+              series: (this.createLogFormGroup.value.series ?? [])
+                .filter(x => !!x.reps && !!x.weightInKg)
+                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+            },
+          };
+
+          const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => ({
+            date: parseDate(request.date).format('DD/MM/YYYY'),
+            name: request.exercise,
+            reps: s.reps,
+            serie: i + 1,
+            type: '',
+            user: request.user,
+            weightKg: s.weightInKg,
+          }));
+
+          this.exerciseLogService.appendLogs$.next(exerciseLogs);
+
+          this.exerciseLogApiService.createExerciseLog(request).subscribe({
+            next: () => {
+              this.createLogFormGroup.reset();
+              localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
+              this.fetchData(false, false);
+            },
+            error: () => {
+              this.fetchData(true, false);
+            },
+          });
+        } else {
+          if (this.updateLogFormGroup.invalid) {
+            return;
+          }
+
+          const request = {
+            date: this.dayjs().format('DD-MM-YYYY'),
+            exercise: this.updateLogFormGroup.value.exercise!.toLowerCase(),
+            user: this.updateLogFormGroup.value.user!.toLowerCase(),
+            payload: {
+              series: (this.updateLogFormGroup.value.series ?? [])
+                .filter(x => !!x.reps && !!x.weightInKg)
+                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+            },
+          };
+
+          this.exerciseLogApiService.updateExerciseLog(request).subscribe({
+            next: () => {
+              this.updateLogFormGroup.reset();
+              this.fetchData(false, false);
+            },
+            error: () => {
+              this.fetchData(true, false);
+            },
+          });
         }
-
-        const request = {
-          date: this.dayjs().format('DD-MM-YYYY'),
-          exercise: this.formGroup.value.exercise!.toLowerCase(),
-          user: this.formGroup.value.user!.toLowerCase(),
-          payload: {
-            series: (this.formGroup.value.series ?? [])
-              .filter(x => !!x.reps && !!x.weightInKg)
-              .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
-          },
-        };
-
-        const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => ({
-          date: parseDate(request.date).format('DD/MM/YYYY'),
-          name: request.exercise,
-          reps: s.reps,
-          serie: i + 1,
-          type: '',
-          user: request.user,
-          weightKg: s.weightInKg,
-        }));
-
-        this.exerciseLogService.appendLogs$.next(exerciseLogs);
-        this.exerciseLogApiService.createExerciseLog(request).subscribe({
-          next: () => {
-            this.formGroup.reset();
-            localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-            this.fetchData(false, false);
-          },
-          error: () => {
-            this.fetchData(true, false);
-          },
-        });
       },
       () => {
-        this.formGroup.markAsPristine();
+        this.createLogFormGroup.markAsPristine();
+        this.updateLogFormGroup.markAsPristine();
       }
     );
   }
