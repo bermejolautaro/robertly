@@ -1,12 +1,7 @@
-// DEPRECATED (should be replaced by firebase-logs)
-
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { google, sheets_v4 } from "googleapis";
-import path from "path";
-import { cert, initializeApp } from "firebase-admin/app";
-import { Reference, getDatabase } from "firebase-admin/database";
 
-const spreadsheetId = "1-P0n9rj15SYlKae9GzFmP7xK_dyHtdDo9wrax6uq9qw";
+const spreadsheetId = process.env.SHEETS_ID;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const auth = new google.auth.GoogleAuth({
@@ -19,23 +14,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const sheets = google.sheets({ version: "v4", auth });
 
-  const serviceAccount = path.join(process.cwd(), "files/database-creds.json");
-
-  const app = initializeApp({
-    credential: cert(serviceAccount),
-    databaseURL: "https://gymtracker-b0b72-default-rtdb.firebaseio.com",
-  });
-
-  const db = getDatabase(app);
-
-  const ref = db.ref();
-
-  const logsRef = ref.child("logs");
-
   if (req.method === "GET") {
     await getLogs(req, res, sheets);
   } else if (req.method === "POST") {
-    await createLog(req, res, sheets, logsRef);
+    await createLog(req, res, sheets);
   } else if (req.method === "PUT") {
     await updateLog(req, res, sheets);
   } else if (req.method === "OPTIONS") {
@@ -82,13 +64,8 @@ type CreateLogRequest = {
   payload: { series: string };
 };
 
-async function createLog(req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets, logsRef: Reference): Promise<void> {
+async function createLog(req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets): Promise<void> {
   const body = req.body as CreateLogRequest;
-
-  logsRef.push({
-    ...body,
-  });
-
   try {
     const exercises = await sheets.spreadsheets.values.append({
       spreadsheetId,
