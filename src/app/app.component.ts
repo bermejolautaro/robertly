@@ -216,6 +216,7 @@ export class AppComponent implements OnInit {
       .subscribe(value => localStorage.setItem(CREATE_LOG_VALUE_CACHE_KEY, JSON.stringify(value)));
 
     this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseRow => {
+      this.updateLogFormGroup.reset();
       this.updateLogFormGroup.patchValue({
         exercise: exerciseRow.excerciseName,
         user: exerciseRow.username,
