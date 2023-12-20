@@ -216,6 +216,7 @@ export class AppComponent implements OnInit ***REMOVED***
       .subscribe(value => localStorage.setItem(CREATE_LOG_VALUE_CACHE_KEY, JSON.stringify(value)));
 
     this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseRow => ***REMOVED***
+      this.updateLogFormGroup.reset();
       this.updateLogFormGroup.patchValue(***REMOVED***
         exercise: exerciseRow.excerciseName,
         user: exerciseRow.username,
