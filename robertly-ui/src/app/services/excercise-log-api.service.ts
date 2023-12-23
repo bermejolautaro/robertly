@@ -64,7 +64,7 @@ export class ExerciseLogApiService ***REMOVED***
 ***REMOVED***
 
   public getExerciseLogsv2(): Observable<ExerciseLog[]> ***REMOVED***
-    return this.http.get<GetExerciseLogsV2Response>(`$***REMOVED***this.url***REMOVED***/firebase-logs`).pipe(
+    return this.http.get<GetExerciseLogsV2Response>(`$***REMOVED***this.url***REMOVED***/firebase/logs`).pipe(
       map(x => ***REMOVED***
         return x.data.flatMap(y => ***REMOVED***
           return y.payload.series.map((s, i) => (***REMOVED***
