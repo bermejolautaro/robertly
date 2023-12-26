@@ -17,7 +17,7 @@ export class ExerciseApiService ***REMOVED***
 
   public getExercises(): Observable<Exercise[]> ***REMOVED***
     return this.http
-      .get<ExercisesResponse>(`$***REMOVED***this.url***REMOVED***/exercises`)
+      .get<ExercisesResponse>(`$***REMOVED***this.url***REMOVED***/firebase/exercises`)
       .pipe(map(x => x.data));
 ***REMOVED***
 ***REMOVED***

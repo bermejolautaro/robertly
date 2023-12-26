@@ -54,7 +54,10 @@ export class ExcerciseLogsPageComponent implements OnInit ***REMOVED***
 
     return merge(debouncedText$, this.exerciseFocus$).pipe(
       map(() => ***REMOVED***
-        const exercises = this.exerciseLogService.exercises().map(x => x.exercise);
+        const selectedType = this.exerciseLogService.selectedType();
+        const exercises = this.exerciseLogService.exercises()
+          .filter(x => !!selectedType ? x.type.toLowerCase() === selectedType.toLowerCase() : true)
+          .map(x => x.exercise);
 
         if (this.exerciseLogService.selectedExercise()) ***REMOVED***
           exercises.unshift(CLEAR_FILTER_LABEL);
