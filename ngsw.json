@@ -1,7 +1,7 @@
 {
   "configVersion": 1,
-  "timestamp": 1703597759691,
-  "index": "/robertly/index.html",
+  "timestamp": 1703773410947,
+  "index": "/index.html",
   "assetGroups": [
     {
       "name": "app",
@@ -11,17 +11,17 @@
         "ignoreVary": true
       },
       "urls": [
-        "/robertly/chunk-7RHUOPPF.js",
-        "/robertly/chunk-EML4QIEH.js",
-        "/robertly/chunk-HY2ONWIP.js",
-        "/robertly/chunk-N47IP6Z3.js",
-        "/robertly/chunk-Y6X4GWIR.js",
-        "/robertly/favicon.ico",
-        "/robertly/index.html",
-        "/robertly/main-OW4NNRP2.js",
-        "/robertly/manifest.webmanifest",
-        "/robertly/polyfills-CG2UM2YX.js",
-        "/robertly/styles-4DOBTHUV.css"
+        "/chunk-7RHUOPPF.js",
+        "/chunk-7ZCKUANY.js",
+        "/chunk-BV3NHN6T.js",
+        "/chunk-HY2ONWIP.js",
+        "/chunk-YQOST7OK.js",
+        "/favicon.ico",
+        "/index.html",
+        "/main-XWM37D5I.js",
+        "/manifest.webmanifest",
+        "/polyfills-CG2UM2YX.js",
+        "/styles-4DOBTHUV.css"
       ],
       "patterns": []
     },
@@ -33,33 +33,33 @@
         "ignoreVary": true
       },
       "urls": [
-        "/robertly/assets/icons/android-chrome-192x192.png",
-        "/robertly/assets/icons/android-chrome-512x512.png",
-        "/robertly/assets/icons/apple-touch-icon.png",
-        "/robertly/assets/icons/favicon-16x16.png",
-        "/robertly/assets/icons/favicon-32x32.png"
+        "/assets/icons/android-chrome-192x192.png",
+        "/assets/icons/android-chrome-512x512.png",
+        "/assets/icons/apple-touch-icon.png",
+        "/assets/icons/favicon-16x16.png",
+        "/assets/icons/favicon-32x32.png"
       ],
       "patterns": []
     }
   ],
   "dataGroups": [],
   "hashTable": {
-    "/robertly/assets/icons/android-chrome-192x192.png": "efc5832c72125018c99ee0513f0fa691a94befc6",
-    "/robertly/assets/icons/android-chrome-512x512.png": "774180cce1f51fdbc68414896b85505627b1f812",
-    "/robertly/assets/icons/apple-touch-icon.png": "b3f527e46181c430f6fd6f7fea8ccbe3c417d604",
-    "/robertly/assets/icons/favicon-16x16.png": "1f98d03c4e43df6ace155d6aee14b3a3aded23a8",
-    "/robertly/assets/icons/favicon-32x32.png": "08bfeb096acfb43dd330af0fd5715d6095343ec2",
-    "/robertly/chunk-7RHUOPPF.js": "9944effaff445389ee002038aa938d5f0de56e1a",
-    "/robertly/chunk-EML4QIEH.js": "94c3ccf538703b417a8e9de346271578986f97ee",
-    "/robertly/chunk-HY2ONWIP.js": "d26e20670137e1affd2690a35d7820eb443a6024",
-    "/robertly/chunk-N47IP6Z3.js": "a58f344ecd7ea1f05099b9bac0e7a358d76bfca6",
-    "/robertly/chunk-Y6X4GWIR.js": "bcc8e97ffd819b13c3d13753004109c0165c20e6",
-    "/robertly/favicon.ico": "0612a0d81b1313c6da6056e10fd3fd401bd771dc",
-    "/robertly/index.html": "4fe6d82009545b237802d85cb2b85e5e8131bb27",
-    "/robertly/main-OW4NNRP2.js": "4ac648d3065e97ca75383409bf8346df5a8e0864",
-    "/robertly/manifest.webmanifest": "b3b7e982267fa7083892ce2a66794383909e6748",
-    "/robertly/polyfills-CG2UM2YX.js": "8758dc9fb93959b8a6c6ee04793c65df80b82558",
-    "/robertly/styles-4DOBTHUV.css": "f903e72faca528ba3527868045b8ca5ac09513db"
+    "/assets/icons/android-chrome-192x192.png": "efc5832c72125018c99ee0513f0fa691a94befc6",
+    "/assets/icons/android-chrome-512x512.png": "774180cce1f51fdbc68414896b85505627b1f812",
+    "/assets/icons/apple-touch-icon.png": "b3f527e46181c430f6fd6f7fea8ccbe3c417d604",
+    "/assets/icons/favicon-16x16.png": "1f98d03c4e43df6ace155d6aee14b3a3aded23a8",
+    "/assets/icons/favicon-32x32.png": "08bfeb096acfb43dd330af0fd5715d6095343ec2",
+    "/chunk-7RHUOPPF.js": "9944effaff445389ee002038aa938d5f0de56e1a",
+    "/chunk-7ZCKUANY.js": "bf04bfa37042a010f8374c4a40f95fe524ad410f",
+    "/chunk-BV3NHN6T.js": "ba3d94a26e531a116ef8e04ad39d3906701a20f2",
+    "/chunk-HY2ONWIP.js": "d26e20670137e1affd2690a35d7820eb443a6024",
+    "/chunk-YQOST7OK.js": "97fd612ba2612befefadbc50efa53d754d8187b9",
+    "/favicon.ico": "0612a0d81b1313c6da6056e10fd3fd401bd771dc",
+    "/index.html": "73c73704cb895fc3a5cfcbcb86e9b602d5679749",
+    "/main-XWM37D5I.js": "6b26e26391e4434e07072df4162417931d509b2f",
+    "/manifest.webmanifest": "b3b7e982267fa7083892ce2a66794383909e6748",
+    "/polyfills-CG2UM2YX.js": "8758dc9fb93959b8a6c6ee04793c65df80b82558",
+    "/styles-4DOBTHUV.css": "f903e72faca528ba3527868045b8ca5ac09513db"
   },
   "navigationUrls": [
     {
