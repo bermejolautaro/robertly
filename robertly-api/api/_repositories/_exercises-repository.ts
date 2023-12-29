@@ -28,7 +28,7 @@ type DeleteExerciseRequest = ***REMOVED***
   id: string;
 ***REMOVED***;
 
-export async function getExercises(_req: VercelRequest, res: VercelResponse, exercisesRef: Reference): Promise<Exercise[]> ***REMOVED***
+export async function getExercises(exercisesRef: Reference): Promise<Exercise[]> ***REMOVED***
   try ***REMOVED***
     const data = (await exercisesRef.once("value")).val() as unknown | null | undefined;
 
@@ -40,7 +40,7 @@ export async function getExercises(_req: VercelRequest, res: VercelResponse, exe
       return [];
 ***REMOVED***
 ***REMOVED*** catch (err) ***REMOVED***
-    res.json("The API returned an error: " + err);
+    return [];
 ***REMOVED***
 ***REMOVED***
 

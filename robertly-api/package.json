@@ -1,4 +1,5 @@
 ***REMOVED***
+  "type": "module",
   "devDependencies": ***REMOVED***
     "@types/node": "^17.0.45",
     "@vercel/node": "^2.9.6",

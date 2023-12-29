@@ -1,6 +1,6 @@
 import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** connectToDatabase ***REMOVED*** from "../_firebase-helper";
-import ***REMOVED*** createLog, updateLog, deleteLog, getLogs ***REMOVED*** from "../_repositories/_logs-repository";
+import ***REMOVED*** connectToDatabase ***REMOVED*** from "../_helpers/_firebase-helper.js";
+import ***REMOVED*** createLog, updateLog, deleteLog, getLogs ***REMOVED*** from "../_repositories/_logs-repository.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
   if (req.method === "OPTIONS") ***REMOVED***
@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) *
   const logsRef = db.ref().child("logs");
 
   if (req.method === "GET") ***REMOVED***
-    const logs = await getLogs(req, res, logsRef);
+    const logs = await getLogs(logsRef);
     res.json(***REMOVED*** data: logs ***REMOVED***);
 ***REMOVED*** else if (req.method === "POST") ***REMOVED***
     await createLog(req, res, logsRef);

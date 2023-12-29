@@ -15,7 +15,7 @@ type UpdateLogRequest = ***REMOVED***
   payload: ***REMOVED*** series: string ***REMOVED***;
 ***REMOVED***;
 
-export async function getLogs(_req: VercelRequest, res: VercelResponse, logsRef: Reference): Promise<unknown[]> ***REMOVED***
+export async function getLogs(logsRef: Reference): Promise<unknown[]> ***REMOVED***
   try ***REMOVED***
     const data = (await logsRef.once("value")).val();
 
@@ -27,7 +27,7 @@ export async function getLogs(_req: VercelRequest, res: VercelResponse, logsRef:
       return [];
 ***REMOVED***
 ***REMOVED*** catch (err) ***REMOVED***
-    res.json("The API returned an error: " + err);
+    return [];
 ***REMOVED***
 ***REMOVED***
 

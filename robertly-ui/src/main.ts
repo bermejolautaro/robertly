@@ -6,6 +6,7 @@ import ***REMOVED*** bootstrapApplication ***REMOVED*** from '@angular/platform-
 import ***REMOVED*** AppComponent ***REMOVED*** from 'src/app/app.component';
 import ***REMOVED*** provideAnimationsAsync ***REMOVED*** from '@angular/platform-browser/animations/async';
 import ***REMOVED*** TitleCasePipe ***REMOVED*** from '@angular/common';
+import ***REMOVED*** environment ***REMOVED*** from './environments/environment';
 
 export const LOGS_PATH = '';
 export const STATS_PATH = 'stats';
@@ -33,7 +34,6 @@ bootstrapApplication(AppComponent, ***REMOVED***
     provideHttpClient(),
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', ***REMOVED*** enabled: !isDevMode() ***REMOVED***),
-    ***REMOVED*** provide: BACKEND_URL, useValue: 'https://gym-nodejs-excel-bermejolautaro.vercel.app/api' ***REMOVED***,
-    // ***REMOVED*** provide: BACKEND_URL, useValue: 'http://localhost:3000/api' ***REMOVED***,
+    ***REMOVED*** provide: BACKEND_URL, useValue: environment.apiUrl ***REMOVED***,
   ],
 ***REMOVED***).catch(err => console.error(err));

@@ -8,7 +8,9 @@
           ***REMOVED******REMOVED*** exerciseLogService.selectedTypeLabel() | titlecase ***REMOVED******REMOVED***
         </button>
         <div ngbDropdownMenu class="w-100">
-          <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
+          @if (exerciseLogService.selectedType()) ***REMOVED***
+            <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
+      ***REMOVED***
           @for (type of exerciseLogService.types(); track type) ***REMOVED***
             <button
               ngbDropdownItem

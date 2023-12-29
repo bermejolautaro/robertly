@@ -1,9 +1,9 @@
-import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** connectToDatabase ***REMOVED*** from "../_firebase-helper";
+import ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
+import ***REMOVED*** connectToDatabase ***REMOVED*** from "../_helpers/_firebase-helper.js";
 
-import ***REMOVED*** getExercises, createExercise, updateExercise, deleteExercise ***REMOVED*** from "../_repositories/_exercises-repository";
+import ***REMOVED*** getExercises, createExercise, updateExercise, deleteExercise ***REMOVED*** from "../_repositories/_exercises-repository.js";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<void> ***REMOVED***
   if (req.method === "OPTIONS") ***REMOVED***
     res.status(200).end();
     return;
@@ -21,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) *
   const exercisesRefs = db.ref().child("exercises");
 
   if (req.method === "GET") ***REMOVED***
-    const exercises = await getExercises(req, res, exercisesRefs);
+    const exercises = await getExercises(exercisesRefs);
     res.json(***REMOVED*** data: exercises ***REMOVED***);
 ***REMOVED*** else if (req.method === "POST") ***REMOVED***
     await createExercise(req, res, exercisesRefs);

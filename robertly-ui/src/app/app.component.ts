@@ -20,6 +20,7 @@ import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
 import ***REMOVED*** CreateOrUpdateLogModalComponent ***REMOVED*** from '@components/create-or-update-log-modal.component';
 import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
 import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import ***REMOVED*** ViewModelApiService ***REMOVED*** from '@services/viewmodel-api.service';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -130,6 +131,7 @@ export class AppComponent implements OnInit ***REMOVED***
   public readonly exerciseLogService = inject(ExerciseLogService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
+  private readonly viewModelApiService = inject(ViewModelApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
@@ -358,6 +360,8 @@ export class AppComponent implements OnInit ***REMOVED***
     ***REMOVED***
   ***REMOVED***)
     );
+
+    this.viewModelApiService.getViewModel().subscribe(x => console.log(x));
 
     logsAndExercises$.subscribe(([exerciseLogs, exercises]) => ***REMOVED***
       localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));

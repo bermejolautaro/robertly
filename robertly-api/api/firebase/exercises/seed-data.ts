@@ -1,6 +1,6 @@
 import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** connectToDatabase ***REMOVED*** from "../../_firebase-helper";
-import ***REMOVED*** seedExercises ***REMOVED*** from "../../_repositories/_exercises-repository";
+import ***REMOVED*** connectToDatabase ***REMOVED*** from "../../_helpers/_firebase-helper.js";
+import ***REMOVED*** seedExercises ***REMOVED*** from "../../_repositories/_exercises-repository.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
   if (req.method === "OPTIONS") ***REMOVED***

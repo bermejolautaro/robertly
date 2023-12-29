@@ -1,7 +1,7 @@
-import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** connectToDatabase ***REMOVED*** from "../_firebase-helper";
-import ***REMOVED*** getLogs ***REMOVED*** from "../_repositories/_logs-repository";
-import ***REMOVED*** getExercises ***REMOVED*** from "../_repositories/_exercises-repository";
+import ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
+import ***REMOVED*** connectToDatabase ***REMOVED*** from "../_helpers/_firebase-helper.js";
+import ***REMOVED*** getLogs ***REMOVED*** from "../_repositories/_logs-repository.js";
+import ***REMOVED*** getExercises ***REMOVED*** from "../_repositories/_exercises-repository.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
   if (req.method === "OPTIONS") ***REMOVED***
@@ -22,8 +22,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) *
   const exercisesRef = db.ref().child("exercises");
 
   if (req.method === "GET") ***REMOVED***
-    const logs = await getLogs(req, res, logsRef);
-    const exercises = await getExercises(req, res, exercisesRef);
+    const logs = await getLogs(logsRef);
+    const exercises = await getExercises(exercisesRef);
 
     res.json(***REMOVED*** data: ***REMOVED*** logs, exercises ***REMOVED*** ***REMOVED***);
 ***REMOVED*** else ***REMOVED***
