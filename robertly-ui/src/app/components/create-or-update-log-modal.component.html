@@ -11,23 +11,43 @@
           type="text"
           class="form-control"
           placeholder="Username"
-          [formControl]="createLogFormGroup.controls.user"
-          (selectItem)="createLogFormGroup.controls.user.patchValue($event.item)"
+          [formControl]="createOrUpdateLogFormGroup.controls.user"
+          (selectItem)="createOrUpdateLogFormGroup.controls.user.patchValue($event.item)"
           [ngbTypeahead]="usernameSearch"
           [popupClass]="'typeahead'"
-          (focus)="usernameFocus$.next(createLogFormGroup.value.user || '')"
+          (focus)="usernameFocus$.next(createOrUpdateLogFormGroup.value.user || '')"
           #usernameTypeaheadInput
         />
-        <button class="btn btn-outline-secondary" type="button" (click)="createLogFormGroup.controls.user.patchValue('')">
+        <button class="btn btn-outline-secondary" type="button" (click)="createOrUpdateLogFormGroup.controls.user.patchValue('')">
           <i class="fa fa-times"></i>
         </button>
       </div>
-      @if (!createLogFormGroup.controls.user.pristine && createLogFormGroup.errors && createLogFormGroup.errors['userRequired']) ***REMOVED***
-        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createLogFormGroup.errors['userRequired'] ***REMOVED******REMOVED***</div>
+      @if (
+        !createOrUpdateLogFormGroup.controls.user.pristine &&
+        createOrUpdateLogFormGroup.errors &&
+        createOrUpdateLogFormGroup.errors['userRequired']
+      ) ***REMOVED***
+        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createOrUpdateLogFormGroup.errors['userRequired'] ***REMOVED******REMOVED***</div>
   ***REMOVED***
-      @if (!createLogFormGroup.controls.user.pristine && createLogFormGroup.errors && createLogFormGroup.errors['userInvalidPeron']) ***REMOVED***
-        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createLogFormGroup.errors['userInvalidPeron'] ***REMOVED******REMOVED***</div>
+      @if (
+        !createOrUpdateLogFormGroup.controls.user.pristine &&
+        createOrUpdateLogFormGroup.errors &&
+        createOrUpdateLogFormGroup.errors['userInvalidPeron']
+      ) ***REMOVED***
+        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createOrUpdateLogFormGroup.errors['userInvalidPeron'] ***REMOVED******REMOVED***</div>
   ***REMOVED***
+    </div>
+    <!-- #endregion -->
+
+    <!-- #region INPUT DATE -->
+    <div class="mb-3">
+      <input
+        type="date"
+        placeholder="DD-MM-YYYY"
+        class="form-control"
+        placeholder="Reps"
+        [formControl]="createOrUpdateLogFormGroup.controls.date"
+      />
     </div>
     <!-- #endregion -->
 
@@ -38,34 +58,42 @@
           type="text"
           class="form-control"
           placeholder="Exercise"
-          [formControl]="createLogFormGroup.controls.exercise"
-          (selectItem)="createLogFormGroup.controls.exercise.patchValue($event.item)"
+          [formControl]="createOrUpdateLogFormGroup.controls.exercise"
+          (selectItem)="createOrUpdateLogFormGroup.controls.exercise.patchValue($event.item)"
           [ngbTypeahead]="exerciseSearch"
           [popupClass]="'typeahead'"
-          (focus)="exerciseFocus$.next(createLogFormGroup.value.exercise || '')"
+          (focus)="exerciseFocus$.next(createOrUpdateLogFormGroup.value.exercise || '')"
           #exerciseTypeaheadInput
         />
-        <button class="btn btn-outline-secondary" type="button" (click)="createLogFormGroup.controls.exercise.patchValue('')">
+        <button class="btn btn-outline-secondary" type="button" (click)="createOrUpdateLogFormGroup.controls.exercise.patchValue('')">
           <i class="fa fa-times"></i>
         </button>
       </div>
-      @if (!createLogFormGroup.controls.exercise.pristine && createLogFormGroup.errors && createLogFormGroup.errors['exerciseRequired']) ***REMOVED***
-        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createLogFormGroup.errors['exerciseRequired'] ***REMOVED******REMOVED***</div>
+      @if (
+        !createOrUpdateLogFormGroup.controls.exercise.pristine &&
+        createOrUpdateLogFormGroup.errors &&
+        createOrUpdateLogFormGroup.errors['exerciseRequired']
+      ) ***REMOVED***
+        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createOrUpdateLogFormGroup.errors['exerciseRequired'] ***REMOVED******REMOVED***</div>
   ***REMOVED***
       @if (
-        !createLogFormGroup.controls.exercise.pristine && createLogFormGroup.errors && createLogFormGroup.errors['exerciseInvalidPeron']
+        !createOrUpdateLogFormGroup.controls.exercise.pristine &&
+        createOrUpdateLogFormGroup.errors &&
+        createOrUpdateLogFormGroup.errors['exerciseInvalidPeron']
       ) ***REMOVED***
-        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createLogFormGroup.errors['exerciseInvalidPeron'] ***REMOVED******REMOVED***</div>
+        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createOrUpdateLogFormGroup.errors['exerciseInvalidPeron'] ***REMOVED******REMOVED***</div>
   ***REMOVED***
       @if (
-        !createLogFormGroup.controls.exercise.pristine && createLogFormGroup.errors && createLogFormGroup.errors['exerciseDoesNotExist']
+        !createOrUpdateLogFormGroup.controls.exercise.pristine &&
+        createOrUpdateLogFormGroup.errors &&
+        createOrUpdateLogFormGroup.errors['exerciseDoesNotExist']
       ) ***REMOVED***
-        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createLogFormGroup.errors['exerciseDoesNotExist'] ***REMOVED******REMOVED***</div>
+        <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createOrUpdateLogFormGroup.errors['exerciseDoesNotExist'] ***REMOVED******REMOVED***</div>
   ***REMOVED***
     </div>
     <!-- #endregion -->
 
-    @for (serieControl of createLogFormGroup.controls.series.controls; track $index) ***REMOVED***
+    @for (serieControl of createOrUpdateLogFormGroup.controls.series.controls; track $index) ***REMOVED***
       <div class="input-group mb-3 align-items-center">
         <span class="input-group-text">Serie ***REMOVED******REMOVED*** $index + 1 ***REMOVED******REMOVED***</span>
         <input type="number" inputmode="decimal" class="form-control" placeholder="Reps" [formControl]="serieControl.controls.reps" />
@@ -73,14 +101,18 @@
       </div>
 ***REMOVED***
     @if (
-      !createLogFormGroup.controls.series.pristine && createLogFormGroup.errors && createLogFormGroup.errors['seriesAllSeriesAreEmpty']
+      !createOrUpdateLogFormGroup.controls.series.pristine &&
+      createOrUpdateLogFormGroup.errors &&
+      createOrUpdateLogFormGroup.errors['seriesAllSeriesAreEmpty']
     ) ***REMOVED***
-      <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createLogFormGroup.errors['seriesAllSeriesAreEmpty'] ***REMOVED******REMOVED***</div>
+      <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createOrUpdateLogFormGroup.errors['seriesAllSeriesAreEmpty'] ***REMOVED******REMOVED***</div>
 ***REMOVED***
     @if (
-      !createLogFormGroup.controls.series.pristine && createLogFormGroup.errors && createLogFormGroup.errors['seriesRepsMustBeInteger']
+      !createOrUpdateLogFormGroup.controls.series.pristine &&
+      createOrUpdateLogFormGroup.errors &&
+      createOrUpdateLogFormGroup.errors['seriesRepsMustBeInteger']
     ) ***REMOVED***
-      <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createLogFormGroup.errors['seriesRepsMustBeInteger'] ***REMOVED******REMOVED***</div>
+      <div class="d-block invalid-feedback">***REMOVED******REMOVED*** createOrUpdateLogFormGroup.errors['seriesRepsMustBeInteger'] ***REMOVED******REMOVED***</div>
 ***REMOVED***
   </form>
 </div>
@@ -93,9 +125,9 @@
   <button
     type="button"
     class="btn"
-    [ngClass]="***REMOVED*** 'btn-primary': createLogFormGroup.valid, 'btn-secondary': createLogFormGroup.invalid ***REMOVED***"
+    [ngClass]="***REMOVED*** 'btn-primary': createOrUpdateLogFormGroup.valid, 'btn-secondary': createOrUpdateLogFormGroup.invalid ***REMOVED***"
     (click)="modal.close()"
-    [disabled]="createLogFormGroup.invalid"
+    [disabled]="createOrUpdateLogFormGroup.invalid"
   >
     Save
   </button>

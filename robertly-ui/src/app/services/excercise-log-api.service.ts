@@ -82,14 +82,14 @@ export class ExerciseLogApiService ***REMOVED***
 ***REMOVED***
 
   public createExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> ***REMOVED***
-    return this.http.post<void>(`$***REMOVED***this.url***REMOVED***/firebase-logs`, request);
+    return this.http.post<void>(`$***REMOVED***this.url***REMOVED***/firebase/logs`, request);
 ***REMOVED***
 
   public updateExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> ***REMOVED***
-    return this.http.put<void>(`$***REMOVED***this.url***REMOVED***/firebase-logs`, request);
+    return this.http.put<void>(`$***REMOVED***this.url***REMOVED***/firebase/logs`, request);
 ***REMOVED***
 
   public deleteExerciseLog(request: DeleteLogRequest): Observable<void> ***REMOVED***
-    return this.http.delete<void>(`$***REMOVED***this.url***REMOVED***/firebase-logs`, ***REMOVED*** body: request ***REMOVED***);
+    return this.http.delete<void>(`$***REMOVED***this.url***REMOVED***/firebase/logs`, ***REMOVED*** body: request ***REMOVED***);
 ***REMOVED***
 ***REMOVED***

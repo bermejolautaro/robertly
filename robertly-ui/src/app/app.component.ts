@@ -29,6 +29,7 @@ const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
 
 export type CreateOrUpdateLogFormGroup = FormGroup<***REMOVED***
   user: FormControl<string | null>;
+  date: FormControl<string | null>;
   exercise: FormControl<string | null>;
   series: FormArray<
     FormGroup<***REMOVED***
@@ -143,6 +144,7 @@ export class AppComponent implements OnInit ***REMOVED***
     ***REMOVED***
       user: new FormControl(''),
       exercise: new FormControl(''),
+      date: new FormControl(this.dayjs().format('DD-MM-YYYY')),
       series: new FormArray([
         new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
         new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
@@ -158,6 +160,7 @@ export class AppComponent implements OnInit ***REMOVED***
     ***REMOVED***
       user: new FormControl(''),
       exercise: new FormControl(''),
+      date: new FormControl(this.dayjs().format('DD-MM-YYYY')),
       series: new FormArray([
         new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
         new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
@@ -221,6 +224,7 @@ export class AppComponent implements OnInit ***REMOVED***
       this.updateLogFormGroup.reset();
       this.updateLogFormGroup.patchValue(***REMOVED***
         exercise: exerciseRow.excerciseName,
+        date: this.dayjsService.parseDate(exerciseRow.date).format('YYYY-MM-DD'),
         user: exerciseRow.username,
         series: exerciseRow.series.map(x => (***REMOVED***
           reps: x.reps,
@@ -253,11 +257,12 @@ export class AppComponent implements OnInit ***REMOVED***
 
   public open(mode: 'update' | 'create', exerciseRow?: ExerciseRow): void ***REMOVED***
     const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, ***REMOVED*** centered: true, injector: this.injector ***REMOVED***);
-    modalRef.componentInstance.createLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
-    modalRef.componentInstance.mode = mode;
+    const instance = modalRef.componentInstance as CreateOrUpdateLogModalComponent;
+    instance.createOrUpdateLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
+    instance.mode = mode;
 
     if (exerciseRow) ***REMOVED***
-      modalRef.componentInstance.originalValue = exerciseRow;
+      instance.originalValue = exerciseRow;
 ***REMOVED***
 
     modalRef.result.then(
@@ -268,7 +273,7 @@ export class AppComponent implements OnInit ***REMOVED***
       ***REMOVED***
 
           const request = ***REMOVED***
-            date: this.dayjs().format('DD-MM-YYYY'),
+            date: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('DD-MM-YYYY'),
             exercise: this.createLogFormGroup.value.exercise!.toLowerCase(),
             user: this.createLogFormGroup.value.user!.toLowerCase(),
             payload: ***REMOVED***
@@ -279,7 +284,7 @@ export class AppComponent implements OnInit ***REMOVED***
       ***REMOVED***;
 
           const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => (***REMOVED***
-            date: parseDate(request.date).format('DD/MM/YYYY'),
+            date: parseDate(request.date).format('DD-MM-YYYY'),
             name: request.exercise,
             reps: s.reps,
             serie: i + 1,
@@ -306,7 +311,7 @@ export class AppComponent implements OnInit ***REMOVED***
       ***REMOVED***
 
           const request = ***REMOVED***
-            date: this.dayjs().format('DD-MM-YYYY'),
+            date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('DD-MM-YYYY'),
             exercise: this.updateLogFormGroup.value.exercise!.toLowerCase(),
             user: this.updateLogFormGroup.value.user!.toLowerCase(),
             payload: ***REMOVED***
