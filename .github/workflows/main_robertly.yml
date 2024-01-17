@@ -20,45 +20,38 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: '6.0.x'
+          include-prerelease: true
 
       - name: Build with dotnet
-        run: cd ./robertly-net-api && dotnet build --configuration Release
+        run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: cd ./robertly-net-api && dotnet publish -c Release -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api
+        run: dotnet publish -c Release -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/myapp
 
-      # - name: Upload artifact for deployment job
-      #   uses: actions/upload-artifact@v3
-      #   with:
-      #     name: .net-app
-      #     path: $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: .net-app
+          path: $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/myapp
 
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: 'Production'
+      url: $***REMOVED******REMOVED*** steps.deploy-to-webapp.outputs.webapp-url ***REMOVED******REMOVED***
+    
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v3
+        with:
+          name: .net-app
+      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'robertly'
+          slot-name: 'Production'
           package: .
-          publish-profile: $***REMOVED******REMOVED*** secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2F5821C575B949918E83500E869CD964 ***REMOVED******REMOVED***
-
-  # deploy:
-  #   runs-on: windows-latest
-  #   needs: build
-  #   environment:
-  #     name: 'Production'
-  #     url: $***REMOVED******REMOVED*** steps.deploy-to-webapp.outputs.webapp-url ***REMOVED******REMOVED***
-
-  #   steps:
-  #     - name: Download artifact from build job
-  #       uses: actions/download-artifact@v3
-  #       with:
-  #         name: .net-app
-
-  #     - name: Deploy to Azure Web App
-  #       id: deploy-to-webapp
-  #       uses: azure/webapps-deploy@v2
-  #       with:
-  #         app-name: 'robertly'
-  #         slot-name: 'Production'
-  #         package: .
-  #         publish-profile: $***REMOVED******REMOVED*** secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2F5821C575B949918E83500E869CD964 ***REMOVED******REMOVED***
+          publish-profile: $***REMOVED******REMOVED*** secrets.AZUREAPPSERVICE_PUBLISHPROFILE_C00D06B48D674758BE67A832F4C6031A ***REMOVED******REMOVED***
