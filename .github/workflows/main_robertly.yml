@@ -35,7 +35,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: .net-app
-          path: $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api
+          path: ./robertly-net-api
 
   deploy:
     runs-on: windows-latest
