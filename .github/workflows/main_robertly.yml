@@ -26,7 +26,7 @@ jobs:
         run: cd ./robertly-net-api && dotnet build --configuration Release
 
       - name: dotnet publish
-        run: cd ./robertly-net-api && dotnet publish -c Release -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api
+        run: cd ./robertly-net-api && dotnet publish -c Release --self-contained -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
