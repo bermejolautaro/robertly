@@ -32,7 +32,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: .net-app
-          path: ./robertly-net-api
+          path: $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api
 
   deploy:
     runs-on: windows-latest
@@ -40,18 +40,18 @@ jobs:
     environment:
       name: 'Production'
       url: $***REMOVED******REMOVED*** steps.deploy-to-webapp.outputs.webapp-url ***REMOVED******REMOVED***
-
+    
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
           name: .net-app
-
+      
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
           app-name: 'robertly'
           slot-name: 'Production'
-          publish-profile: $***REMOVED******REMOVED*** secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0C70180C246D4FA89194CFE8FF6BF549 ***REMOVED******REMOVED***
           package: .
+          publish-profile: $***REMOVED******REMOVED*** secrets.AZUREAPPSERVICE_PUBLISHPROFILE_2F5821C575B949918E83500E869CD964 ***REMOVED******REMOVED***
