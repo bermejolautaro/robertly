@@ -27,10 +27,10 @@ jobs:
           # include-prerelease: true
 
       - name: Build with dotnet
-        run: dotnet build ./roberly-net-api.sln --configuration Release
+        run: dotnet build ./robertly-net-api/robertly-net-api.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./robertly-net-api/roberly-net-api.sln -c Release -o ***REMOVED******REMOVED*** env.$AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED*** --no-build
+        run: dotnet publish ./robertly-net-api/robertly-net-api.sln -c Release -o ***REMOVED******REMOVED*** env.$AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED*** --no-build
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
