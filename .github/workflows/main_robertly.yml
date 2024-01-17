@@ -22,7 +22,7 @@ jobs:
           dotnet-version: '8.x'
 
       - name: Build with dotnet
-        run: cd ./robertly-net-api && dotnet build --configuration Release --no-restore
+        run: cd ./robertly-net-api && dotnet build --configuration Release
 
       - name: dotnet publish
         run: cd ./robertly-net-api && dotnet publish -c Release --self-contained true -r linux-x64 -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api /p:UseAppHost=true
