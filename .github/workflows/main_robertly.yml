@@ -36,8 +36,8 @@ jobs:
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
         with:
-          app-name: $***REMOVED******REMOVED*** AZURE_WEBAPP_NAME ***REMOVED******REMOVED***
-          package: $***REMOVED******REMOVED*** AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
+          app-name: $***REMOVED******REMOVED*** env.AZURE_WEBAPP_NAME ***REMOVED******REMOVED***
+          package: $***REMOVED******REMOVED*** env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***
           publish-profile: $***REMOVED******REMOVED*** secrets.AZURE_PUBLISH_PROFILE ***REMOVED******REMOVED***
 
       # - name: Upload artifact for deployment job
