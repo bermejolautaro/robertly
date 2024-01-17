@@ -22,11 +22,14 @@ jobs:
           dotnet-version: '8.x'
           include-prerelease: true
 
+      - name: Change directory
+        run: cd ./robertly-net-api
+
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ./robertly-net-api
+        run: dotnet publish -c Release -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/robertly-net-api
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
