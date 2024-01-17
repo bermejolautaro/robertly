@@ -30,7 +30,7 @@ jobs:
         run: dotnet build ./robertly-net-api/robertly-net-api.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish ./robertly-net-api/robertly-net-api.sln -c Release -o '$***REMOVED******REMOVED*** env.$AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***'
+        run: dotnet publish ./robertly-net-api/robertly-net-api.sln -c Release -o '$***REMOVED******REMOVED*** env.AZURE_WEBAPP_PACKAGE_PATH ***REMOVED******REMOVED***'
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
