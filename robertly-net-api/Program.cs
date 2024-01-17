@@ -15,18 +15,15 @@ builder.Services.AddSwaggerGen();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-***REMOVED***
-    app.UseSwagger();
-    app.UseSwaggerUI();
-***REMOVED***
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapControllerRoute("default", "Api/***REMOVED***controller***REMOVED***/***REMOVED***action***REMOVED***");
 
 app.Run();
 
