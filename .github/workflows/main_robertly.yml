@@ -47,6 +47,17 @@ jobs:
         with:
           name: .net-app
 
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: '${{env.DOTNET_ROOT}}/myapp/appsettings.json'
+        env:
+          GoogleCredential.ClientEmail: ${{ secrets.GOOGLE_CREDENTIAL_CLIENT_EMAIL }}
+          GoogleCredential.PrivateKey: ${{ secrets.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
+          GoogleCredential.ProjectId: ${{ secrets.GOOGLE_CREDENTIAL_PROJECT_ID }}
+          GoogleCredential.DatabaseUrl: ${{ secrets.GOOGLE_CREDENTIAL_DATABASE_URL }}
+
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
