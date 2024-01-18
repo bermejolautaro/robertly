@@ -1,0 +1,29 @@
+name: Build and deploy robertly-net-ui
+
+on:
+  push:
+    branches:
+      - main
+    paths: 
+      - './robertly-net-ui/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Use Node.js 10.x
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10.x
+
+    - name: Prepare and deploy
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        npm install
+        npm run ngsw-config && npm run ng -- deploy --cname=www.robertly.ar --name="Lautaro Bermejo" --email=tarolau97@hotmail.com
