@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Build and deploy ASP.Net Core app to Azure Web App - robertly
+name: Build and deploy robertly-net-api
 
 on:
   push:
@@ -47,10 +47,13 @@ jobs:
         with:
           name: .net-app
 
+      - name: test
+        run: dir
+
       - name: App Settings Variable Substitution
         uses: microsoft/variable-substitution@v1
         with:
-          files: '${{env.DOTNET_ROOT}}/myapp/robertly-net-api/appsettings.json'
+          files: '${{env.DOTNET_ROOT}}/myapp/appsettings.json'
         env:
           GoogleCredential.ClientEmail: ${{ secrets.GOOGLE_CREDENTIAL_CLIENT_EMAIL }}
           GoogleCredential.PrivateKey: ${{ secrets.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
