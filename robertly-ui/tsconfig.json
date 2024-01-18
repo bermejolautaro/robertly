@@ -1,15 +1,15 @@
 /* To learn more about this file see: https://angular.io/config/tsconfig. */
-***REMOVED***
+{
   "compileOnSave": false,
-  "compilerOptions": ***REMOVED***
-    "paths": ***REMOVED***
+  "compilerOptions": {
+    "paths": {
       "@pages/*": ["src/app/pages/*"],
       "@helpers/*": ["src/app/helpers/*"],
       "@services/*": ["src/app/services/*"],
       "@models/*": ["src/app/models/*"],
       "@components/*": ["src/app/components/*"],
       "@pipes/*": ["src/app/pipes/*"]
-***REMOVED***,
+    },
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
@@ -37,11 +37,11 @@
       "ES2022",
       "dom"
     ]
-***REMOVED***
-  "angularCompilerOptions": ***REMOVED***
+  },
+  "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-***REMOVED***
-***REMOVED***
+  }
+}

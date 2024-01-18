@@ -1,118 +1,118 @@
-import ***REMOVED*** Component, Injector, OnInit, inject ***REMOVED*** from '@angular/core';
-import ***REMOVED*** RouterLinkActive, RouterLinkWithHref, RouterOutlet ***REMOVED*** from '@angular/router';
-import ***REMOVED*** SwUpdate, VersionReadyEvent ***REMOVED*** from '@angular/service-worker';
+import { Component, Injector, OnInit, inject } from '@angular/core';
+import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import ***REMOVED*** debounceTime, filter, first, forkJoin, map, of, switchMap, tap ***REMOVED*** from 'rxjs';
-import ***REMOVED*** LOGS_PATH, STATS_PATH ***REMOVED*** from 'src/main';
+import { debounceTime, filter, first, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import { LOGS_PATH, STATS_PATH } from 'src/main';
 
-import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/excercise-log.service';
 
-import ***REMOVED*** ExerciseLogApiService ***REMOVED*** from '@services/excercise-log-api.service';
-import ***REMOVED*** DOCUMENT, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
+import { ExerciseLogApiService } from '@services/excercise-log-api.service';
+import { DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
 
-import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
-import ***REMOVED*** NgbDropdownModule, NgbModal, NgbTypeaheadModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
-import ***REMOVED*** ExerciseApiService ***REMOVED*** from '@services/exercises-api.service';
-import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
-import ***REMOVED*** FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators ***REMOVED*** from '@angular/forms';
-import ***REMOVED*** parseDate ***REMOVED*** from '@helpers/date.helper';
-import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
-import ***REMOVED*** CreateOrUpdateLogModalComponent ***REMOVED*** from '@components/create-or-update-log-modal.component';
-import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
-import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
-import ***REMOVED*** ViewModelApiService ***REMOVED*** from '@services/viewmodel-api.service';
+import { ExerciseLog } from '@models/excercise-log.model';
+import { NgbDropdownModule, NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import { ExerciseApiService } from '@services/exercises-api.service';
+import { Exercise } from '@models/exercise.model';
+import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { parseDate } from '@helpers/date.helper';
+import { DayjsService } from '@services/dayjs.service';
+import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ExerciseRow } from '@models/excercise-row.model';
+import { ViewModelApiService } from '@services/viewmodel-api.service';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
 const EXERCISES_CACHE_KEY = 'robertly-exercises';
 const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
 
-export type CreateOrUpdateLogFormGroup = FormGroup<***REMOVED***
+export type CreateOrUpdateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
   date: FormControl<string | null>;
   exercise: FormControl<string | null>;
   series: FormArray<
-    FormGroup<***REMOVED***
+    FormGroup<{
       reps: FormControl<number | null>;
       weightInKg: FormControl<number | null>;
-***REMOVED***>
+    }>
   >;
-***REMOVED***>;
+}>;
 
 const createOrUpdateLogFormValidator =
   (exerciseLogService: ExerciseLogService): ValidatorFn =>
-  control => ***REMOVED***
+  control => {
     const typedControl = control as CreateOrUpdateLogFormGroup;
     let errors: Record<string, string> | null = null;
 
     const userRequiredErrors = Validators.required(typedControl.controls.user);
-    if (userRequiredErrors) ***REMOVED***
-      errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** userRequired: 'Username is required' ***REMOVED*** ***REMOVED***;
-***REMOVED***
+    if (userRequiredErrors) {
+      errors = { ...(errors ?? {}), ...{ userRequired: 'Username is required' } };
+    }
 
-    if (typedControl.value.user === 'peron') ***REMOVED***
-      errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** userInvalidPeron: 'Peron is not allowed' ***REMOVED*** ***REMOVED***;
-***REMOVED***
+    if (typedControl.value.user === 'peron') {
+      errors = { ...(errors ?? {}), ...{ userInvalidPeron: 'Peron is not allowed' } };
+    }
 
     const exerciseRequiredErrors = Validators.required(typedControl.controls.exercise);
-    if (exerciseRequiredErrors) ***REMOVED***
-      errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** exerciseRequired: 'Exercise is required' ***REMOVED*** ***REMOVED***;
-***REMOVED***
+    if (exerciseRequiredErrors) {
+      errors = { ...(errors ?? {}), ...{ exerciseRequired: 'Exercise is required' } };
+    }
 
-    if (typedControl.value.exercise === 'peron') ***REMOVED***
-      errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** exerciseInvalidPeron: 'Peron is not allowed' ***REMOVED*** ***REMOVED***;
-***REMOVED***
+    if (typedControl.value.exercise === 'peron') {
+      errors = { ...(errors ?? {}), ...{ exerciseInvalidPeron: 'Peron is not allowed' } };
+    }
 
     const exerciseExists = exerciseLogService
       .exercises()
       .find(x => x.exercise.toLowerCase() === typedControl.value.exercise?.toLowerCase());
 
-    if (!exerciseExists) ***REMOVED***
-      errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** exerciseDoesNotExist: 'Exercise does not exists' ***REMOVED*** ***REMOVED***;
-***REMOVED***
+    if (!exerciseExists) {
+      errors = { ...(errors ?? {}), ...{ exerciseDoesNotExist: 'Exercise does not exists' } };
+    }
 
-    if (typedControl.controls.series.value.map(x => (x.reps ?? 0) > 0 && (x.weightInKg ?? 0) > 0).every(x => !x)) ***REMOVED***
-      errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** seriesAllSeriesAreEmpty: 'Needs at least one serie' ***REMOVED*** ***REMOVED***;
-***REMOVED***
+    if (typedControl.controls.series.value.map(x => (x.reps ?? 0) > 0 && (x.weightInKg ?? 0) > 0).every(x => !x)) {
+      errors = { ...(errors ?? {}), ...{ seriesAllSeriesAreEmpty: 'Needs at least one serie' } };
+    }
 
-    if (typedControl.controls.series.value.some(x => !Number.isInteger(x.reps ?? 0))) ***REMOVED***
-      errors = ***REMOVED*** ...(errors ?? ***REMOVED******REMOVED***), ...***REMOVED*** seriesRepsMustBeInteger: 'Reps needs to be whole numbers' ***REMOVED*** ***REMOVED***;
-***REMOVED***
+    if (typedControl.controls.series.value.some(x => !Number.isInteger(x.reps ?? 0))) {
+      errors = { ...(errors ?? {}), ...{ seriesRepsMustBeInteger: 'Reps needs to be whole numbers' } };
+    }
 
     return errors;
-***REMOVED***;
+  };
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styles: `
-      nav.navbar.fixed-bottom ***REMOVED***
+      nav.navbar.fixed-bottom {
         padding-bottom: max(env(safe-area-inset-bottom), 0.8rem);
         border-top-left-radius: 10px;
         border-top-right-radius: 10px;
-  ***REMOVED***
+      }
 
-      button:focus i.fa.fa-refresh.spin ***REMOVED***
+      button:focus i.fa.fa-refresh.spin {
         animation: rotate 1s ease-in-out 0s;
-  ***REMOVED***
+      }
 
-      @keyframes rotate ***REMOVED***
-          from ***REMOVED*** transform: rotate(0deg); ***REMOVED***
-          to ***REMOVED*** transform: rotate(720deg); ***REMOVED***
-  ***REMOVED***
+      @keyframes rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(720deg); }
+      }
 
-      button:has(.fa.fa-plus) ***REMOVED***
+      button:has(.fa.fa-plus) {
         border-radius: 100%;
         position: fixed;
         right: 25px;
         bottom: 75px;
 
-        @supports (-webkit-hyphens: none) ***REMOVED***
+        @supports (-webkit-hyphens: none) {
           bottom: 100px;
-    ***REMOVED***
+        }
 
         z-index: 4;
-  ***REMOVED***
+      }
     `,
   standalone: true,
   providers: [ExerciseLogService],
@@ -127,8 +127,8 @@ const createOrUpdateLogFormValidator =
     ReactiveFormsModule,
     NgbTypeaheadModule,
   ],
-***REMOVED***)
-export class AppComponent implements OnInit ***REMOVED***
+})
+export class AppComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
@@ -141,34 +141,34 @@ export class AppComponent implements OnInit ***REMOVED***
   private readonly injector = inject(Injector);
 
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
-    ***REMOVED***
+    {
       user: new FormControl(''),
       exercise: new FormControl(''),
       date: new FormControl(this.dayjs().format('DD-MM-YYYY')),
       series: new FormArray([
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
       ]),
-***REMOVED***,
+    },
     [createOrUpdateLogFormValidator(this.exerciseLogService)]
   );
 
   public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
-    ***REMOVED***
+    {
       user: new FormControl(''),
       exercise: new FormControl(''),
       date: new FormControl(this.dayjs().format('DD-MM-YYYY')),
       series: new FormArray([
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
-        new FormGroup(***REMOVED*** reps: new FormControl(), weightInKg: new FormControl() ***REMOVED***),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
       ]),
-***REMOVED***,
+    },
     [createOrUpdateLogFormValidator(this.exerciseLogService)]
   );
 
@@ -177,32 +177,32 @@ export class AppComponent implements OnInit ***REMOVED***
   public readonly STATS_PATH = STATS_PATH;
   public readonly LOGS_PATH = LOGS_PATH;
 
-  public constructor() ***REMOVED***
+  public constructor() {
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
     let shouldFetchExerciseLogs = false;
 
-    if (!cacheTimestamp) ***REMOVED***
+    if (!cacheTimestamp) {
       localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
       shouldFetchExerciseLogs = true;
-***REMOVED*** else ***REMOVED***
+    } else {
       const x = this.dayjs.unix(+cacheTimestamp);
       const difference = this.dayjs().diff(x, 'seconds');
 
-      if (difference > 5 * 60) ***REMOVED***
+      if (difference > 5 * 60) {
         shouldFetchExerciseLogs = true;
         localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
-  ***REMOVED***
-***REMOVED***
+      }
+    }
 
-    if (shouldFetchExerciseLogs) ***REMOVED***
+    if (shouldFetchExerciseLogs) {
       this.fetchData();
-***REMOVED*** else ***REMOVED***
+    } else {
       const exerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
       const exercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
       this.exerciseLogService.updateLogs$.next(exerciseLogs);
       this.exerciseLogService.updateExercises$.next(exercises);
-***REMOVED***
+    }
 
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
@@ -212,78 +212,78 @@ export class AppComponent implements OnInit ***REMOVED***
         filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
         first()
       )
-      .subscribe(() => ***REMOVED***
+      .subscribe(() => {
         this.document.location.reload();
-  ***REMOVED***);
+      });
 
     this.createLogFormGroup.valueChanges
       .pipe(takeUntilDestroyed(), debounceTime(1000))
       .subscribe(value => localStorage.setItem(CREATE_LOG_VALUE_CACHE_KEY, JSON.stringify(value)));
 
-    this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseRow => ***REMOVED***
+    this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseRow => {
       this.updateLogFormGroup.reset();
-      this.updateLogFormGroup.patchValue(***REMOVED***
+      this.updateLogFormGroup.patchValue({
         exercise: exerciseRow.excerciseName,
         date: this.dayjsService.parseDate(exerciseRow.date).format('YYYY-MM-DD'),
         user: exerciseRow.username,
-        series: exerciseRow.series.map(x => (***REMOVED***
+        series: exerciseRow.series.map(x => ({
           reps: x.reps,
           weightInKg: x.weightKg,
-    ***REMOVED***)),
-  ***REMOVED***);
+        })),
+      });
       this.open('update', exerciseRow);
-***REMOVED***);
+    });
 
-    this.exerciseLogService.deleteLog$.pipe(takeUntilDestroyed()).subscribe(x => ***REMOVED***
-      const request = ***REMOVED***
+    this.exerciseLogService.deleteLog$.pipe(takeUntilDestroyed()).subscribe(x => {
+      const request = {
         date: this.dayjsService.parseDate(x.date).format('DD-MM-YYYY'),
         exercise: x.excerciseName,
         user: x.username,
-  ***REMOVED***;
+      };
 
-      this.exerciseLogApiService.deleteExerciseLog(request).subscribe(() => ***REMOVED***
+      this.exerciseLogApiService.deleteExerciseLog(request).subscribe(() => {
         this.fetchData(false, false);
-  ***REMOVED***);
-***REMOVED***);
-***REMOVED***
+      });
+    });
+  }
 
-  public ngOnInit(): void ***REMOVED***
+  public ngOnInit(): void {
     const formGroupValue = JSON.parse(localStorage.getItem(CREATE_LOG_VALUE_CACHE_KEY) ?? 'null');
 
-    if (formGroupValue) ***REMOVED***
+    if (formGroupValue) {
       this.createLogFormGroup.patchValue(formGroupValue);
-***REMOVED***
-***REMOVED***
+    }
+  }
 
-  public open(mode: 'update' | 'create', exerciseRow?: ExerciseRow): void ***REMOVED***
-    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, ***REMOVED*** centered: true, injector: this.injector ***REMOVED***);
+  public open(mode: 'update' | 'create', exerciseRow?: ExerciseRow): void {
+    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, { centered: true, injector: this.injector });
     const instance = modalRef.componentInstance as CreateOrUpdateLogModalComponent;
     instance.createOrUpdateLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
     instance.mode = mode;
 
-    if (exerciseRow) ***REMOVED***
+    if (exerciseRow) {
       instance.originalValue = exerciseRow;
-***REMOVED***
+    }
 
     modalRef.result.then(
-      () => ***REMOVED***
-        if (mode === 'create') ***REMOVED***
-          if (this.createLogFormGroup.invalid) ***REMOVED***
+      () => {
+        if (mode === 'create') {
+          if (this.createLogFormGroup.invalid) {
             return;
-      ***REMOVED***
+          }
 
-          const request = ***REMOVED***
+          const request = {
             date: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('DD-MM-YYYY'),
             exercise: this.createLogFormGroup.value.exercise!.toLowerCase(),
             user: this.createLogFormGroup.value.user!.toLowerCase(),
-            payload: ***REMOVED***
+            payload: {
               series: (this.createLogFormGroup.value.series ?? [])
                 .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => (***REMOVED*** reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) ***REMOVED***)),
-        ***REMOVED***,
-      ***REMOVED***;
+                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+            },
+          };
 
-          const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => (***REMOVED***
+          const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => ({
             date: parseDate(request.date).format('DD-MM-YYYY'),
             name: request.exercise,
             reps: s.reps,
@@ -291,65 +291,65 @@ export class AppComponent implements OnInit ***REMOVED***
             type: '',
             user: request.user,
             weightKg: s.weightInKg,
-      ***REMOVED***));
+          }));
 
           this.exerciseLogService.appendLogs$.next(exerciseLogs);
 
-          this.exerciseLogApiService.createExerciseLog(request).subscribe(***REMOVED***
-            next: () => ***REMOVED***
+          this.exerciseLogApiService.createExerciseLog(request).subscribe({
+            next: () => {
               this.createLogFormGroup.reset();
               localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
               this.fetchData(false, false);
-        ***REMOVED***,
-            error: () => ***REMOVED***
+            },
+            error: () => {
               this.fetchData(true, false);
-        ***REMOVED***,
-      ***REMOVED***);
-    ***REMOVED*** else ***REMOVED***
-          if (this.updateLogFormGroup.invalid) ***REMOVED***
+            },
+          });
+        } else {
+          if (this.updateLogFormGroup.invalid) {
             return;
-      ***REMOVED***
+          }
 
-          const request = ***REMOVED***
+          const request = {
             date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('DD-MM-YYYY'),
             exercise: this.updateLogFormGroup.value.exercise!.toLowerCase(),
             user: this.updateLogFormGroup.value.user!.toLowerCase(),
-            payload: ***REMOVED***
+            payload: {
               series: (this.updateLogFormGroup.value.series ?? [])
                 .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => (***REMOVED*** reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) ***REMOVED***)),
-        ***REMOVED***,
-      ***REMOVED***;
+                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+            },
+          };
 
-          this.exerciseLogApiService.updateExerciseLog(request).subscribe(***REMOVED***
-            next: () => ***REMOVED***
+          this.exerciseLogApiService.updateExerciseLog(request).subscribe({
+            next: () => {
               this.updateLogFormGroup.reset();
               this.fetchData(false, false);
-        ***REMOVED***,
-            error: () => ***REMOVED***
+            },
+            error: () => {
               this.fetchData(true, false);
-        ***REMOVED***,
-      ***REMOVED***);
-    ***REMOVED***
-  ***REMOVED***,
-      () => ***REMOVED***
+            },
+          });
+        }
+      },
+      () => {
         this.createLogFormGroup.markAsPristine();
         this.updateLogFormGroup.markAsPristine();
-  ***REMOVED***
+      }
     );
-***REMOVED***
+  }
 
-  public fetchData(showLoading: boolean = true, fetchExercises: boolean = true): void ***REMOVED***
-    if (showLoading) ***REMOVED***
+  public fetchData(showLoading: boolean = true, fetchExercises: boolean = true): void {
+    if (showLoading) {
       this.exerciseLogService.startLoading$.next();
-***REMOVED***
+    }
 
     const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
     let exercises$ = this.exerciseApiService.getExercises();
 
-    if (!fetchExercises && cachedExercises.length) ***REMOVED***
+    if (!fetchExercises && cachedExercises.length) {
       exercises$ = of(cachedExercises);
-***REMOVED***
+    }
 
     const exerciseLogs$ = forkJoin([this.exerciseLogApiService.getExerciseLogs(), this.exerciseLogApiService.getExerciseLogsv2()]).pipe(
       map(([a, b]) => a.concat(b))
@@ -357,22 +357,22 @@ export class AppComponent implements OnInit ***REMOVED***
 
     const logsAndExercises$ = exercises$.pipe(
       switchMap(exercises => exerciseLogs$.pipe(map(logs => [logs, exercises] as const))),
-      tap(([logs, exercises]) => ***REMOVED***
-        for (const log of logs) ***REMOVED***
-          if (!log.type) ***REMOVED***
+      tap(([logs, exercises]) => {
+        for (const log of logs) {
+          if (!log.type) {
             log.type = exercises.find(x => x.exercise === log.name)?.type ?? '';
-      ***REMOVED***
-    ***REMOVED***
-  ***REMOVED***)
+          }
+        }
+      })
     );
 
     this.viewModelApiService.getViewModel().subscribe(x => console.log(x));
 
-    logsAndExercises$.subscribe(([exerciseLogs, exercises]) => ***REMOVED***
+    logsAndExercises$.subscribe(([exerciseLogs, exercises]) => {
       localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
       localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));
       this.exerciseLogService.updateLogs$.next(exerciseLogs);
       this.exerciseLogService.updateExercises$.next(exercises);
-***REMOVED***);
-***REMOVED***
-***REMOVED***
+    });
+  }
+}

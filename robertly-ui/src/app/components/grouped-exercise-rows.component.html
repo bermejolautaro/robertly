@@ -7,20 +7,20 @@
           <button ngbAccordionButton>
             <div class="row w-100">
               <div class="col d-flex align-items-center justify-content-center text-center">
-                ***REMOVED******REMOVED*** exerciseLogsPerExerciseNamePerUsernamePerDate[0] | parseToDate ***REMOVED******REMOVED***
+                {{ exerciseLogsPerExerciseNamePerUsernamePerDate[0] | parseToDate }}
               </div>
             </div>
           </button>
         </h2>
         <div ngbAccordionCollapse>
-          <div ngbAccordionBody [ngClass]="***REMOVED*** 'p-0': exerciseLogService.selectedUsername() ***REMOVED***">
+          <div ngbAccordionBody [ngClass]="{ 'p-0': exerciseLogService.selectedUsername() }">
             <ng-template>
-              @if (exerciseLogService.selectedUsername()) ***REMOVED***
+              @if (exerciseLogService.selectedUsername()) {
                 <div class="table-responsive">
                   <table class="table table-bordered m-0 table-slim">
                     <tbody>
-                      @for (exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]; track $index) ***REMOVED***
-                        @for (exerciseLogsPerExerciseName of exerciseLogsPerExerciseNamePerUsername[1]; track $index) ***REMOVED***
+                      @for (exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]; track $index) {
+                        @for (exerciseLogsPerExerciseName of exerciseLogsPerExerciseNamePerUsername[1]; track $index) {
                           <tr
                             [ngClass]="
                               exerciseLogsPerExerciseName[1].highlighted
@@ -29,21 +29,21 @@
                             "
                           >
                             <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
-                              ***REMOVED******REMOVED*** exerciseLogsPerExerciseName[1].excerciseName | titlecase ***REMOVED******REMOVED***
+                              {{ exerciseLogsPerExerciseName[1].excerciseName | titlecase }}
                             </td>
-                            @for (serie of exerciseLogsPerExerciseName[1].series; track $index) ***REMOVED***
+                            @for (serie of exerciseLogsPerExerciseName[1].series; track $index) {
                               <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
-                                <div>***REMOVED******REMOVED*** serie.reps ***REMOVED******REMOVED*** reps</div>
-                                <div>***REMOVED******REMOVED*** serie.weightKg ***REMOVED******REMOVED***kg</div>
+                                <div>{{ serie.reps }} reps</div>
+                                <div>{{ serie.weightKg }}kg</div>
                               </td>
-                        ***REMOVED***
+                            }
                           </tr>
-                    ***REMOVED***
-                  ***REMOVED***
+                        }
+                      }
                     </tbody>
                   </table>
                 </div>
-          ***REMOVED*** @else ***REMOVED***
+              } @else {
                 <!-- #region USER -->
                 <div ngbAccordion>
                   <div
@@ -54,7 +54,7 @@
                       <button ngbAccordionButton>
                         <div class="row w-100">
                           <div class="col d-flex align-items-center justify-content-center text-center">
-                            ***REMOVED******REMOVED*** exerciseLogsPerExerciseNamePerUsername[0] | titlecase ***REMOVED******REMOVED***
+                            {{ exerciseLogsPerExerciseNamePerUsername[0] | titlecase }}
                           </div>
                         </div>
                       </button>
@@ -97,7 +97,7 @@
                   </div>
                 </div>
                 <!-- #endregion -->
-          ***REMOVED***
+              }
             </ng-template>
           </div>
         </div>

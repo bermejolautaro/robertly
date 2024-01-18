@@ -1,15 +1,15 @@
-import ***REMOVED*** ChangeDetectionStrategy, Component, OnInit, inject ***REMOVED*** from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 
-import ***REMOVED*** SeriesPerMuscleGroupWeeklyComponent ***REMOVED*** from '@components/series-per-muscle-group-weekly.component';
-import ***REMOVED*** SeriesPerMuscleGroupMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-monthly.component';
-import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
-import ***REMOVED*** DOCUMENT, KeyValuePipe, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** SeriesPerMuscleGroupYearlyComponent ***REMOVED*** from '@components/series-per-muscle-group-yearly.component';
-import ***REMOVED*** NgbNavModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
-import ***REMOVED*** SeriesPerMuscleGroupGraphMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-graph-monthly.component';
-import ***REMOVED*** SeriesPerMuscleGroupSummaryMonthlyComponent ***REMOVED*** from '@components/series-per-muscle-group-summary-monthly.component';
+import { SeriesPerMuscleGroupWeeklyComponent } from '@components/series-per-muscle-group-weekly.component';
+import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-muscle-group-monthly.component';
+import { ExerciseLogService } from '@services/excercise-log.service';
+import { DOCUMENT, KeyValuePipe, TitleCasePipe } from '@angular/common';
+import { SeriesPerMuscleGroupYearlyComponent } from '@components/series-per-muscle-group-yearly.component';
+import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
+import { SeriesPerMuscleGroupGraphMonthlyComponent } from '@components/series-per-muscle-group-graph-monthly.component';
+import { SeriesPerMuscleGroupSummaryMonthlyComponent } from '@components/series-per-muscle-group-summary-monthly.component';
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-stats-page',
   templateUrl: './stats.page.component.html',
   styles: [``],
@@ -25,14 +25,14 @@ import ***REMOVED*** SeriesPerMuscleGroupSummaryMonthlyComponent ***REMOVED*** f
     SeriesPerMuscleGroupSummaryMonthlyComponent,
     SeriesPerMuscleGroupYearlyComponent,
   ],
-***REMOVED***)
-export class StatsPageComponent implements OnInit ***REMOVED***
+})
+export class StatsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   public readonly exerciseLogService = inject(ExerciseLogService);
 
   public active = 1;
 
-  public ngOnInit(): void ***REMOVED***
-    this.document.defaultView?.scroll(***REMOVED*** top: 0, left: 0, behavior: 'smooth' ***REMOVED***);
-***REMOVED***
-***REMOVED***
+  public ngOnInit(): void {
+    this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
+  }
+}

@@ -1,4 +1,4 @@
-module.exports = ***REMOVED***
+module.exports = {
   printWidth: 140,
   tabWidth: 2,
   useTabs: false,
@@ -13,4 +13,4 @@ module.exports = ***REMOVED***
   requirePragma: false,
   insertPragma: false,
   proseWrap: "preserve",
-***REMOVED***
+}

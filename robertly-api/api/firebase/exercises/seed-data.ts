@@ -1,27 +1,27 @@
-import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** connectToDatabase ***REMOVED*** from "../../_helpers/_firebase-helper.js";
-import ***REMOVED*** seedExercises ***REMOVED*** from "../../_repositories/_exercises-repository.js";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { connectToDatabase } from "../../_helpers/_firebase-helper.js";
+import { seedExercises } from "../../_repositories/_exercises-repository.js";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
-  if (req.method === "OPTIONS") ***REMOVED***
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
-***REMOVED***
+  }
 
   const result = connectToDatabase();
 
-  if (!result) ***REMOVED***
+  if (!result) {
     res.status(500).end();
     return;
-***REMOVED***
+  }
 
-  const ***REMOVED*** app, db ***REMOVED*** = result;
+  const { app, db } = result;
 
   const exercisesRefs = db.ref().child("exercises");
 
-  if (req.method === "PUT") ***REMOVED***
+  if (req.method === "PUT") {
     await seedExercises(req, res, exercisesRefs);
-***REMOVED*** else ***REMOVED***
+  } else {
     res.status(405).send("Method not allowed");
-***REMOVED***
-***REMOVED***
+  }
+}

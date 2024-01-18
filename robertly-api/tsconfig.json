@@ -1,5 +1,5 @@
-***REMOVED***
-  "compilerOptions": ***REMOVED***
+{
+  "compilerOptions": {
     "target": "ES6",
     "lib": [
       "ESNext"
@@ -13,8 +13,8 @@
     "isolatedModules": true,
     "noEmit": true,
     "allowSyntheticDefaultImports": true
-***REMOVED***
+  },
   "include": [
     "api/**/*"
   ]
-***REMOVED***
+}

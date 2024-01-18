@@ -1,252 +1,252 @@
 [
-  ***REMOVED***
+  {
     "exercise": "pecho plano",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pecho inclinado",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pec fly",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "chest press",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "overhead press",
     "type": "push",
     "muscleGroup": "shoulders"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "shoulder press db",
     "type": "push",
     "muscleGroup": "shoulders"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "lateral raises polea",
     "type": "push",
     "muscleGroup": "shoulders"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "lateral raises db",
     "type": "push",
     "muscleGroup": "shoulders"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "press militar banco db",
     "type": "push",
     "muscleGroup": "shoulders"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "tricep polea soga",
     "type": "push",
     "muscleGroup": "arms"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "tricep polea barra",
     "type": "push",
     "muscleGroup": "arms"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "skullcrusher",
     "type": "push",
     "muscleGroup": "arms"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pecho inclinado smith",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "cruce polea",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pecho inclinado db",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "apertura banco db",
     "type": "push",
     "muscleGroup": "chest"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pulldown over",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pulldown under",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pulldown v",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "remo cerrucho",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "remo olimpico",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "remo caballo",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "remo landmine",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "remo maquina",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "shrugs",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "shrugs db",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "pull-ups",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "chin-ups",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "bicep curl",
     "type": "pull",
     "muscleGroup": "arms"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "bicep martillo",
     "type": "pull",
     "muscleGroup": "arms"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "bicep preacher db",
     "type": "pull",
     "muscleGroup": "arms"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "espinales",
     "type": "pull",
     "muscleGroup": "back"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "forearm barra",
     "type": "pull",
     "muscleGroup": "arms"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "sentadilla",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "sentadilla bulgara",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "sillon cuadricep",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "sillon cuadricep 1 pierna",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "femorales",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "gemelos",
     "type": "legs",
     "muscleGroup": "calves"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "patada",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "peso muerto",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "hip thrust",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "hip thrust polea",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "sentadilla smith",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "abductores",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "leg press",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "zancada smith",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "rumanas db",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "zancada",
     "type": "legs",
     "muscleGroup": "legs"
-***REMOVED***
-  ***REMOVED***
+  },
+  {
     "exercise": "sillon gemelos",
     "type": "legs",
     "muscleGroup": "calves"
-***REMOVED***
+  }
 ]

@@ -1,11 +1,11 @@
-import ***REMOVED*** parseAndCompare, parseDate ***REMOVED*** from '@helpers/date.helper';
-import ***REMOVED*** type ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
-import ***REMOVED*** type ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
-import ***REMOVED*** Exercise ***REMOVED*** from '@models/exercise.model';
-import ***REMOVED*** type GroupedLog ***REMOVED*** from '@models/grouped-log.model';
+import { parseAndCompare, parseDate } from '@helpers/date.helper';
+import { type ExerciseLog } from '@models/excercise-log.model';
+import { type ExerciseRow } from '@models/excercise-row.model';
+import { Exercise } from '@models/exercise.model';
+import { type GroupedLog } from '@models/grouped-log.model';
 import * as R from 'remeda';
 
-export function groupExcerciseLogs(excerciseLogs: ExerciseLog[], exercises: Exercise[]): GroupedLog[] ***REMOVED***
+export function groupExcerciseLogs(excerciseLogs: ExerciseLog[], exercises: Exercise[]): GroupedLog[] {
   return R.pipe(
     excerciseLogs,
     R.groupBy(x => x.date),
@@ -27,15 +27,15 @@ export function groupExcerciseLogs(excerciseLogs: ExerciseLog[], exercises: Exer
     R.toPairs,
     R.sort(([a], [b]) => parseAndCompare(a, b))
   );
-***REMOVED***
+}
 
-export function amountDaysTrainedByUser(exerciseLogs: ExerciseLog[]) ***REMOVED***
+export function amountDaysTrainedByUser(exerciseLogs: ExerciseLog[]) {
   return R.pipe(
     exerciseLogs,
     R.groupBy(x => x.user),
     R.mapValues(logs => amountDaysTrained(logs))
   );
-***REMOVED***
+}
 
 function mapToExcerciseRow(
   date: PropertyKey,
@@ -43,10 +43,10 @@ function mapToExcerciseRow(
   excerciseName: PropertyKey,
   series: [ExerciseLog, ...ExerciseLog[]],
   exercises: Exercise[]
-): ExerciseRow ***REMOVED***
+): ExerciseRow {
   const total = series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps!) : null;
 
-  return ***REMOVED***
+  return {
     date: date.toString(),
     username: username.toString(),
     excerciseName: excerciseName.toString(),
@@ -63,18 +63,18 @@ function mapToExcerciseRow(
     tonnage: series.reduce((prev, curr) => prev + curr.reps! * curr.weightKg!, 0),
     average: total ? Math.ceil(total / series.length) : null,
     muscleGroup: exercises.find(x => x.exercise === excerciseName)?.muscleGroup ?? '',
-***REMOVED***;
-***REMOVED***
+  };
+}
 
-export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExerciseRow[] ***REMOVED***
+export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExerciseRow[] {
   return R.pipe(
     groupedLogs,
     R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv.flatMap(([_, vvv]) => vvv))),
     R.sort((a, b) => parseAndCompare(a.date, b.date))
   );
-***REMOVED***
+}
 
-export function amountDaysTrained(logs: ExerciseLog[]): number ***REMOVED***
+export function amountDaysTrained(logs: ExerciseLog[]): number {
   const result = R.pipe(
     logs,
     R.map(x => x.date),
@@ -82,32 +82,32 @@ export function amountDaysTrained(logs: ExerciseLog[]): number ***REMOVED***
   );
 
   return result.length;
-***REMOVED***
+}
 
-export function getPersonalRecord(rows: ExerciseRow[], excerciseName: string, username: string): ExerciseRow | null ***REMOVED***
+export function getPersonalRecord(rows: ExerciseRow[], excerciseName: string, username: string): ExerciseRow | null {
   const result = R.pipe(
     rows,
     R.filter(x => x.username === username && x.excerciseName === excerciseName),
-    R.sort((a, b) => ***REMOVED***
+    R.sort((a, b) => {
       const bestSerieFromA = R.first(R.sort(a.series, sortByWeightAndRepsDesc))!;
       const bestSerieFromB = R.first(R.sort(b.series, sortByWeightAndRepsDesc))!;
 
       return sortByWeightAndRepsDesc(bestSerieFromA, bestSerieFromB);
-***REMOVED***),
+    }),
     R.first()
   );
 
   return result ?? null;
-***REMOVED***
+}
 
-function sortByWeightAndRepsDesc(a: ExerciseLog, b: ExerciseLog): number ***REMOVED***
+function sortByWeightAndRepsDesc(a: ExerciseLog, b: ExerciseLog): number {
   const differenceWeight = b.weightKg! - a.weightKg!;
   const differenceReps = b.reps! - a.reps!;
 
   return differenceWeight !== 0 ? differenceWeight : differenceReps;
-***REMOVED***
+}
 
-export function getSeriesAmountPerMuscleGroupPerWeek(excerciseRows: ExerciseRow[]) ***REMOVED***
+export function getSeriesAmountPerMuscleGroupPerWeek(excerciseRows: ExerciseRow[]) {
   return R.pipe(
     excerciseRows,
     R.groupBy(row => parseDate(row.date).startOf('isoWeek').format('DD/MM/YYYY')),
@@ -131,9 +131,9 @@ export function getSeriesAmountPerMuscleGroupPerWeek(excerciseRows: ExerciseRow[
       )
     )
   );
-***REMOVED***
+}
 
-export function getSeriesAmountPerUserPerMuscleGroupPerMonth(excerciseRows: ExerciseRow[]) ***REMOVED***
+export function getSeriesAmountPerUserPerMuscleGroupPerMonth(excerciseRows: ExerciseRow[]) {
   return R.pipe(
     excerciseRows,
     R.groupBy(row => parseDate(row.date).startOf('month').format('DD/MM/YYYY')),
@@ -157,9 +157,9 @@ export function getSeriesAmountPerUserPerMuscleGroupPerMonth(excerciseRows: Exer
       )
     )
   );
-***REMOVED***
+}
 
-export function getSeriesAmountPerUserPerMuscleGroupPerYear(excerciseRows: ExerciseRow[]) ***REMOVED***
+export function getSeriesAmountPerUserPerMuscleGroupPerYear(excerciseRows: ExerciseRow[]) {
   return R.pipe(
     excerciseRows,
     R.groupBy(row => parseDate(row.date).startOf('year').format('DD/MM/YYYY')),
@@ -183,28 +183,28 @@ export function getSeriesAmountPerUserPerMuscleGroupPerYear(excerciseRows: Exerc
       )
     )
   );
-***REMOVED***
+}
 
-export function groupByWeek(excerciseRows: ExerciseLog[]) ***REMOVED***
+export function groupByWeek(excerciseRows: ExerciseLog[]) {
   return R.pipe(
     excerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('isoWeek').format('DD/MM/YYYY')),
     R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
-***REMOVED***
+}
 
-export function groupByMonth(excerciseRows: ExerciseLog[]) ***REMOVED***
+export function groupByMonth(excerciseRows: ExerciseLog[]) {
   return R.pipe(
     excerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('month').format('DD/MM/YYYY')),
     R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
-***REMOVED***
+}
 
-export function groupByYear(excerciseRows: ExerciseLog[]) ***REMOVED***
+export function groupByYear(excerciseRows: ExerciseLog[]) {
   return R.pipe(
     excerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('year').format('DD/MM/YYYY')),
     R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
-***REMOVED***
+}

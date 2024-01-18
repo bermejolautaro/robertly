@@ -1,48 +1,48 @@
-import ***REMOVED*** NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
-import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import { NgClass, TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { ExerciseRow } from '@models/excercise-row.model';
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-excercise-row-title',
   template: `
     <div class="w-100">
-      @if (exerciseRow) ***REMOVED***
+      @if (exerciseRow) {
         <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-semibold' : null">
-          @if (showExercise) ***REMOVED***
+          @if (showExercise) {
             <div class="col d-flex align-items-center gap-1" [style.fontSize.rem]="1">
-              ***REMOVED******REMOVED*** exerciseRow.excerciseName | titlecase ***REMOVED******REMOVED***
-              @if (showStar) ***REMOVED***
+              {{ exerciseRow.excerciseName | titlecase }}
+              @if (showStar) {
                 <i class="fa fa-star"></i>
-          ***REMOVED***
+              }
             </div>
-      ***REMOVED***
+          }
         </div>
-  ***REMOVED***
+      }
       <div class="row">
-        @if (showDate) ***REMOVED***
+        @if (showDate) {
           <div class="col d-flex text-muted" [style.fontSize.rem]="0.8">
-            ***REMOVED******REMOVED*** exerciseRow.date ***REMOVED******REMOVED*** - ***REMOVED******REMOVED*** exerciseRow.username | titlecase ***REMOVED******REMOVED***
+            {{ exerciseRow.date }} - {{ exerciseRow.username | titlecase }}
           </div>
-    ***REMOVED***
+        }
       </div>
     </div>
   `,
   styles: [
     `
-      :host ***REMOVED***
+      :host {
         display: flex;
         flex: 1;
-  ***REMOVED***
+      }
     `,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass, TitleCasePipe],
-***REMOVED***)
-export class ExcerciseRowTitleComponent ***REMOVED***
+})
+export class ExcerciseRowTitleComponent {
   @Input() showStar: boolean = false;
   @Input() showExercise: boolean = true;
   @Input() showDate: boolean = true;
   @Input() showUsername: boolean = true;
-  @Input(***REMOVED*** required: true ***REMOVED***) exerciseRow!: ExerciseRow;
-***REMOVED***
+  @Input({ required: true }) exerciseRow!: ExerciseRow;
+}

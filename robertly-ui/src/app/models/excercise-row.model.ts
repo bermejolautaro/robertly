@@ -1,6 +1,6 @@
-import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
+import { ExerciseLog } from '@models/excercise-log.model';
 
-export interface ExerciseRow ***REMOVED***
+export interface ExerciseRow {
   date: string;
   excerciseName: string;
   type: string;
@@ -11,4 +11,4 @@ export interface ExerciseRow ***REMOVED***
   average: number | null;
   tonnage: number;
   muscleGroup: string;
-***REMOVED***
+}

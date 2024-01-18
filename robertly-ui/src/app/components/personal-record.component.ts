@@ -1,11 +1,11 @@
-import ***REMOVED*** ChangeDetectionStrategy, Component, Input ***REMOVED*** from '@angular/core';
-import ***REMOVED*** NgbAccordionModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** ExcerciseRowTitleComponent ***REMOVED*** from '@components/excercise-row-title.component';
-import ***REMOVED*** ExcerciseRowBodyComponent ***REMOVED*** from '@components//excercise-row-body.component';
-import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
+import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.component';
+import { ExcerciseRowBodyComponent } from '@components//excercise-row-body.component';
+import { ExerciseRow } from '@models/excercise-row.model';
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-personal-record',
   template: `
     <div ngbAccordion>
@@ -27,15 +27,15 @@ import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model
   `,
   styles: [
     `
-      :host ***REMOVED***
+      :host {
         display: block;
-  ***REMOVED***
+      }
     `,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ExcerciseRowTitleComponent, ExcerciseRowBodyComponent, NgbAccordionModule],
-***REMOVED***)
-export class PersonalRecordComponent ***REMOVED***
-  @Input(***REMOVED*** required: true ***REMOVED***) personalRecord!: ExerciseRow;
-***REMOVED***
+})
+export class PersonalRecordComponent {
+  @Input({ required: true }) personalRecord!: ExerciseRow;
+}

@@ -28,11 +28,11 @@ app.MapControllers();
 app.Run();
 
 public class GoogleCredentialOptions
-***REMOVED***
+{
     public const string GoogleCredential = "GoogleCredential";
 
-    public string ClientEmail ***REMOVED*** get; set; ***REMOVED*** = "";
-    public string PrivateKey ***REMOVED*** get; set; ***REMOVED*** = "";
-    public string ProjectId ***REMOVED*** get; set; ***REMOVED*** = "";
-    public string DatabaseUrl ***REMOVED*** get; set; ***REMOVED*** = "";
-***REMOVED***
+    public string ClientEmail { get; set; } = "";
+    public string PrivateKey { get; set; } = "";
+    public string ProjectId { get; set; } = "";
+    public string DatabaseUrl { get; set; } = "";
+}

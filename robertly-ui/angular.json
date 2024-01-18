@@ -1,22 +1,22 @@
-***REMOVED***
+{
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
-  "projects": ***REMOVED***
-    "gym-angular-excel": ***REMOVED***
+  "projects": {
+    "gym-angular-excel": {
       "projectType": "application",
-      "schematics": ***REMOVED***
-        "@schematics/angular:component": ***REMOVED***
+      "schematics": {
+        "@schematics/angular:component": {
           "style": "scss"
-    ***REMOVED***
-  ***REMOVED***,
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
-      "architect": ***REMOVED***
-        "build": ***REMOVED***
+      "architect": {
+        "build": {
           "builder": "@angular-devkit/build-angular:browser-esbuild",
-          "options": ***REMOVED***
+          "options": {
             "allowedCommonJsDependencies": [
               "dayjs"
             ],
@@ -39,31 +39,31 @@
             "scripts": [],
             "serviceWorker": true,
             "ngswConfigPath": "ngsw-config.json"
-      ***REMOVED***,
-          "configurations": ***REMOVED***
-            "production": ***REMOVED***
-              "optimization": ***REMOVED***
+          },
+          "configurations": {
+            "production": {
+              "optimization": {
                 "scripts": true,
-                "styles": ***REMOVED***
+                "styles": {
                   "minify": true,
                   "inlineCritical": false
-            ***REMOVED***
-          ***REMOVED***,
+                }
+              },
               "budgets": [
-                ***REMOVED***
+                {
                   "type": "initial",
                   "maximumWarning": "700kb",
                   "maximumError": "1mb"
-            ***REMOVED***,
-                ***REMOVED***
+                },
+                {
                   "type": "anyComponentStyle",
                   "maximumWarning": "2kb",
                   "maximumError": "4kb"
-            ***REMOVED***
+                }
               ],
               "outputHashing": "all"
-        ***REMOVED***,
-            "development": ***REMOVED***
+            },
+            "development": {
               "buildOptimizer": false,
               "optimization": false,
               "vendorChunk": true,
@@ -71,36 +71,36 @@
               "sourceMap": true,
               "namedChunks": true,
               "fileReplacements": [
-                ***REMOVED***
+                {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.development.ts"
-            ***REMOVED***
+                }
               ]
-        ***REMOVED***
-      ***REMOVED***,
+            }
+          },
           "defaultConfiguration": "production"
-    ***REMOVED***,
-        "serve": ***REMOVED***
+        },
+        "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "configurations": ***REMOVED***
-            "production": ***REMOVED***
+          "configurations": {
+            "production": {
               "buildTarget": "gym-angular-excel:build:production"
-        ***REMOVED***,
-            "development": ***REMOVED***
+            },
+            "development": {
               "buildTarget": "gym-angular-excel:build:development"
-        ***REMOVED***
-      ***REMOVED***,
+            }
+          },
           "defaultConfiguration": "development"
-    ***REMOVED***,
-        "extract-i18n": ***REMOVED***
+        },
+        "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
-          "options": ***REMOVED***
+          "options": {
             "buildTarget": "gym-angular-excel:build"
-      ***REMOVED***
-    ***REMOVED***,
-        "test": ***REMOVED***
+          }
+        },
+        "test": {
           "builder": "@angular-devkit/build-angular:karma",
-          "options": ***REMOVED***
+          "options": {
             "polyfills": [
               "zone.js",
               "zone.js/testing"
@@ -116,15 +116,15 @@
               "src/styles.scss"
             ],
             "scripts": []
-      ***REMOVED***
-    ***REMOVED***,
-        "deploy": ***REMOVED***
+          }
+        },
+        "deploy": {
           "builder": "angular-cli-ghpages:deploy"
-    ***REMOVED***
-  ***REMOVED***
-***REMOVED***
-***REMOVED***
-  "cli": ***REMOVED***
+        }
+      }
+    }
+  },
+  "cli": {
     "analytics": false
-***REMOVED***
-***REMOVED***
+  }
+}

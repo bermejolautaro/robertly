@@ -1,38 +1,38 @@
-import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** google, sheets_v4 ***REMOVED*** from "googleapis";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { google, sheets_v4 } from "googleapis";
 
 const spreadsheetId = process.env.SHEETS_ID;
 
-export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
-  const auth = new google.auth.GoogleAuth(***REMOVED***
-    credentials: ***REMOVED***
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const auth = new google.auth.GoogleAuth({
+    credentials: {
       client_email: process.env.SHEETS_CLIENT_EMAIL,
       private_key: JSON.parse(process.env.SHEETS_PRIVATE_KEY ?? "null"),
-***REMOVED***,
+    },
     scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-***REMOVED***);
+  });
 
-  const sheets = google.sheets(***REMOVED*** version: "v4", auth ***REMOVED***);
+  const sheets = google.sheets({ version: "v4", auth });
 
-  if (req.method === "GET") ***REMOVED***
+  if (req.method === "GET") {
     await getLogs(req, res, sheets);
-***REMOVED*** else if (req.method === "POST") ***REMOVED***
+  } else if (req.method === "POST") {
     await createLog(req, res, sheets);
-***REMOVED*** else if (req.method === "PUT") ***REMOVED***
+  } else if (req.method === "PUT") {
     await updateLog(req, res, sheets);
-***REMOVED*** else if (req.method === "OPTIONS") ***REMOVED***
+  } else if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
-***REMOVED*** else ***REMOVED***
+  } else {
     res.status(405).send("Method not allowed");
-***REMOVED***
-***REMOVED***
+  }
+}
 
-async function getLogs(_req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets): Promise<void> ***REMOVED***
-  try ***REMOVED***
-    const logs = (await sheets.spreadsheets.values.get(***REMOVED*** spreadsheetId, range: `Internal!F:I` ***REMOVED***)).data.values;
+async function getLogs(_req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets): Promise<void> {
+  try {
+    const logs = (await sheets.spreadsheets.values.get({ spreadsheetId, range: `Internal!F:I` })).data.values;
 
-    if (logs?.length) ***REMOVED***
+    if (logs?.length) {
       const headerUser = logs[0][0];
       const headerExercise = logs[0][1];
       const headerDate = logs[0][2];
@@ -41,86 +41,86 @@ async function getLogs(_req: VercelRequest, res: VercelResponse, sheets: sheets_
       const parsedLogs = logs
         .slice(1)
         .filter((x) => x.length)
-        .map((x) => (***REMOVED***
+        .map((x) => ({
           [headerUser]: x[0],
           [headerExercise]: x[1],
           [headerDate]: x[2],
           [headerPayload]: JSON.parse(x[3]),
-    ***REMOVED***));
+        }));
 
-      res.json(***REMOVED*** data: parsedLogs ***REMOVED***);
-***REMOVED*** else ***REMOVED***
+      res.json({ data: parsedLogs });
+    } else {
       res.json("No data found.");
-***REMOVED***
-***REMOVED*** catch (err) ***REMOVED***
+    }
+  } catch (err) {
     res.json("The API returned an error: " + err);
-***REMOVED***
-***REMOVED***
+  }
+}
 
-type CreateLogRequest = ***REMOVED***
+type CreateLogRequest = {
   user: string;
   exercise: string;
   date: string;
-  payload: ***REMOVED*** series: string ***REMOVED***;
-***REMOVED***;
+  payload: { series: string };
+};
 
-async function createLog(req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets): Promise<void> ***REMOVED***
+async function createLog(req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets): Promise<void> {
   const body = req.body as CreateLogRequest;
-  try ***REMOVED***
-    const exercises = await sheets.spreadsheets.values.append(***REMOVED***
+  try {
+    const exercises = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range: "Internal!F:I",
       valueInputOption: "RAW",
-      requestBody: ***REMOVED***
+      requestBody: {
         values: [[body.user, body.exercise, body.date, JSON.stringify(body.payload)]],
-  ***REMOVED***,
-***REMOVED***);
-    res.json(***REMOVED*** data: exercises.data ***REMOVED***);
-***REMOVED*** catch (err) ***REMOVED***
+      },
+    });
+    res.json({ data: exercises.data });
+  } catch (err) {
     res.json("The API returned an error: " + err);
-***REMOVED***
-***REMOVED***
+  }
+}
 
-type UpdateLogRequest = ***REMOVED***
+type UpdateLogRequest = {
   user: string;
   exercise: string;
   date: string;
-  payload: ***REMOVED*** series: string ***REMOVED***;
-***REMOVED***;
+  payload: { series: string };
+};
 
-async function updateLog(req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets): Promise<void> ***REMOVED***
+async function updateLog(req: VercelRequest, res: VercelResponse, sheets: sheets_v4.Sheets): Promise<void> {
   const body = req.body as UpdateLogRequest;
 
-  try ***REMOVED***
-    const result = await sheets.spreadsheets.values.get(***REMOVED*** spreadsheetId, range: `Internal!F:I` ***REMOVED***);
+  try {
+    const result = await sheets.spreadsheets.values.get({ spreadsheetId, range: `Internal!F:I` });
     const logs = result.data.values;
 
-    if (logs?.length) ***REMOVED***
-      let logToUpdated: ***REMOVED*** index: number; value: string[] ***REMOVED*** | null = null;
+    if (logs?.length) {
+      let logToUpdated: { index: number; value: string[] } | null = null;
 
-      for (let i = 0; i < logs.length; i++) ***REMOVED***
+      for (let i = 0; i < logs.length; i++) {
         const x = logs[i];
-        if (x[0] === body.user && x[1] === body.exercise && x[2] === body.date) ***REMOVED***
-          logToUpdated = ***REMOVED*** index: i, value: [body.user, body.exercise, body.date, JSON.stringify(body.payload)] ***REMOVED***;
-    ***REMOVED***
-  ***REMOVED***
+        if (x[0] === body.user && x[1] === body.exercise && x[2] === body.date) {
+          logToUpdated = { index: i, value: [body.user, body.exercise, body.date, JSON.stringify(body.payload)] };
+        }
+      }
 
-      if (logToUpdated) ***REMOVED***
-        await sheets.spreadsheets.values.update(***REMOVED***
+      if (logToUpdated) {
+        await sheets.spreadsheets.values.update({
           spreadsheetId,
-          range: `Internal!F$***REMOVED***logToUpdated.index + 1***REMOVED***:I$***REMOVED***logToUpdated.index + 1***REMOVED***`,
+          range: `Internal!F${logToUpdated.index + 1}:I${logToUpdated.index + 1}`,
           valueInputOption: "RAW",
-          requestBody: ***REMOVED***
+          requestBody: {
             values: [logToUpdated.value],
-      ***REMOVED***,
-    ***REMOVED***);
-  ***REMOVED***
+          },
+        });
+      }
 
       res.json("Updated successfuly!");
-***REMOVED*** else ***REMOVED***
+    } else {
       res.json("No data found.");
-***REMOVED***
-***REMOVED*** catch (err) ***REMOVED***
+    }
+  } catch (err) {
     res.json("The API returned an error: " + err);
-***REMOVED***
-***REMOVED***
+  }
+}

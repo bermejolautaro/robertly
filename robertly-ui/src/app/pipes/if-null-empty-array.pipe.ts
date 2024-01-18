@@ -1,9 +1,9 @@
-import ***REMOVED*** Pipe, PipeTransform ***REMOVED*** from "@angular/core";
+import { Pipe, PipeTransform } from "@angular/core";
 
-@Pipe(***REMOVED*** name: 'ifNullEmptyArray', standalone: true ***REMOVED***)
-export class IfNullEmptyArrayPipe<T> implements PipeTransform ***REMOVED***
-  transform(value: T[] | null): T[] ***REMOVED***
+@Pipe({ name: 'ifNullEmptyArray', standalone: true })
+export class IfNullEmptyArrayPipe<T> implements PipeTransform {
+  transform(value: T[] | null): T[] {
     return value ?? [];
-***REMOVED***
-***REMOVED***
+  }
+}
 

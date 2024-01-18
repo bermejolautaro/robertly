@@ -1,51 +1,51 @@
-import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** google ***REMOVED*** from "googleapis";
-import ***REMOVED*** GoogleAuth ***REMOVED*** from "googleapis-common";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { google } from "googleapis";
+import { GoogleAuth } from "googleapis-common";
 
 const spreadsheetId = process.env.SHEETS_ID;
 let auth: GoogleAuth | null = null;
 
-export default async function handler(_req: VercelRequest, res: VercelResponse) ***REMOVED***
+export default async function handler(_req: VercelRequest, res: VercelResponse) {
 
-  try ***REMOVED***
-    auth = new google.auth.GoogleAuth(***REMOVED***
-      credentials: ***REMOVED***
+  try {
+    auth = new google.auth.GoogleAuth({
+      credentials: {
         client_email: process.env.SHEETS_CLIENT_EMAIL,
         private_key: JSON.parse(process.env.SHEETS_PRIVATE_KEY ?? "null"),
-  ***REMOVED***,
+      },
       scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-***REMOVED***);
-***REMOVED*** catch (e) ***REMOVED***
+    });
+  } catch (e) {
     console.error(e);
     console.error(process.env.SHEETS_PRIVATE_KEY);
     res.status(500).end();
     return;
-***REMOVED***
+  }
 
-  const sheets = google.sheets(***REMOVED*** version: "v4", auth ***REMOVED***);
+  const sheets = google.sheets({ version: "v4", auth });
 
-  const exercisesPromise = sheets.spreadsheets.values.get(***REMOVED*** spreadsheetId, range: `Internal!A:C` ***REMOVED***);
+  const exercisesPromise = sheets.spreadsheets.values.get({ spreadsheetId, range: `Internal!A:C` });
 
-  try ***REMOVED***
+  try {
     const result = await exercisesPromise;
     const exercises = result.data.values;
 
-    if (exercises?.length) ***REMOVED***
+    if (exercises?.length) {
       const headerExercise = exercises[0][0];
       const headerType = exercises[0][1];
       const headerMuscleGroup = exercises[0][2];
 
-      const parsedExercises = exercises.slice(1).map((x) => (***REMOVED***
+      const parsedExercises = exercises.slice(1).map((x) => ({
         [headerExercise]: x[0],
         [headerType]: x[1],
         [headerMuscleGroup]: x[2],
-  ***REMOVED***));
+      }));
 
-      return res.json(***REMOVED*** data: parsedExercises ***REMOVED***);
-***REMOVED*** else ***REMOVED***
+      return res.json({ data: parsedExercises });
+    } else {
       return res.json("No data found.");
-***REMOVED***
-***REMOVED*** catch (err) ***REMOVED***
+    }
+  } catch (err) {
     return res.json("The API returned an error: " + err);
-***REMOVED***
-***REMOVED***
+  }
+}

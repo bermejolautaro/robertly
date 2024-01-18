@@ -1,5 +1,5 @@
-export interface Exercise ***REMOVED***
+export interface Exercise {
   exercise: string;
   type: string;
   muscleGroup: string;
-***REMOVED***
+}

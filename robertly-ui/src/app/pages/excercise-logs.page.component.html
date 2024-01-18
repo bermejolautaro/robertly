@@ -5,21 +5,21 @@
     <div class="col-12">
       <div ngbDropdown class="d-flex justify-content-center">
         <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-          ***REMOVED******REMOVED*** exerciseLogService.selectedTypeLabel() | titlecase ***REMOVED******REMOVED***
+          {{ exerciseLogService.selectedTypeLabel() | titlecase }}
         </button>
         <div ngbDropdownMenu class="w-100">
-          @if (exerciseLogService.selectedType()) ***REMOVED***
+          @if (exerciseLogService.selectedType()) {
             <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
-      ***REMOVED***
-          @for (type of exerciseLogService.types(); track type) ***REMOVED***
+          }
+          @for (type of exerciseLogService.types(); track type) {
             <button
               ngbDropdownItem
-              [ngClass]="***REMOVED*** active: type === exerciseLogService.selectedType() ***REMOVED***"
+              [ngClass]="{ active: type === exerciseLogService.selectedType() }"
               (click)="exerciseLogService.selectedType$.next(type)"
             >
-              ***REMOVED******REMOVED*** type | titlecase ***REMOVED******REMOVED***
+              {{ type | titlecase }}
             </button>
-      ***REMOVED***
+          }
         </div>
       </div>
     </div>
@@ -74,21 +74,21 @@
 </div>
 <!-- #endregion -->
 
-@if (exerciseLogService.loaded()) ***REMOVED***
+@if (exerciseLogService.loaded()) {
   <div class="container">
-    @if (exerciseLogService.personalRecord(); as personalRecord) ***REMOVED***
+    @if (exerciseLogService.personalRecord(); as personalRecord) {
       <app-personal-record class="mb-3" [personalRecord]="personalRecord"></app-personal-record>
-***REMOVED***
-    @if (isGrouped) ***REMOVED***
+    }
+    @if (isGrouped) {
       <app-grouped-exercise-rows></app-grouped-exercise-rows>
-***REMOVED*** @else ***REMOVED***
+    } @else {
       <app-excercise-rows [exerciseRows]="exerciseLogService.exerciseRows()"></app-excercise-rows>
-***REMOVED***
+    }
   </div>
-***REMOVED*** @else ***REMOVED***
+} @else {
   <div class="position-absolute top-50 start-50 translate-middle">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-***REMOVED***
+}

@@ -1,14 +1,14 @@
-import ***REMOVED*** KeyValuePipe, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, OnInit, inject ***REMOVED*** from '@angular/core';
+import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 
-import ***REMOVED*** NgbDropdownModule, NgbPopoverModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/parse-to-month.pipe';
-import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
+import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
+import { ExerciseLogService } from '@services/excercise-log.service';
 
 const DEFAULT_MONTH_LABEL = 'Month';
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-series-per-muscle-group-monthly',
   template: `
     <div class="card border-0 shadow-material-1">
@@ -19,18 +19,18 @@ const DEFAULT_MONTH_LABEL = 'Month';
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
-              ***REMOVED******REMOVED*** this.exerciseLogService.selectedMonth() | parseToMonth: DEFAULT_MONTH_LABEL ***REMOVED******REMOVED***
+              {{ this.exerciseLogService.selectedMonth() | parseToMonth: DEFAULT_MONTH_LABEL }}
             </button>
             <div ngbDropdownMenu class="w-100">
-              @for (month of exerciseLogService.months(); track $index) ***REMOVED***
+              @for (month of exerciseLogService.months(); track $index) {
                 <button
                   ngbDropdownItem
-                  [ngClass]="***REMOVED*** active: month === this.exerciseLogService.selectedMonth() ***REMOVED***"
+                  [ngClass]="{ active: month === this.exerciseLogService.selectedMonth() }"
                   (click)="exerciseLogService.selectedMonth$.next(month)"
                 >
-                  ***REMOVED******REMOVED*** month | parseToMonth: DEFAULT_MONTH_LABEL ***REMOVED******REMOVED***
+                  {{ month | parseToMonth: DEFAULT_MONTH_LABEL }}
                 </button>
-          ***REMOVED***
+              }
             </div>
           </div>
         </div>
@@ -44,7 +44,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
             [ngbPopover]="popoverTemplate"
             #popover="ngbPopover"
           >
-            ***REMOVED******REMOVED*** exerciseLogService.daysTrainedInSelectedMonthMessage() ***REMOVED******REMOVED***
+            {{ exerciseLogService.daysTrainedInSelectedMonthMessage() }}
           </div>
         </div>
       </div>
@@ -52,31 +52,31 @@ const DEFAULT_MONTH_LABEL = 'Month';
 
     <ng-template #popoverTemplate>
       <div>
-        @for (days of exerciseLogService.daysAmountByDayInSelectedMonth() | keyvalue; track $index) ***REMOVED***
-          <div>***REMOVED******REMOVED*** days.key | titlecase ***REMOVED******REMOVED***: ***REMOVED******REMOVED*** days.value ***REMOVED******REMOVED***</div>
-    ***REMOVED***
+        @for (days of exerciseLogService.daysAmountByDayInSelectedMonth() | keyvalue; track $index) {
+          <div>{{ days.key | titlecase }}: {{ days.value }}</div>
+        }
       </div>
     </ng-template>
   `,
   styles: [
     `
-      :host ***REMOVED***
+      :host {
         display: block;
-  ***REMOVED***
+      }
     `,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass, NgbPopoverModule, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
-***REMOVED***)
-export class SeriesPerMuscleGroupMonthlyComponent implements OnInit ***REMOVED***
+})
+export class SeriesPerMuscleGroupMonthlyComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
 
   public readonly DEFAULT_MONTH_LABEL = DEFAULT_MONTH_LABEL;
 
-  public ngOnInit(): void ***REMOVED***
-    if (!this.exerciseLogService.selectedMonth()) ***REMOVED***
+  public ngOnInit(): void {
+    if (!this.exerciseLogService.selectedMonth()) {
       this.exerciseLogService.selectedMonth$.next(this.exerciseLogService.months()[0] ?? null);
-***REMOVED***
-***REMOVED***
-***REMOVED***
+    }
+  }
+}

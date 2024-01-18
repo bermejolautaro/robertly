@@ -1,6 +1,6 @@
-// import ***REMOVED*** processDataFirstStep ***REMOVED*** from '@helpers/excercise-log-api.helper';
+// import { processDataFirstStep } from '@helpers/excercise-log-api.helper';
 
-describe('ExcerciseLogApiService', () => ***REMOVED***
+describe('ExcerciseLogApiService', () => {
   // const data = [
   //   ['Push', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
   //   [
@@ -681,7 +681,7 @@ describe('ExcerciseLogApiService', () => ***REMOVED***
   //   ['Zancada smith', '', '', '', '', '', '', '', '20-8|20-12|20-4'],
   // ];
 
-  it('first step tests', () => ***REMOVED***
+  it('first step tests', () => {
     // const result = processDataFirstStep(data2);
     // const [a, b] = processDataSecondStep(result);
     // const result3 = processDataThirdStep(a, data2, b);
@@ -691,5 +691,5 @@ describe('ExcerciseLogApiService', () => ***REMOVED***
     // const amount = amountDaysTrained(result3);
 
     expect(69).toBe(69);
-***REMOVED***);
-***REMOVED***);
+  });
+});

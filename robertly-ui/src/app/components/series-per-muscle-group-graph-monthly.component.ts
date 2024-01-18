@@ -1,15 +1,15 @@
-import ***REMOVED*** TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, effect, inject ***REMOVED*** from '@angular/core';
+import { TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, effect, inject } from '@angular/core';
 
-import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
-import ***REMOVED*** Chart ***REMOVED*** from 'chart.js/auto';
-import ***REMOVED*** getSeriesAmountPerUserPerMuscleGroupPerMonth ***REMOVED*** from '@helpers/excercise-log.helper';
+import { ExerciseLogService } from '@services/excercise-log.service';
+import { Chart } from 'chart.js/auto';
+import { getSeriesAmountPerUserPerMuscleGroupPerMonth } from '@helpers/excercise-log.helper';
 
 import * as R from 'remeda';
 
-type ChartDataSetItem = ***REMOVED*** label: string; data: number[]; borderWidth: number ***REMOVED***;
+type ChartDataSetItem = { label: string; data: number[]; borderWidth: number };
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-series-per-muscle-group-graph-monthly',
   template: `
     <div>
@@ -18,85 +18,85 @@ type ChartDataSetItem = ***REMOVED*** label: string; data: number[]; borderWidth
   `,
   styles: [
     `
-      :host ***REMOVED***
+      :host {
         display: block;
-  ***REMOVED***
+      }
     `,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
-***REMOVED***)
-export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit ***REMOVED***
-  @ViewChild('chart', ***REMOVED*** static: true ***REMOVED***) chartCanvasElementRef: ElementRef<HTMLCanvasElement> | null = null;
+})
+export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit {
+  @ViewChild('chart', { static: true }) chartCanvasElementRef: ElementRef<HTMLCanvasElement> | null = null;
   public readonly exerciseLogService = inject(ExerciseLogService);
   private readonly titleCasePipe = inject(TitleCasePipe);
 
   private chart: Chart | null = null;
 
-  public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => ***REMOVED***
+  public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => {
     const seriesAmountPerUserPerMuscleGroupPerMonth = getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseLogService.exerciseRows());
     const muscleGroups = this.exerciseLogService.muscleGroups();
     const selectedMonth = this.exerciseLogService.selectedMonth();
 
-    if (selectedMonth) ***REMOVED***
+    if (selectedMonth) {
       let seriesAmountPerUserPerMuscleGroup = seriesAmountPerUserPerMuscleGroupPerMonth[selectedMonth];
 
-      if (seriesAmountPerUserPerMuscleGroup) ***REMOVED***
+      if (seriesAmountPerUserPerMuscleGroup) {
         const result: ChartDataSetItem[] = [];
 
-        for (const x of R.toPairs(seriesAmountPerUserPerMuscleGroup)) ***REMOVED***
+        for (const x of R.toPairs(seriesAmountPerUserPerMuscleGroup)) {
           const name = x[0];
           const values = x[1];
 
           let seriesAmount: number[] = [];
 
-          for (const muscleGroup of muscleGroups) ***REMOVED***
+          for (const muscleGroup of muscleGroups) {
             const value = values[muscleGroup] || 0;
             seriesAmount.push(value);
-      ***REMOVED***
+          }
 
-          result.push(***REMOVED***
+          result.push({
             label: this.titleCasePipe.transform(name),
             data: seriesAmount,
             borderWidth: 1,
-      ***REMOVED***);
-    ***REMOVED***
+          });
+        }
 
         return result;
-  ***REMOVED***
-***REMOVED***
+      }
+    }
 
     return [];
-***REMOVED***);
+  });
 
-  public constructor() ***REMOVED***
-    effect(() => ***REMOVED***
-      if (this.chart) ***REMOVED***
+  public constructor() {
+    effect(() => {
+      if (this.chart) {
         this.chart.data.datasets = this.seriesPerMuscleGroupPerUserPerMonth();
         this.chart.update();
-  ***REMOVED***
-***REMOVED***);
-***REMOVED***
+      }
+    });
+  }
 
-  public ngOnInit(): void ***REMOVED***
-    if (this.chartCanvasElementRef) ***REMOVED***
-      this.chart = new Chart(this.chartCanvasElementRef.nativeElement, ***REMOVED***
+  public ngOnInit(): void {
+    if (this.chartCanvasElementRef) {
+      this.chart = new Chart(this.chartCanvasElementRef.nativeElement, {
         type: 'bar',
-        data: ***REMOVED***
+        data: {
           labels: this.exerciseLogService.muscleGroups().map(this.titleCasePipe.transform),
           datasets: this.seriesPerMuscleGroupPerUserPerMonth(),
-    ***REMOVED***,
-        options: ***REMOVED***
-          scales: ***REMOVED***
-            y: ***REMOVED***
+        },
+        options: {
+          scales: {
+            y: {
               beginAtZero: true,
-        ***REMOVED***,
-      ***REMOVED***,
-    ***REMOVED***,
-  ***REMOVED***);
+            },
+          },
+        },
+      });
 
       this.chart.options.animation = false;
-***REMOVED***
-***REMOVED***
-***REMOVED***
+    }
+  }
+}

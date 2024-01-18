@@ -1,23 +1,23 @@
-import ***REMOVED*** HttpClient ***REMOVED*** from "@angular/common/http";
-import ***REMOVED*** Injectable, inject ***REMOVED*** from "@angular/core";
-import ***REMOVED*** Exercise ***REMOVED*** from "@models/exercise.model";
-import ***REMOVED*** Observable, map ***REMOVED*** from "rxjs";
-import ***REMOVED*** BACKEND_URL ***REMOVED*** from "src/main";
+import { HttpClient } from "@angular/common/http";
+import { Injectable, inject } from "@angular/core";
+import { Exercise } from "@models/exercise.model";
+import { Observable, map } from "rxjs";
+import { BACKEND_URL } from "src/main";
 
-type ExercisesResponse = ***REMOVED***
+type ExercisesResponse = {
   data: Exercise[]
-***REMOVED***;
+};
 
-@Injectable(***REMOVED***
+@Injectable({
   providedIn: 'root',
-***REMOVED***)
-export class ExerciseApiService ***REMOVED***
+})
+export class ExerciseApiService {
   private readonly http = inject(HttpClient);
   private readonly url = inject(BACKEND_URL);
 
-  public getExercises(): Observable<Exercise[]> ***REMOVED***
+  public getExercises(): Observable<Exercise[]> {
     return this.http
-      .get<ExercisesResponse>(`$***REMOVED***this.url***REMOVED***/firebase/exercises`)
+      .get<ExercisesResponse>(`${this.url}/firebase/exercises`)
       .pipe(map(x => x.data));
-***REMOVED***
-***REMOVED***
+  }
+}

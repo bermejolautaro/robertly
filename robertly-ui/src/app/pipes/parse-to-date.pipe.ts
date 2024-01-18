@@ -1,19 +1,19 @@
-import ***REMOVED*** TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** Pipe, PipeTransform, inject ***REMOVED*** from '@angular/core';
-import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
+import { TitleCasePipe } from '@angular/common';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { DayjsService } from '@services/dayjs.service';
 
-@Pipe(***REMOVED*** name: 'parseToDate', standalone: true ***REMOVED***)
-export class ParseToDatePipe implements PipeTransform ***REMOVED***
+@Pipe({ name: 'parseToDate', standalone: true })
+export class ParseToDatePipe implements PipeTransform {
   private readonly dayjsService = inject(DayjsService);
   private readonly titleCasePipe = inject(TitleCasePipe)
 
-  public transform(value: string | null | undefined, defaultValue: string = 'Invalid Date'): string ***REMOVED***
+  public transform(value: string | null | undefined, defaultValue: string = 'Invalid Date'): string {
     const parsedDate = this.dayjsService.parseDate(value ?? '');
 
-    if (!parsedDate.isValid()) ***REMOVED***
+    if (!parsedDate.isValid()) {
       return defaultValue;
-***REMOVED***
+    }
 
     return this.titleCasePipe.transform(parsedDate.format('dddd[ - ]DD/MM/YYYY'));
-***REMOVED***
-***REMOVED***
+  }
+}

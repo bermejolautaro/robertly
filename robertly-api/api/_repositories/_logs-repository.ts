@@ -1,69 +1,69 @@
-import ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** Reference ***REMOVED*** from "firebase-admin/database";
+import { VercelRequest, VercelResponse } from "@vercel/node";
+import { Reference } from "firebase-admin/database";
 
-type CreateLogRequest = ***REMOVED***
+type CreateLogRequest = {
   user: string;
   exercise: string;
   date: string;
-  payload: ***REMOVED*** series: string ***REMOVED***;
-***REMOVED***;
+  payload: { series: string };
+};
 
-type UpdateLogRequest = ***REMOVED***
+type UpdateLogRequest = {
   user: string;
   exercise: string;
   date: string;
-  payload: ***REMOVED*** series: string ***REMOVED***;
-***REMOVED***;
+  payload: { series: string };
+};
 
-export async function getLogs(logsRef: Reference): Promise<unknown[]> ***REMOVED***
-  try ***REMOVED***
+export async function getLogs(logsRef: Reference): Promise<unknown[]> {
+  try {
     const data = (await logsRef.once("value")).val();
 
     const logs = Object.values(data);
 
-    if (logs?.length) ***REMOVED***
+    if (logs?.length) {
       return logs;
-***REMOVED*** else ***REMOVED***
+    } else {
       return [];
-***REMOVED***
-***REMOVED*** catch (err) ***REMOVED***
+    }
+  } catch (err) {
     return [];
-***REMOVED***
-***REMOVED***
+  }
+}
 
-export async function createLog(req: VercelRequest, res: VercelResponse, logsRef: Reference): Promise<void> ***REMOVED***
+export async function createLog(req: VercelRequest, res: VercelResponse, logsRef: Reference): Promise<void> {
   const body = req.body as CreateLogRequest;
-  const id = `$***REMOVED***body.user***REMOVED***|$***REMOVED***body.exercise***REMOVED***|$***REMOVED***body.date***REMOVED***`;
+  const id = `${body.user}|${body.exercise}|${body.date}`;
 
-  try ***REMOVED***
+  try {
     await logsRef.child(id).transaction((currentValue) => (!currentValue ? body : currentValue));
 
     res.json("Data saved successfully");
-***REMOVED*** catch (err) ***REMOVED***
+  } catch (err) {
     res.json("The API returned an error: " + err);
-***REMOVED***
-***REMOVED***
+  }
+}
 
-export async function updateLog(req: VercelRequest, res: VercelResponse, logsRef: Reference): Promise<void> ***REMOVED***
+export async function updateLog(req: VercelRequest, res: VercelResponse, logsRef: Reference): Promise<void> {
   const body = req.body as UpdateLogRequest;
-  const id = `$***REMOVED***body.user***REMOVED***|$***REMOVED***body.exercise***REMOVED***|$***REMOVED***body.date***REMOVED***`;
+  const id = `${body.user}|${body.exercise}|${body.date}`;
 
-  try ***REMOVED***
-    await logsRef.update(***REMOVED*** [id]: body ***REMOVED***);
+  try {
+    await logsRef.update({ [id]: body });
     res.json("Updated successfuly!");
-***REMOVED*** catch (err) ***REMOVED***
+  } catch (err) {
     res.json("The API returned an error: " + err);
-***REMOVED***
-***REMOVED***
+  }
+}
 
-export async function deleteLog(req: VercelRequest, res: VercelResponse, logsRef: Reference): Promise<void> ***REMOVED***
+export async function deleteLog(req: VercelRequest, res: VercelResponse, logsRef: Reference): Promise<void> {
   const body = req.body as UpdateLogRequest;
-  const id = `$***REMOVED***body.user***REMOVED***|$***REMOVED***body.exercise***REMOVED***|$***REMOVED***body.date***REMOVED***`;
+  const id = `${body.user}|${body.exercise}|${body.date}`;
 
-  try ***REMOVED***
+  try {
     await logsRef.child(id).remove();
     res.json("Updated successfuly!");
-***REMOVED*** catch (err) ***REMOVED***
+  } catch (err) {
     res.json("The API returned an error: " + err);
-***REMOVED***
-***REMOVED***
+  }
+}

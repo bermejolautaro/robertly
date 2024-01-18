@@ -1,4 +1,4 @@
-export interface ExerciseLog ***REMOVED***
+export interface ExerciseLog {
   date: string;
   name: string;
   type: string;
@@ -6,4 +6,4 @@ export interface ExerciseLog ***REMOVED***
   weightKg: number | null;
   reps: number | null;
   serie: number | null;
-***REMOVED***
+}

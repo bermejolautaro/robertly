@@ -1,20 +1,20 @@
-import ***REMOVED*** ExerciseLog ***REMOVED*** from '@models/excercise-log.model';
+import { ExerciseLog } from '@models/excercise-log.model';
 
-type FirstStepResult = ***REMOVED***
+type FirstStepResult = {
   header: boolean;
   value: string | null;
   row: number;
   col: number;
-***REMOVED***;
+};
 
-type SecondStepResult = ***REMOVED***
+type SecondStepResult = {
   value: string | null;
   rowIndex: number;
   columnIndex: number;
   type: string;
-***REMOVED***;
+};
 
-type ThirdStepResult = ***REMOVED***
+type ThirdStepResult = {
   type: string;
   name: string;
   date: string;
@@ -22,20 +22,20 @@ type ThirdStepResult = ***REMOVED***
   weightKg: number | null;
   reps: number | null;
   user: string;
-***REMOVED***;
+};
 
-export function processDataFirstStep(data: string[][]): FirstStepResult[] ***REMOVED***
+export function processDataFirstStep(data: string[][]): FirstStepResult[] {
   const result: FirstStepResult[] = [];
   const firstColumn = data.map(x => x[0] || null);
 
-  for (let rowIndex = 0; rowIndex < firstColumn.length; rowIndex++) ***REMOVED***
+  for (let rowIndex = 0; rowIndex < firstColumn.length; rowIndex++) {
     const prevRow = firstColumn[rowIndex - 1] ?? null;
     const row = firstColumn[rowIndex] ?? null;
     const nextRow = firstColumn[rowIndex + 1] ?? null;
 
-    if (!row) ***REMOVED***
+    if (!row) {
       continue;
-***REMOVED***
+    }
 
     const element = firstColumn[rowIndex] ?? null;
 
@@ -43,66 +43,66 @@ export function processDataFirstStep(data: string[][]): FirstStepResult[] ***REM
     const isHeader = !prevRow && !nextRow && rowIndex !== firstColumn.length - 1;
     const isExerciseName = !isHeader && !!element;
 
-    if (isHeader) ***REMOVED***
-      result.push(***REMOVED*** header: true, value: element, row: rowIndex, col: 0 ***REMOVED***);
-***REMOVED*** else if (isExerciseName) ***REMOVED***
-      result.push(***REMOVED*** header: false, value: element, row: rowIndex, col: 0 ***REMOVED***);
-***REMOVED***
-***REMOVED***
+    if (isHeader) {
+      result.push({ header: true, value: element, row: rowIndex, col: 0 });
+    } else if (isExerciseName) {
+      result.push({ header: false, value: element, row: rowIndex, col: 0 });
+    }
+  }
 
   return result;
-***REMOVED***
+}
 
-export function processDataSecondStep(data: FirstStepResult[]): [SecondStepResult[], Record<string, number>] ***REMOVED***
+export function processDataSecondStep(data: FirstStepResult[]): [SecondStepResult[], Record<string, number>] {
   const result = [];
 
-  const dateRowIndexByType: Record<string, number> = ***REMOVED******REMOVED***;
+  const dateRowIndexByType: Record<string, number> = {};
 
   let lastHeader = '';
 
-  for (const element of data) ***REMOVED***
-    if (element.header && element.value) ***REMOVED***
+  for (const element of data) {
+    if (element.header && element.value) {
       dateRowIndexByType[element.value] = element.row + 1;
       lastHeader = element.value ?? '';
-***REMOVED*** else ***REMOVED***
-      result.push(***REMOVED***
+    } else {
+      result.push({
         value: element.value,
         rowIndex: element.row,
         columnIndex: element.col,
         type: lastHeader,
-  ***REMOVED***);
-***REMOVED***
-***REMOVED***
+      });
+    }
+  }
 
   return [result, dateRowIndexByType];
-***REMOVED***
+}
 
 export function processDataThirdStep(
   secondStepResult: SecondStepResult[],
   data: string[][],
   dateRowIndexByType: Record<string, number>,
   username: string = ''
-): ThirdStepResult[] ***REMOVED***
+): ThirdStepResult[] {
   const result = [];
 
-  for (const element of secondStepResult) ***REMOVED***
+  for (const element of secondStepResult) {
     const dateRowIndex = dateRowIndexByType[element.type] ?? -1;
 
-    const emptyDateAlreadyAdded: Record<string, boolean> = ***REMOVED******REMOVED***;
+    const emptyDateAlreadyAdded: Record<string, boolean> = {};
 
     const columns = data[dateRowIndex] ?? [];
 
-    for (let col = 1; col < columns.length; col++) ***REMOVED***
+    for (let col = 1; col < columns.length; col++) {
       const row = data[element.rowIndex] ?? [];
       const repsString = row[col] || null;
       const series = repsString?.split('|') ?? [];
 
       const date = data[dateRowIndex]![col]!;
 
-      if (!series.length && !emptyDateAlreadyAdded[date]) ***REMOVED***
+      if (!series.length && !emptyDateAlreadyAdded[date]) {
         emptyDateAlreadyAdded[date] = true;
 
-        result.push(***REMOVED***
+        result.push({
           type: element.type.toLowerCase(),
           name: null!,
           date,
@@ -110,19 +110,19 @@ export function processDataThirdStep(
           weightKg: null,
           reps: null,
           user: username,
-    ***REMOVED***);
+        });
         continue;
-  ***REMOVED***
+      }
 
-      for (let j = 0; j < series!.length; j++) ***REMOVED***
+      for (let j = 0; j < series!.length; j++) {
         const serie = series![j]!;
         const [kg, reps] = serie.split('-');
 
-        if (!kg || !reps) ***REMOVED***
+        if (!kg || !reps) {
           continue;
-    ***REMOVED***
+        }
 
-        result.push(***REMOVED***
+        result.push({
           type: element.type.toLowerCase(),
           name: element.value!.toLowerCase(),
           date: data[dateRowIndex]![col]!,
@@ -130,17 +130,17 @@ export function processDataThirdStep(
           weightKg: Number(kg.replace(',', '.')),
           reps: Number(reps),
           user: username,
-    ***REMOVED***);
-  ***REMOVED***
-***REMOVED***
-***REMOVED***
+        });
+      }
+    }
+  }
 
   return result;
-***REMOVED***
+}
 
-export function processData(data: string[][], username: string = ''): ExerciseLog[] ***REMOVED***
+export function processData(data: string[][], username: string = ''): ExerciseLog[] {
   const [secondStepResult, dateRowIndexByType] = processDataSecondStep(processDataFirstStep(data));
   const result = processDataThirdStep(secondStepResult, data, dateRowIndexByType, username);
 
   return result;
-***REMOVED***
+}

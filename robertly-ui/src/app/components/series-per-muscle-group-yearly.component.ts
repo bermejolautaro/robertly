@@ -1,23 +1,23 @@
-import ***REMOVED*** KeyValuePipe, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, Input, computed, inject, signal ***REMOVED*** from '@angular/core';
+import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, Input, computed, inject, signal } from '@angular/core';
 
 import * as R from 'remeda';
 
-import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** getSeriesAmountPerUserPerMuscleGroupPerYear, groupByYear ***REMOVED*** from '@helpers/excercise-log.helper';
-import ***REMOVED*** ExerciseRow ***REMOVED*** from '@models/excercise-row.model';
-import ***REMOVED*** takeUntilDestroyed ***REMOVED*** from '@angular/core/rxjs-interop';
-import ***REMOVED*** Subject ***REMOVED*** from 'rxjs';
-import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
-import ***REMOVED*** ParseToYearPipe ***REMOVED*** from '@pipes/parse-to-year.pipe';
+import { getSeriesAmountPerUserPerMuscleGroupPerYear, groupByYear } from '@helpers/excercise-log.helper';
+import { ExerciseRow } from '@models/excercise-row.model';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Subject } from 'rxjs';
+import { ExerciseLogService } from '@services/excercise-log.service';
+import { ParseToYearPipe } from '@pipes/parse-to-year.pipe';
 
-type State = ***REMOVED***
+type State = {
   rows: ExerciseRow[];
   selectedYear: string;
-***REMOVED***;
+};
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-series-per-muscle-group-yearly',
   template: `
     <div class="card border-0 shadow-material-1">
@@ -28,14 +28,14 @@ type State = ***REMOVED***
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
-              ***REMOVED******REMOVED*** selectedYearLabel() | parseToYear ***REMOVED******REMOVED***
+              {{ selectedYearLabel() | parseToYear }}
             </button>
             <div ngbDropdownMenu class="w-100" style="overflow-x: hidden; overflow-y: scroll; max-height: 400px">
-              @for (year of years(); track year) ***REMOVED***
-                <button ngbDropdownItem [ngClass]="***REMOVED*** active: year === selectedYear() ***REMOVED***" (click)="selectedYear$.next(year)">
-                  ***REMOVED******REMOVED*** year | parseToYear ***REMOVED******REMOVED***
+              @for (year of years(); track year) {
+                <button ngbDropdownItem [ngClass]="{ active: year === selectedYear() }" (click)="selectedYear$.next(year)">
+                  {{ year | parseToYear }}
                 </button>
-          ***REMOVED***
+              }
             </div>
           </div>
         </div>
@@ -44,62 +44,62 @@ type State = ***REMOVED***
             <thead>
               <tr>
                 <td scope="col" class="fw-semibold">Muscle Group</td>
-                @if (selectedYear(); as selectedYear) ***REMOVED***
-                  @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerYear()[selectedYear] | keyvalue; track $index) ***REMOVED***
+                @if (selectedYear(); as selectedYear) {
+                  @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerYear()[selectedYear] | keyvalue; track $index) {
                     <td class="text-center fw-semibold">
-                      ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.key | titlecase ***REMOVED******REMOVED***
+                      {{ seriesPerMuscleGroupPerUser.key | titlecase }}
                     </td>
-              ***REMOVED***
-            ***REMOVED***
+                  }
+                }
                 <td class="text-center fw-semibold">Target</td>
               </tr>
             </thead>
             <tbody>
-              @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) ***REMOVED***
+              @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) {
                 <tr>
-                  <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
-                  @if (selectedYear(); as selectedYear) ***REMOVED***
-                    @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerYear()[selectedYear] | keyvalue; track $index) ***REMOVED***
+                  <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
+                  @if (selectedYear(); as selectedYear) {
+                    @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerYear()[selectedYear] | keyvalue; track $index) {
                       <td class="text-center">
-                        ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
+                        {{ seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 }}
                       </td>
-                ***REMOVED***
-              ***REMOVED***
-                  <td class="text-center">***REMOVED******REMOVED*** 40 * 12***REMOVED******REMOVED***</td>
+                    }
+                  }
+                  <td class="text-center">{{ 40 * 12}}</td>
                 </tr>
-          ***REMOVED***
+              }
             </tbody>
           </table>
         </div>
         <div class="fw-semibold">
-          ***REMOVED******REMOVED*** daysTrainedMessage() ***REMOVED******REMOVED***
+          {{ daysTrainedMessage() }}
         </div>
       </div>
     </div>
   `,
   styles: [
     `
-      :host ***REMOVED***
+      :host {
         display: block;
-  ***REMOVED***
+      }
     `,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass, ParseToYearPipe, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
-***REMOVED***)
-export class SeriesPerMuscleGroupYearlyComponent ***REMOVED***
-  @Input(***REMOVED*** required: true ***REMOVED***) public set rows(value: ExerciseRow[]) ***REMOVED***
-    this.state.update(state => (***REMOVED*** ...state, rows: value ***REMOVED***));
-    this.state.update(state => (***REMOVED*** ...state, selectedYear: this.years().at(0) ?? 'Year' ***REMOVED***));
-***REMOVED***
+})
+export class SeriesPerMuscleGroupYearlyComponent {
+  @Input({ required: true }) public set rows(value: ExerciseRow[]) {
+    this.state.update(state => ({ ...state, rows: value }));
+    this.state.update(state => ({ ...state, selectedYear: this.years().at(0) ?? 'Year' }));
+  }
 
   public readonly exerciseLogService = inject(ExerciseLogService);
 
-  private readonly state = signal<State>(***REMOVED***
+  private readonly state = signal<State>({
     rows: [],
     selectedYear: 'Year',
-***REMOVED***);
+  });
 
   public readonly selectedYear$: Subject<string> = new Subject();
 
@@ -111,18 +111,18 @@ export class SeriesPerMuscleGroupYearlyComponent ***REMOVED***
   public readonly years = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerYear()));
 
   public readonly selectedYearLabel = computed(() => this.state().selectedYear ?? 'Year');
-  public readonly daysTrainedMessage = computed(() => ***REMOVED***
+  public readonly daysTrainedMessage = computed(() => {
     const selectedYear = this.selectedYear();
     const daysTrained = selectedYear ? this.daysByYear()[selectedYear] : 0;
-    return `$***REMOVED***daysTrained***REMOVED*** $***REMOVED***daysTrained === 1 ? 'day' : 'days'***REMOVED*** trained this year`;
-***REMOVED***);
+    return `${daysTrained} ${daysTrained === 1 ? 'day' : 'days'} trained this year`;
+  });
 
-  public constructor() ***REMOVED***
-    this.selectedYear$.pipe(takeUntilDestroyed()).subscribe(selectedYear => ***REMOVED***
-      this.state.update(state => (***REMOVED***
+  public constructor() {
+    this.selectedYear$.pipe(takeUntilDestroyed()).subscribe(selectedYear => {
+      this.state.update(state => ({
         ...state,
         selectedYear,
-  ***REMOVED***));
-***REMOVED***);
-***REMOVED***
-***REMOVED***
+      }));
+    });
+  }
+}

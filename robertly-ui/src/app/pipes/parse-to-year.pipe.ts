@@ -1,13 +1,13 @@
-import ***REMOVED*** TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** Pipe, PipeTransform, inject ***REMOVED*** from '@angular/core';
-import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
+import { TitleCasePipe } from '@angular/common';
+import { Pipe, PipeTransform, inject } from '@angular/core';
+import { DayjsService } from '@services/dayjs.service';
 
-@Pipe(***REMOVED*** name: 'parseToYear', standalone: true ***REMOVED***)
-export class ParseToYearPipe implements PipeTransform ***REMOVED***
+@Pipe({ name: 'parseToYear', standalone: true })
+export class ParseToYearPipe implements PipeTransform {
   private readonly dayjsService = inject(DayjsService);
   private readonly titleCasePipe = inject(TitleCasePipe);
 
-  public transform(value: string): string ***REMOVED***
+  public transform(value: string): string {
     return this.titleCasePipe.transform(this.dayjsService.parseDate(value).format('YYYY'));
-***REMOVED***
-***REMOVED***
+  }
+}

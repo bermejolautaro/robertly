@@ -1,57 +1,57 @@
-import ***REMOVED*** HttpClient ***REMOVED*** from '@angular/common/http';
-import ***REMOVED*** Injectable, inject ***REMOVED*** from '@angular/core';
-import ***REMOVED*** processData ***REMOVED*** from '@helpers/excercise-log-api.helper';
-import ***REMOVED*** DayjsService ***REMOVED*** from '@services/dayjs.service';
-import ***REMOVED*** Observable, map ***REMOVED*** from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
+import { processData } from '@helpers/excercise-log-api.helper';
+import { DayjsService } from '@services/dayjs.service';
+import { Observable, map } from 'rxjs';
 
-import ***REMOVED*** ExerciseLog ***REMOVED*** from 'src/app/models/excercise-log.model';
-import ***REMOVED*** BACKEND_URL ***REMOVED*** from 'src/main';
+import { ExerciseLog } from 'src/app/models/excercise-log.model';
+import { BACKEND_URL } from 'src/main';
 
-type GetExerciseLogsResponse = ***REMOVED***
+type GetExerciseLogsResponse = {
   lautaro: string[][];
   roberto: string[][];
   nikito: string[][];
   matias: string[][];
   peque: string[][];
-***REMOVED***;
+};
 
-type GetExerciseLogsV2Response = ***REMOVED***
-  data: ***REMOVED***
+type GetExerciseLogsV2Response = {
+  data: {
     user: string;
     exercise: string;
     date: string;
-    payload: ***REMOVED***
-      series: ***REMOVED*** reps: number; weightInKg: number ***REMOVED***[];
-***REMOVED***;
-***REMOVED***[];
-***REMOVED***;
+    payload: {
+      series: { reps: number; weightInKg: number }[];
+    };
+  }[];
+};
 
-type CreateOrUpdateExerciseLogRequest = ***REMOVED***
+type CreateOrUpdateExerciseLogRequest = {
   user: string;
   exercise: string;
   date: string;
-  payload: ***REMOVED***
-    series: ***REMOVED*** reps: number; weightInKg: number ***REMOVED***[];
-***REMOVED***;
-***REMOVED***;
+  payload: {
+    series: { reps: number; weightInKg: number }[];
+  };
+};
 
-export type DeleteLogRequest = ***REMOVED***
+export type DeleteLogRequest = {
   user: string;
   exercise: string;
   date: string;
-***REMOVED***;
+};
 
-@Injectable(***REMOVED***
+@Injectable({
   providedIn: 'root',
-***REMOVED***)
-export class ExerciseLogApiService ***REMOVED***
+})
+export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
   private readonly url = inject(BACKEND_URL);
   private readonly dayjsService = inject(DayjsService);
 
-  public getExerciseLogs(): Observable<ExerciseLog[]> ***REMOVED***
+  public getExerciseLogs(): Observable<ExerciseLog[]> {
     return this.http
-      .get<GetExerciseLogsResponse>(`$***REMOVED***this.url***REMOVED***/logs/get-logs`)
+      .get<GetExerciseLogsResponse>(`${this.url}/logs/get-logs`)
       .pipe(
         map(data => [
           ...processData(data.lautaro, 'lautaro'),
@@ -61,13 +61,13 @@ export class ExerciseLogApiService ***REMOVED***
           ...processData(data.peque, 'peque'),
         ])
       );
-***REMOVED***
+  }
 
-  public getExerciseLogsv2(): Observable<ExerciseLog[]> ***REMOVED***
-    return this.http.get<GetExerciseLogsV2Response>(`$***REMOVED***this.url***REMOVED***/firebase/logs`).pipe(
-      map(x => ***REMOVED***
-        return x.data.flatMap(y => ***REMOVED***
-          return y.payload.series.map((s, i) => (***REMOVED***
+  public getExerciseLogsv2(): Observable<ExerciseLog[]> {
+    return this.http.get<GetExerciseLogsV2Response>(`${this.url}/firebase/logs`).pipe(
+      map(x => {
+        return x.data.flatMap(y => {
+          return y.payload.series.map((s, i) => ({
             date: this.dayjsService.parseDate(y.date).format('DD/MM/YYYY'),
             name: y.exercise,
             reps: s.reps,
@@ -75,21 +75,21 @@ export class ExerciseLogApiService ***REMOVED***
             type: '',
             user: y.user,
             weightKg: s.weightInKg,
-      ***REMOVED***));
-    ***REMOVED***);
-  ***REMOVED***)
+          }));
+        });
+      })
     );
-***REMOVED***
+  }
 
-  public createExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> ***REMOVED***
-    return this.http.post<void>(`$***REMOVED***this.url***REMOVED***/firebase/logs`, request);
-***REMOVED***
+  public createExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> {
+    return this.http.post<void>(`${this.url}/firebase/logs`, request);
+  }
 
-  public updateExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> ***REMOVED***
-    return this.http.put<void>(`$***REMOVED***this.url***REMOVED***/firebase/logs`, request);
-***REMOVED***
+  public updateExerciseLog(request: CreateOrUpdateExerciseLogRequest): Observable<void> {
+    return this.http.put<void>(`${this.url}/firebase/logs`, request);
+  }
 
-  public deleteExerciseLog(request: DeleteLogRequest): Observable<void> ***REMOVED***
-    return this.http.delete<void>(`$***REMOVED***this.url***REMOVED***/firebase/logs`, ***REMOVED*** body: request ***REMOVED***);
-***REMOVED***
-***REMOVED***
+  public deleteExerciseLog(request: DeleteLogRequest): Observable<void> {
+    return this.http.delete<void>(`${this.url}/firebase/logs`, { body: request });
+  }
+}

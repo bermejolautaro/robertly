@@ -1,9 +1,9 @@
-***REMOVED***
+{
   "name": "gym-angular-excel",
   "version": "0.0.0",
-  "scripts": ***REMOVED***
+  "scripts": {
     "ng": "ng",
-    "prettier": "prettier --write \"**/*.***REMOVED***js,json,css,scss,less,md,ts,html,component.html***REMOVED***\"",
+    "prettier": "prettier --write \"**/*.{js,json,css,scss,less,md,ts,html,component.html}\"",
     "start": "ng serve",
     "build": "ng build",
     "ngsw-config": "node_modules\\.bin\\ngsw-config dist\\gym-angular-excel ngsw-config.json [/base/href] && echo \"nsgw-config done!\"",
@@ -11,9 +11,9 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "postinstall": "node scripts/service-worker-workaround.js"
-***REMOVED***
+  },
   "private": true,
-  "dependencies": ***REMOVED***
+  "dependencies": {
     "@angular/animations": "^17.0.5",
     "@angular/common": "^17.0.5",
     "@angular/compiler": "^17.0.5",
@@ -33,8 +33,8 @@
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
-***REMOVED***
-  "devDependencies": ***REMOVED***
+  },
+  "devDependencies": {
     "@angular-devkit/architect": "^0.1601.8",
     "@angular-devkit/build-angular": "^17.0.5",
     "@angular-devkit/schematics": "^16.0.0",
@@ -52,5 +52,5 @@
     "prettier": "next",
     "tslint-config-prettier": "latest",
     "typescript": "~5.2.2"
-***REMOVED***
-***REMOVED***
+  }
+}

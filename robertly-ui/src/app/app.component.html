@@ -8,19 +8,19 @@
         style="outline: none; border: none; color: white; font-weight: 500"
         ngbDropdownToggle
       >
-        ***REMOVED******REMOVED*** exerciseLogService.selectedUsernameLabel() | titlecase ***REMOVED******REMOVED***
+        {{ exerciseLogService.selectedUsernameLabel() | titlecase }}
       </button>
       <div ngbDropdownMenu>
         <button ngbDropdownItem (click)="exerciseLogService.selectedUsername$.next(null)">All Users</button>
-        @for (username of exerciseLogService.usernames(); track username) ***REMOVED***
+        @for (username of exerciseLogService.usernames(); track username) {
           <button
             ngbDropdownItem
-            [ngClass]="***REMOVED*** active: username === exerciseLogService.selectedUsername() ***REMOVED***"
+            [ngClass]="{ active: username === exerciseLogService.selectedUsername() }"
             (click)="exerciseLogService.selectedUsername$.next(username)"
           >
-            ***REMOVED******REMOVED*** username | titlecase ***REMOVED******REMOVED***
+            {{ username | titlecase }}
           </button>
-    ***REMOVED***
+        }
       </div>
     </div>
     <!-- #endregion -->
@@ -28,7 +28,7 @@
       <i
         class="fa fa-refresh"
         style="font-size: 20px; color: white"
-        [ngClass]="***REMOVED*** spin: isSpinning ***REMOVED***"
+        [ngClass]="{ spin: isSpinning }"
         (click)="isSpinning = true; fetchData()"
         (animationend)="isSpinning = false"
       ></i>
@@ -40,11 +40,11 @@
   <router-outlet></router-outlet>
 </div>
 
-@if (exerciseLogService.loaded()) ***REMOVED***
+@if (exerciseLogService.loaded()) {
   <button class="btn btn-lg btn-primary" (click)="open('create')">
     <i class="fa fa-plus"></i>
   </button>
-***REMOVED***
+}
 
 <nav class="navbar navbar-dark bg-primary bg-gradient fixed-bottom fw-bold">
   <div class="container-fluid">
@@ -54,7 +54,7 @@
           class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
           [routerLink]="LOGS_PATH"
           routerLinkActive="active"
-          [routerLinkActiveOptions]="***REMOVED*** exact: true ***REMOVED***"
+          [routerLinkActiveOptions]="{ exact: true }"
         >
           Logs <i class="fa fa-history"></i>
         </a>

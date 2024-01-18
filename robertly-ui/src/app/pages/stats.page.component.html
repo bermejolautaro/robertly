@@ -1,4 +1,4 @@
-@if (exerciseLogService.loaded()) ***REMOVED***
+@if (exerciseLogService.loaded()) {
   <div class="container my-4">
     <app-series-per-muscle-group-weekly class="mb-4" [rows]="exerciseLogService.exerciseRows()"></app-series-per-muscle-group-weekly>
 
@@ -32,22 +32,22 @@
           <table class="table table-sm m-0 mb-3">
             <tbody>
               <th colspan="2" style="font-weight: 500">Days Trained</th>
-              @for (daysByUser of exerciseLogService.amountDaysTrainedPerUser() | keyvalue; track daysByUser.key) ***REMOVED***
+              @for (daysByUser of exerciseLogService.amountDaysTrainedPerUser() | keyvalue; track daysByUser.key) {
                 <tr>
-                  <td>***REMOVED******REMOVED*** daysByUser.key | titlecase ***REMOVED******REMOVED***</td>
-                  <td>***REMOVED******REMOVED*** daysByUser.value ***REMOVED******REMOVED***</td>
+                  <td>{{ daysByUser.key | titlecase }}</td>
+                  <td>{{ daysByUser.value }}</td>
                 </tr>
-          ***REMOVED***
+              }
             </tbody>
           </table>
         </div>
       </div>
     </div>
   </div>
-***REMOVED*** @else ***REMOVED***
+} @else {
   <div class="position-absolute top-50 start-50 translate-middle">
     <div class="spinner-border text-primary" role="status">
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>
-***REMOVED***
+}

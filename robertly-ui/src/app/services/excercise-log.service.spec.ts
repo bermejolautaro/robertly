@@ -1,20 +1,20 @@
-import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
-import ***REMOVED*** TestBed, fakeAsync, tick ***REMOVED*** from '@angular/core/testing';
+import { ExerciseLogService } from '@services/excercise-log.service';
+import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 
-describe('ExcerciseLogService', () => ***REMOVED***
+describe('ExcerciseLogService', () => {
   let service: ExerciseLogService = null!;
 
-  beforeEach(() => ***REMOVED***
-    TestBed.configureTestingModule(***REMOVED*** providers: [ExerciseLogService] ***REMOVED***);
+  beforeEach(() => {
+    TestBed.configureTestingModule({ providers: [ExerciseLogService] });
     service = TestBed.inject(ExerciseLogService);
-***REMOVED***);
+  });
 
-  it('amountDaysTrainedPerUser', fakeAsync(() => ***REMOVED***
+  it('amountDaysTrainedPerUser', fakeAsync(() => {
     const input = [
-      ***REMOVED*** date: '1997/10/20', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 ***REMOVED***,
-      ***REMOVED*** date: '1997/10/21', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 ***REMOVED***,
-      ***REMOVED*** date: '1997/10/22', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 ***REMOVED***,
-      ***REMOVED*** date: '1997/10/20', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'matias', weightKg: 12 ***REMOVED***,
+      { date: '1997/10/20', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 },
+      { date: '1997/10/21', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 },
+      { date: '1997/10/22', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'lautaro', weightKg: 12 },
+      { date: '1997/10/20', name: 'bicep curl', reps: 12, serie: 1, type: 'push', user: 'matias', weightKg: 12 },
     ];
     service.updateLogs$.next(input);
 
@@ -22,8 +22,8 @@ describe('ExcerciseLogService', () => ***REMOVED***
 
     const result = service.amountDaysTrainedPerUser();
 
-    const expected = ***REMOVED*** lautaro: 3, matias: 1 ***REMOVED***;
+    const expected = { lautaro: 3, matias: 1 };
 
     expect(result).toEqual(expected);
-***REMOVED***));
-***REMOVED***);
+  }));
+});

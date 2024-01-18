@@ -1,34 +1,34 @@
-import type ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
-import ***REMOVED*** connectToDatabase ***REMOVED*** from "../_helpers/_firebase-helper.js";
-import ***REMOVED*** createLog, updateLog, deleteLog, getLogs ***REMOVED*** from "../_repositories/_logs-repository.js";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import { connectToDatabase } from "../_helpers/_firebase-helper.js";
+import { createLog, updateLog, deleteLog, getLogs } from "../_repositories/_logs-repository.js";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
-  if (req.method === "OPTIONS") ***REMOVED***
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === "OPTIONS") {
     res.status(200).end();
     return;
-***REMOVED***
+  }
 
   const result = connectToDatabase();
 
-  if (!result) ***REMOVED***
+  if (!result) {
     res.status(500).end();
     return;
-***REMOVED***
+  }
 
-  const ***REMOVED*** app, db ***REMOVED*** = result;
+  const { app, db } = result;
 
   const logsRef = db.ref().child("logs");
 
-  if (req.method === "GET") ***REMOVED***
+  if (req.method === "GET") {
     const logs = await getLogs(logsRef);
-    res.json(***REMOVED*** data: logs ***REMOVED***);
-***REMOVED*** else if (req.method === "POST") ***REMOVED***
+    res.json({ data: logs });
+  } else if (req.method === "POST") {
     await createLog(req, res, logsRef);
-***REMOVED*** else if (req.method === "PUT") ***REMOVED***
+  } else if (req.method === "PUT") {
     await updateLog(req, res, logsRef);
-***REMOVED*** else if (req.method === "DELETE") ***REMOVED***
+  } else if (req.method === "DELETE") {
     await deleteLog(req, res, logsRef);
-***REMOVED*** else ***REMOVED***
+  } else {
     res.status(405).send("Method not allowed");
-***REMOVED***
-***REMOVED***
+  }
+}

@@ -1,5 +1,5 @@
-import ***REMOVED*** VercelRequest, VercelResponse ***REMOVED*** from "@vercel/node";
+import { VercelRequest, VercelResponse } from "@vercel/node";
 
-export default async function handler(req: VercelRequest, res: VercelResponse) ***REMOVED***
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.json('todo ok')
-***REMOVED***
+}

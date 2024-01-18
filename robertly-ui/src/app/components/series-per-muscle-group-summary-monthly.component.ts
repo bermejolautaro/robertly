@@ -1,12 +1,12 @@
-import ***REMOVED*** KeyValuePipe, NgClass, TitleCasePipe ***REMOVED*** from '@angular/common';
-import ***REMOVED*** ChangeDetectionStrategy, Component, inject ***REMOVED*** from '@angular/core';
+import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
-import ***REMOVED*** NgbDropdownModule ***REMOVED*** from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
-import ***REMOVED*** ParseToMonthPipe ***REMOVED*** from '@pipes/parse-to-month.pipe';
-import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-log.service';
+import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
+import { ExerciseLogService } from '@services/excercise-log.service';
 
-@Component(***REMOVED***
+@Component({
   selector: 'app-series-per-muscle-group-summary-monthly',
   template: `
     <div class="table-responsive">
@@ -14,49 +14,49 @@ import ***REMOVED*** ExerciseLogService ***REMOVED*** from '@services/excercise-
         <thead>
           <tr>
             <td scope="col" class="fw-semibold">Muscle Group</td>
-            @if (this.exerciseLogService.selectedMonth(); as selectedMonth) ***REMOVED***
+            @if (this.exerciseLogService.selectedMonth(); as selectedMonth) {
               @for (
                 seriesPerMuscleGroup of exerciseLogService.seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue;
                 track $index
-              ) ***REMOVED***
-                <td class="text-center fw-semibold">***REMOVED******REMOVED*** seriesPerMuscleGroup.key | titlecase ***REMOVED******REMOVED***</td>
-          ***REMOVED***
-        ***REMOVED***
+              ) {
+                <td class="text-center fw-semibold">{{ seriesPerMuscleGroup.key | titlecase }}</td>
+              }
+            }
             <td class="text-center fw-semibold">Target</td>
           </tr>
         </thead>
         <tbody>
-          @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) ***REMOVED***
+          @for (muscleGroup of exerciseLogService.muscleGroups(); track $index) {
             <tr>
-              <td class="fw-semibold">***REMOVED******REMOVED*** muscleGroup | titlecase ***REMOVED******REMOVED***</td>
-              @if (this.exerciseLogService.selectedMonth(); as selectedMonth) ***REMOVED***
+              <td class="fw-semibold">{{ muscleGroup | titlecase }}</td>
+              @if (this.exerciseLogService.selectedMonth(); as selectedMonth) {
                 @for (
                   seriesPerMuscleGroupPerUser of exerciseLogService.seriesPerMuscleGroupPerUserPerMonth()[selectedMonth] | keyvalue;
                   track $index
-                ) ***REMOVED***
+                ) {
                   <td class="text-center">
-                    ***REMOVED******REMOVED*** seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 ***REMOVED******REMOVED***
+                    {{ seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 }}
                   </td>
-            ***REMOVED***
-          ***REMOVED***
+                }
+              }
               <td class="text-center">40</td>
             </tr>
-      ***REMOVED***
+          }
         </tbody>
       </table>
     </div>
   `,
   styles: [
     `
-      :host ***REMOVED***
+      :host {
         display: block;
-  ***REMOVED***
+      }
     `,
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
-***REMOVED***)
-export class SeriesPerMuscleGroupSummaryMonthlyComponent ***REMOVED***
+})
+export class SeriesPerMuscleGroupSummaryMonthlyComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
-***REMOVED***
+}
