@@ -17,12 +17,10 @@ namespace gym_app_net_api.Controllers
     public class LogsController : ControllerBase
     {
         private readonly GoogleCredentialOptions _googleCredentialOptions;
-        private readonly ILogger<LogsController> _logger;
 
-        public LogsController(ILogger<LogsController> logger, IOptions<GoogleCredentialOptions> googleCredentialOptions)
+        public LogsController(IOptions<GoogleCredentialOptions> googleCredentialOptions)
         {
             _googleCredentialOptions = googleCredentialOptions.Value;
-            _logger = logger;
         }
 
         [HttpGet]
@@ -42,8 +40,6 @@ namespace gym_app_net_api.Controllers
 
         private async Task<string> GetAccessToken()
         {
-            _logger.LogCritical(_googleCredentialOptions.PrivateKey);
-
             var credential = GoogleCredential.FromJsonParameters(new JsonCredentialParameters()
             {
                 ClientEmail = _googleCredentialOptions.ClientEmail,
