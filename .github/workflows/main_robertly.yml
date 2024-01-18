@@ -25,7 +25,7 @@ jobs:
       - name: App Settings Variable Substitution
         uses: microsoft/variable-substitution@v1
         with:
-          files: "${{env.DOTNET_ROOT}}/myapp/appsettings.json"
+          files: "./robertly-net-api//appsettings.json"
         env:
           GoogleCredential.ClientEmail: ${{ secrets.GOOGLE_CREDENTIAL_CLIENT_EMAIL }}
           GoogleCredential.PrivateKey: ${{ secrets.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
