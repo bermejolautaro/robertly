@@ -14,17 +14,17 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
-    - name: Use Node.js 10.x
-      uses: actions/setup-node@v1
+    - name: Use Node.js 18.x
+      uses: actions/setup-node@v3
       with:
-        node-version: 10.x
+        node-version: '20.x'
 
     - name: Prepare and deploy
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
         cd ./robertly-ui
-        npm install
+        npm ci
         npm run ngsw-config && npm run ng -- deploy --cname=www.robertly.ar --name="Lautaro Bermejo" --email=tarolau97@hotmail.com
