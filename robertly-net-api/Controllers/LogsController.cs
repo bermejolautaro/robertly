@@ -1,6 +1,7 @@
 using Firebase.Database;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,10 +17,12 @@ namespace gym_app_net_api.Controllers
     public class LogsController : ControllerBase
     {
         private readonly GoogleCredentialOptions _googleCredentialOptions;
+        private readonly ILogger<LogsController> _logger;
 
-        public LogsController(IOptions<GoogleCredentialOptions> googleCredentialOptions)
+        public LogsController(ILogger<LogsController> logger, IOptions<GoogleCredentialOptions> googleCredentialOptions)
         {
             _googleCredentialOptions = googleCredentialOptions.Value;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -39,6 +42,8 @@ namespace gym_app_net_api.Controllers
 
         private async Task<string> GetAccessToken()
         {
+            _logger.LogCritical(_googleCredentialOptions.PrivateKey);
+
             var credential = GoogleCredential.FromJsonParameters(new JsonCredentialParameters()
             {
                 ClientEmail = _googleCredentialOptions.ClientEmail,
