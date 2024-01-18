@@ -13,10 +13,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      GOOGLE_CREDENTIAL_PRIVATE_KEY: |
-        ${{ secrets.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -32,7 +28,7 @@ jobs:
           files: "./robertly-net-api//appsettings.json"
         env:
           GoogleCredential.ClientEmail: ${{ secrets.GOOGLE_CREDENTIAL_CLIENT_EMAIL }}
-          GoogleCredential.PrivateKey: ${{ env.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
+          GoogleCredential.PrivateKey: ${{ vars.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
           GoogleCredential.ProjectId: ${{ secrets.GOOGLE_CREDENTIAL_PROJECT_ID }}
           GoogleCredential.DatabaseUrl: ${{ secrets.GOOGLE_CREDENTIAL_DATABASE_URL }}
 
