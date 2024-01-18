@@ -23,10 +23,10 @@ jobs:
           include-prerelease: true
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build ./robertly-net-api/robertly-net-api.sln --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/myapp
+        run: dotnet publish ./robertly-net-api/robertly-net-api.sln -c Release -o $***REMOVED******REMOVED***env.DOTNET_ROOT***REMOVED******REMOVED***/myapp
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v3
@@ -40,13 +40,13 @@ jobs:
     environment:
       name: 'Production'
       url: $***REMOVED******REMOVED*** steps.deploy-to-webapp.outputs.webapp-url ***REMOVED******REMOVED***
-    
+
     steps:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
           name: .net-app
-      
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v2
@@ -54,4 +54,4 @@ jobs:
           app-name: 'robertly'
           slot-name: 'Production'
           package: .
-          publish-profile: $***REMOVED******REMOVED*** secrets.AZUREAPPSERVICE_PUBLISHPROFILE_0BB386E9C7C240C8A7C69854D1E15C64 ***REMOVED******REMOVED***
+          publish-profile: $***REMOVED******REMOVED*** secrets.AZUREAPPSERVICE_PUBLISH_PROFILE ***REMOVED******REMOVED***
