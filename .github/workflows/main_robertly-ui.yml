@@ -1,11 +1,11 @@
-name: Build and deploy robertly-net-ui
+name: Build and deploy robertly-ui
 
 on:
   push:
     branches:
       - main
-    paths: 
-      - './robertly-net-ui/**'
+    paths:
+      - './robertly-ui/**'
   workflow_dispatch:
 
 jobs:
@@ -25,5 +25,6 @@ jobs:
       env:
         GH_TOKEN: ${{ secrets.GH_TOKEN }}
       run: |
+        cd ./robertly-ui
         npm install
         npm run ngsw-config && npm run ng -- deploy --cname=www.robertly.ar --name="Lautaro Bermejo" --email=tarolau97@hotmail.com
