@@ -29,7 +29,8 @@ jobs:
         env:
           ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
           GoogleCredential.ClientEmail: ${{ secrets.GOOGLE_CREDENTIAL_CLIENT_EMAIL }}
-          GoogleCredential.PrivateKey: ${{ vars.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
+          GoogleCredential.PrivateKey: |
+            ${{ vars.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
           GoogleCredential.ProjectId: ${{ secrets.GOOGLE_CREDENTIAL_PROJECT_ID }}
           GoogleCredential.DatabaseUrl: ${{ secrets.GOOGLE_CREDENTIAL_DATABASE_URL }}
 
