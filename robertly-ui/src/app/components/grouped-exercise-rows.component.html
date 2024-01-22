@@ -63,26 +63,21 @@
                           <div class="table-responsive">
                             <table class="table table-bordered m-0 table-slim">
                               <tbody>
-                                @for (
-                                  exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1];
-                                  track $index
-                                ) {
-                                  @for (exerciseRow of exerciseLogsPerExerciseNamePerUsername[1]; track $index) {
-                                    <tr
-                                      (click)="exerciseLogService.logClicked$.next(exerciseRow)"
-                                      [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
-                                    >
-                                      <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
-                                        {{ exerciseRow.excerciseName | titlecase }}
+                                @for (exerciseRow of exerciseLogsPerExerciseNamePerUsername[1]; track $index) {
+                                  <tr
+                                    (click)="exerciseLogService.logClicked$.next(exerciseRow)"
+                                    [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
+                                  >
+                                    <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
+                                      {{ exerciseRow.excerciseName | titlecase }}
+                                    </td>
+                                    @for (serie of exerciseRow.series; track $index) {
+                                      <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
+                                        <div>{{ serie.reps }} reps</div>
+                                        <div>{{ serie.weightInKg }}kg</div>
                                       </td>
-                                      @for (serie of exerciseRow.series; track $index) {
-                                        <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
-                                          <div>{{ serie.reps }} reps</div>
-                                          <div>{{ serie.weightInKg }}kg</div>
-                                        </td>
-                                      }
-                                    </tr>
-                                  }
+                                    }
+                                  </tr>
                                 }
                               </tbody>
                             </table>
