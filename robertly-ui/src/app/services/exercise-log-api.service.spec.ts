@@ -1,6 +1,6 @@
 // import { processDataFirstStep } from '@helpers/excercise-log-api.helper';
 
-describe('ExcerciseLogApiService', () => {
+describe('ExerciseLogApiService', () => {
   // const data = [
   //   ['Push', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', ''],
   //   [

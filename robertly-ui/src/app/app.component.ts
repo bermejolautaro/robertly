@@ -1,17 +1,31 @@
-import { Component, Injector, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, Injector, OnInit, ViewChild, effect, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import { debounceTime, filter, first, forkJoin, map, of, switchMap, tap } from 'rxjs';
+import {
+  Observable,
+  OperatorFunction,
+  Subject,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  first,
+  forkJoin,
+  map,
+  merge,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { LOGS_PATH, STATS_PATH } from 'src/main';
 
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { EXERCISE_DEFAULT_LABEL, ExerciseLogService, WEIGHT_DEFAULT_LABEL } from '@services/exercise-log.service';
 
-import { ExerciseLogApiService } from '@services/excercise-log-api.service';
+import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
 
 import { ExerciseLog } from '@models/excercise-log.model';
-import { NgbDropdownModule, NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
@@ -39,6 +53,8 @@ export type CreateOrUpdateLogFormGroup = FormGroup<{
   >;
 }>;
 
+const CLEAR_FILTER_LABEL = 'Clear Filter';
+
 const createOrUpdateLogFormValidator =
   (exerciseLogService: ExerciseLogService): ValidatorFn =>
   control => {
@@ -65,7 +81,7 @@ const createOrUpdateLogFormValidator =
 
     const exerciseExists = exerciseLogService
       .exercises()
-      .find(x => x.exercise.toLowerCase() === typedControl.value.exercise?.toLowerCase());
+      .find(x => x.name.toLowerCase() === typedControl.value.exercise?.toLowerCase());
 
     if (!exerciseExists) {
       errors = { ...(errors ?? {}), ...{ exerciseDoesNotExist: 'Exercise does not exists' } };
@@ -139,12 +155,13 @@ export class AppComponent implements OnInit {
   private readonly dayjsService = inject(DayjsService);
   private readonly dayjs = this.dayjsService.instance;
   private readonly injector = inject(Injector);
+  private readonly titleCasePipe = inject(TitleCasePipe);
 
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
     {
       user: new FormControl(''),
       exercise: new FormControl(''),
-      date: new FormControl(this.dayjs().format('DD-MM-YYYY')),
+      date: new FormControl(''),
       series: new FormArray([
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
@@ -160,7 +177,7 @@ export class AppComponent implements OnInit {
     {
       user: new FormControl(''),
       exercise: new FormControl(''),
-      date: new FormControl(this.dayjs().format('DD-MM-YYYY')),
+      date: new FormControl(''),
       series: new FormArray([
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
@@ -177,7 +194,64 @@ export class AppComponent implements OnInit {
   public readonly STATS_PATH = STATS_PATH;
   public readonly LOGS_PATH = LOGS_PATH;
 
+  public exerciseTypeahead: string = '';
+
+  @ViewChild('exerciseTypeaheadInput', { static: true }) exerciseTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly exerciseFocus$: Subject<string> = new Subject<string>();
+
+  public readonly exerciseSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+
+    return merge(debouncedText$, this.exerciseFocus$).pipe(
+      map(() => {
+        const selectedType = this.exerciseLogService.selectedType();
+        const exercises = this.exerciseLogService
+          .exercises()
+          .filter(x => (!!selectedType ? x.type.toLowerCase() === selectedType.toLowerCase() : true))
+          .map(x => x.name);
+
+        if (this.exerciseLogService.selectedExercise()) {
+          exercises.unshift(CLEAR_FILTER_LABEL);
+        }
+
+        return this.exerciseTypeahead === '' || this.exerciseTypeahead === EXERCISE_DEFAULT_LABEL
+          ? exercises
+          : exercises.filter(x => !!x).filter(x => x.toLowerCase().includes(this.exerciseTypeahead.toLowerCase()));
+      })
+    );
+  };
+
+  public weightTypeahead: string = '';
+
+  @ViewChild('weightTypeaheadInput', { static: true }) weightTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
+  public readonly weightFocus$: Subject<string> = new Subject<string>();
+
+  public readonly weightSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+    const debouncedText$ = text$.pipe(distinctUntilChanged());
+
+    return merge(debouncedText$, this.weightFocus$).pipe(
+      map(() => {
+        const weights = this.exerciseLogService.weights().map(x => `${x}`);
+
+        if (this.exerciseLogService.selectedWeight()) {
+          weights.unshift(CLEAR_FILTER_LABEL);
+        }
+
+        return this.weightTypeahead === '' || this.weightTypeahead === WEIGHT_DEFAULT_LABEL
+          ? weights
+          : weights.filter(x => !!x).filter(x => x.includes(this.weightTypeahead));
+      })
+    );
+  };
+
+  public readonly exerciseFormatter = (x: string) => {
+    return this.titleCasePipe.transform(x);
+  };
+  public readonly weightFormatter = (x: string) => (!isNaN(parseInt(x)) ? `${x}kg` : x);
+
   public constructor() {
+    effect(() => (this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel()));
+    effect(() => (this.weightTypeahead = this.exerciseLogService.selectedWeightLabel()));
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
     let shouldFetchExerciseLogs = false;
@@ -226,25 +300,17 @@ export class AppComponent implements OnInit {
         exercise: exerciseRow.excerciseName,
         date: this.dayjsService.parseDate(exerciseRow.date).format('YYYY-MM-DD'),
         user: exerciseRow.username,
-        series: exerciseRow.series.map(x => ({
-          reps: x.reps,
-          weightInKg: x.weightKg,
-        })),
+        series: exerciseRow.series.map(x => ({ reps: x.reps, weightInKg: x.weightInKg })),
       });
       this.open('update', exerciseRow);
     });
 
-    this.exerciseLogService.deleteLog$.pipe(takeUntilDestroyed()).subscribe(x => {
-      const request = {
-        date: this.dayjsService.parseDate(x.date).format('DD-MM-YYYY'),
-        exercise: x.excerciseName,
-        user: x.username,
-      };
-
-      this.exerciseLogApiService.deleteExerciseLog(request).subscribe(() => {
-        this.fetchData(false, false);
-      });
-    });
+    this.exerciseLogService.deleteLog$
+      .pipe(
+        switchMap(x => this.exerciseLogApiService.deleteExerciseLog(x.id).pipe(tap(() => this.fetchData(false, false)))),
+        takeUntilDestroyed()
+      )
+      .subscribe();
   }
 
   public ngOnInit(): void {
@@ -261,6 +327,10 @@ export class AppComponent implements OnInit {
     instance.createOrUpdateLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
     instance.mode = mode;
 
+    if (mode === 'create' && !this.createLogFormGroup.value.date) {
+      this.createLogFormGroup.controls.date.patchValue(this.dayjs().format('YYYY-MM-DD'));
+    }
+
     if (exerciseRow) {
       instance.originalValue = exerciseRow;
     }
@@ -273,27 +343,13 @@ export class AppComponent implements OnInit {
           }
 
           const request = {
-            date: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('DD-MM-YYYY'),
+            date: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
             exercise: this.createLogFormGroup.value.exercise!.toLowerCase(),
             user: this.createLogFormGroup.value.user!.toLowerCase(),
-            payload: {
-              series: (this.createLogFormGroup.value.series ?? [])
-                .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
-            },
+            series: (this.createLogFormGroup.value.series ?? [])
+              .filter(x => !!x.reps && !!x.weightInKg)
+              .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
           };
-
-          const exerciseLogs: ExerciseLog[] = request.payload.series.map((s, i) => ({
-            date: parseDate(request.date).format('DD-MM-YYYY'),
-            name: request.exercise,
-            reps: s.reps,
-            serie: i + 1,
-            type: '',
-            user: request.user,
-            weightKg: s.weightInKg,
-          }));
-
-          this.exerciseLogService.appendLogs$.next(exerciseLogs);
 
           this.exerciseLogApiService.createExerciseLog(request).subscribe({
             next: () => {
@@ -311,14 +367,13 @@ export class AppComponent implements OnInit {
           }
 
           const request = {
-            date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('DD-MM-YYYY'),
+            id: exerciseRow!.id,
+            date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
             exercise: this.updateLogFormGroup.value.exercise!.toLowerCase(),
             user: this.updateLogFormGroup.value.user!.toLowerCase(),
-            payload: {
-              series: (this.updateLogFormGroup.value.series ?? [])
-                .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
-            },
+            series: (this.updateLogFormGroup.value.series ?? [])
+              .filter(x => !!x.reps && !!x.weightInKg)
+              .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
           };
 
           this.exerciseLogApiService.updateExerciseLog(request).subscribe({
@@ -351,28 +406,49 @@ export class AppComponent implements OnInit {
       exercises$ = of(cachedExercises);
     }
 
-    const exerciseLogs$ = forkJoin([this.exerciseLogApiService.getExerciseLogs(), this.exerciseLogApiService.getExerciseLogsv2()]).pipe(
-      map(([a, b]) => a.concat(b))
-    );
-
-    const logsAndExercises$ = exercises$.pipe(
-      switchMap(exercises => exerciseLogs$.pipe(map(logs => [logs, exercises] as const))),
-      tap(([logs, exercises]) => {
-        for (const log of logs) {
-          if (!log.type) {
-            log.type = exercises.find(x => x.exercise === log.name)?.type ?? '';
-          }
-        }
-      })
-    );
-
     this.viewModelApiService.getViewModel().subscribe(x => console.log(x));
 
-    logsAndExercises$.subscribe(([exerciseLogs, exercises]) => {
+    forkJoin([this.exerciseLogApiService.getExerciseLogsv2(), exercises$]).subscribe(([exerciseLogs, exercises]) => {
       localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
       localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));
       this.exerciseLogService.updateLogs$.next(exerciseLogs);
       this.exerciseLogService.updateExercises$.next(exercises);
     });
+  }
+
+  public onExerciseTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void {
+    let selectedExercise =
+      this.exerciseLogService
+        .exercises()
+        .filter(x => x.name === event.item)
+        .at(0) ?? null;
+
+    if (event.item === CLEAR_FILTER_LABEL) {
+      selectedExercise = null;
+    }
+
+    this.exerciseLogService.selectedExercise$.next(
+      selectedExercise ? { name: selectedExercise.name, type: selectedExercise.type } : null
+    );
+    this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel();
+    this.exerciseTypeaheadInput?.nativeElement.blur();
+
+    this.exerciseLogService.selectedWeight$.next(null);
+    this.weightTypeahead = this.exerciseLogService.selectedWeightLabel();
+  }
+
+  public onWeightTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void {
+    let selectedWeight =
+      this.exerciseLogService
+        .weights()
+        .filter(x => `${x}` === event.item)
+        .at(0) ?? null;
+
+    if (event.item === CLEAR_FILTER_LABEL) {
+      selectedWeight = null;
+    }
+
+    this.exerciseLogService.selectedWeight$.next(selectedWeight);
+    this.weightTypeaheadInput?.nativeElement.blur();
   }
 }

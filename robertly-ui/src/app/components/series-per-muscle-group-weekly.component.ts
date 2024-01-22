@@ -9,7 +9,7 @@ import { getSeriesAmountPerMuscleGroupPerWeek, groupByWeek } from '@helpers/exce
 import { ExerciseRow } from '@models/excercise-row.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 
 type State = {
   rows: ExerciseRow[];

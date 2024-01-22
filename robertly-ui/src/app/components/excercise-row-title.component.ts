@@ -1,6 +1,7 @@
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ExerciseRow } from '@models/excercise-row.model';
+import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 
 @Component({
   selector: 'app-excercise-row-title',
@@ -21,7 +22,7 @@ import { ExerciseRow } from '@models/excercise-row.model';
       <div class="row">
         @if (showDate) {
           <div class="col d-flex text-muted" [style.fontSize.rem]="0.8">
-            {{ exerciseRow.date }} - {{ exerciseRow.username | titlecase }}
+            {{ exerciseRow.date | parseToDate }} - {{ exerciseRow.username | titlecase }}
           </div>
         }
       </div>
@@ -37,7 +38,7 @@ import { ExerciseRow } from '@models/excercise-row.model';
   ],
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe],
+  imports: [NgClass, TitleCasePipe, ParseToDatePipe],
 })
 export class ExcerciseRowTitleComponent {
   @Input() showStar: boolean = false;

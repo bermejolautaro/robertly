@@ -1,7 +1,7 @@
 import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, computed, effect, inject } from '@angular/core';
 
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 import { Chart } from 'chart.js/auto';
 import { getSeriesAmountPerUserPerMuscleGroupPerMonth } from '@helpers/excercise-log.helper';
 

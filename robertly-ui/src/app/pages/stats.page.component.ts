@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 
 import { SeriesPerMuscleGroupWeeklyComponent } from '@components/series-per-muscle-group-weekly.component';
 import { SeriesPerMuscleGroupMonthlyComponent } from '@components/series-per-muscle-group-monthly.component';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 import { DOCUMENT, KeyValuePipe, TitleCasePipe } from '@angular/common';
 import { SeriesPerMuscleGroupYearlyComponent } from '@components/series-per-muscle-group-yearly.component';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';

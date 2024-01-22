@@ -1,32 +1,26 @@
 import { parseAndCompare, parseDate } from '@helpers/date.helper';
-import { type ExerciseLog } from '@models/excercise-log.model';
+import { Serie, type ExerciseLog } from '@models/excercise-log.model';
 import { type ExerciseRow } from '@models/excercise-row.model';
-import { Exercise } from '@models/exercise.model';
 import { type GroupedLog } from '@models/grouped-log.model';
 import * as R from 'remeda';
 
-export function groupExcerciseLogs(excerciseLogs: ExerciseLog[], exercises: Exercise[]): GroupedLog[] {
-  return R.pipe(
+export function groupExcerciseLogs(excerciseLogs: ExerciseLog[]) {
+  const result = R.pipe(
     excerciseLogs,
     R.groupBy(x => x.date),
-    R.mapValues((x, date) =>
+    R.mapValues(x =>
       R.pipe(
         x,
         R.groupBy(y => y.user),
-        R.mapValues((y, username) =>
-          R.pipe(
-            y,
-            R.groupBy(z => z.name),
-            R.mapValues((series, excerciseName) => mapToExcerciseRow(date, username, excerciseName, series, exercises)),
-            R.toPairs
-          )
-        ),
+        R.mapValues(y => y.map(mapToExcerciseRow)),
         R.toPairs
       )
     ),
     R.toPairs,
-    R.sort(([a], [b]) => parseAndCompare(a, b))
+    R.sort(([dateA], [dateB]) => parseAndCompare(dateA, dateB))
   );
+
+  return result;
 }
 
 export function amountDaysTrainedByUser(exerciseLogs: ExerciseLog[]) {
@@ -37,39 +31,35 @@ export function amountDaysTrainedByUser(exerciseLogs: ExerciseLog[]) {
   );
 }
 
-function mapToExcerciseRow(
-  date: PropertyKey,
-  username: PropertyKey,
-  excerciseName: PropertyKey,
-  series: [ExerciseLog, ...ExerciseLog[]],
-  exercises: Exercise[]
-): ExerciseRow {
-  const total = series.every(x => x.weightKg === R.first(series).weightKg) ? R.sumBy(series, x => x.reps!) : null;
+function mapToExcerciseRow(log: ExerciseLog): ExerciseRow {
+  const firstSerie = log.series.at(0);
+  const total = log.series.every(x => x.weightInKg === firstSerie?.weightInKg) ? R.sumBy(log.series, x => x.reps!) : null;
 
   return {
-    date: date.toString(),
-    username: username.toString(),
-    excerciseName: excerciseName.toString(),
-    type: R.first(series).type,
-    series: [...series],
-    highlighted: series.every(x => x.weightKg === R.first(series).weightKg)
-      ? series.every(x => x.reps! >= 12)
+    id: log.id,
+    date: log.date.toString(),
+    username: log.user.toString(),
+    excerciseName: log.exercise.name.toString(),
+    type: log.exercise.type,
+    series: [...log.series],
+    highlighted: log.series.every(x => x.weightInKg === firstSerie?.weightInKg)
+      ? log.series.every(x => x.reps! >= 12)
         ? ('green' as const)
-        : series.every(x => x.reps! >= 8)
+        : log.series.every(x => x.reps! >= 8)
           ? ('yellow' as const)
           : null
       : null,
     total,
-    tonnage: series.reduce((prev, curr) => prev + curr.reps! * curr.weightKg!, 0),
-    average: total ? Math.ceil(total / series.length) : null,
-    muscleGroup: exercises.find(x => x.exercise === excerciseName)?.muscleGroup ?? '',
+    tonnage: log.series.reduce((prev, curr) => prev + curr.reps! * curr.weightInKg!, 0),
+    average: total ? Math.ceil(total / log.series.length) : null,
+    muscleGroup: log.exercise.muscleGroup,
   };
 }
 
 export function mapGroupedToExcerciseRows(groupedLogs: GroupedLog[]): ExerciseRow[] {
   return R.pipe(
     groupedLogs,
-    R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv.flatMap(([_, vvv]) => vvv))),
+    R.flatMap(([_, v]) => v.flatMap(([_, vv]) => vv)),
     R.sort((a, b) => parseAndCompare(a.date, b.date))
   );
 }
@@ -100,8 +90,8 @@ export function getPersonalRecord(rows: ExerciseRow[], excerciseName: string, us
   return result ?? null;
 }
 
-function sortByWeightAndRepsDesc(a: ExerciseLog, b: ExerciseLog): number {
-  const differenceWeight = b.weightKg! - a.weightKg!;
+function sortByWeightAndRepsDesc(a: Serie, b: Serie): number {
+  const differenceWeight = b.weightInKg! - a.weightInKg!;
   const differenceReps = b.reps! - a.reps!;
 
   return differenceWeight !== 0 ? differenceWeight : differenceReps;
@@ -122,7 +112,7 @@ export function getSeriesAmountPerMuscleGroupPerWeek(excerciseRows: ExerciseRow[
             R.mapValues(w =>
               R.pipe(
                 w,
-                R.filter(x => !!x.series.at(0)?.serie),
+                R.filter(x => !!x.series.at(0)),
                 R.sumBy(x => x.series.length)
               )
             )
@@ -148,7 +138,7 @@ export function getSeriesAmountPerUserPerMuscleGroupPerMonth(excerciseRows: Exer
             R.mapValues(w =>
               R.pipe(
                 w,
-                R.filter(x => !!x.series.at(0)?.serie),
+                R.filter(x => !!x.series.at(0)),
                 R.sumBy(x => x.series.length)
               )
             )
@@ -174,7 +164,7 @@ export function getSeriesAmountPerUserPerMuscleGroupPerYear(excerciseRows: Exerc
             R.mapValues(w =>
               R.pipe(
                 w,
-                R.filter(x => !!x.series.at(0)?.serie),
+                R.filter(x => !!x.series.at(0)),
                 R.sumBy(x => x.series.length)
               )
             )

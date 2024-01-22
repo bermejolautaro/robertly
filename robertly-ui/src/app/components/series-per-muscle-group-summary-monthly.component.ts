@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 
 @Component({
   selector: 'app-series-per-muscle-group-summary-monthly',

@@ -5,7 +5,7 @@ import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.component';
 import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.component';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 
 @Component({

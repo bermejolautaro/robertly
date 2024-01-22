@@ -4,7 +4,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { NgbDropdownModule, NgbPopoverModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 
 const DEFAULT_MONTH_LABEL = 'Month';
 

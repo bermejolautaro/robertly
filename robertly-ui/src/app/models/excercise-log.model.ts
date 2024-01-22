@@ -1,9 +1,14 @@
+import { Exercise } from "./exercise.model";
+
+export interface Serie {
+  reps: number;
+  weightInKg: number;
+}
+
 export interface ExerciseLog {
-  date: string;
-  name: string;
-  type: string;
+  id: string;
   user: string;
-  weightKg: number | null;
-  reps: number | null;
-  serie: number | null;
+  exercise: Exercise;
+  date: string;
+  series: Serie[];
 }

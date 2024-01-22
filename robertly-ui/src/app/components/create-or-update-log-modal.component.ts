@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, injec
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ExerciseRow } from '@models/excercise-row.model';
 import { NgbActiveModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 import { Subject, OperatorFunction, Observable, distinctUntilChanged, merge, map } from 'rxjs';
 import { CreateOrUpdateLogFormGroup } from 'src/app/app.component';
 
@@ -48,7 +48,7 @@ export class CreateOrUpdateLogModalComponent {
 
     return merge(debouncedText$, this.exerciseFocus$).pipe(
       map(() => {
-        const exercises = this.exerciseLogService.exercises().map(x => x.exercise);
+        const exercises = this.exerciseLogService.exercises().map(x => x.name);
 
         return this.createOrUpdateLogFormGroup.value.exercise === ''
           ? exercises

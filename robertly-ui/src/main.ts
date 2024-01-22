@@ -26,6 +26,7 @@ const routes = [
 export type RoutePath = (typeof routes)[number]['path'];
 
 export const BACKEND_URL = new InjectionToken<string>('BACKEND_URL');
+export const NET_API_URL = new InjectionToken<string>('NET_API_URL');
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -35,5 +36,7 @@ bootstrapApplication(AppComponent, {
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
     { provide: BACKEND_URL, useValue: environment.apiUrl },
+    { provide: NET_API_URL, useValue: environment.netApiUrl },
+
   ],
 }).catch(err => console.error(err));

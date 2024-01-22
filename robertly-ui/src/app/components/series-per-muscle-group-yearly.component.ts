@@ -9,7 +9,7 @@ import { getSeriesAmountPerUserPerMuscleGroupPerYear, groupByYear } from '@helpe
 import { ExerciseRow } from '@models/excercise-row.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 import { ParseToYearPipe } from '@pipes/parse-to-year.pipe';
 
 type State = {
@@ -51,7 +51,7 @@ type State = {
                     </td>
                   }
                 }
-                <td class="text-center fw-semibold">Target</td>
+                <td class="text-center fw-semibold sticky">Target</td>
               </tr>
             </thead>
             <tbody>
@@ -65,7 +65,7 @@ type State = {
                       </td>
                     }
                   }
-                  <td class="text-center">{{ 40 * 12}}</td>
+                  <td class="text-center sticky">{{ 40 * 12}}</td>
                 </tr>
               }
             </tbody>
@@ -81,6 +81,11 @@ type State = {
     `
       :host {
         display: block;
+      }
+
+      .sticky {
+        position: sticky;
+        right: 0;
       }
     `,
   ],

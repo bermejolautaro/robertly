@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { ExerciseRow } from '@models/excercise-row.model';
-import { ExerciseLogService } from '@services/excercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 
 @Component({
   selector: 'app-excercise-row-body',
@@ -8,11 +8,11 @@ import { ExerciseLogService } from '@services/excercise-log.service';
     @if (exerciseRow) {
       <table class="table table-striped table-sm m-0" (click)="exerciseLogService.logClicked$.next(exerciseRow)">
         <tbody>
-          @for (serie of exerciseRow.series; track serie.serie) {
+          @for (serie of exerciseRow.series; track $index) {
             <tr class="row">
-              <td class="fw-bold col">Serie {{ serie.serie }}</td>
+              <td class="fw-bold col">Serie {{ $index + 1 }}</td>
               <td class="col text-center">{{ serie.reps }} reps</td>
-              <td class="col text-center">{{ serie.weightKg }}kg</td>
+              <td class="col text-center">{{ serie.weightInKg }}kg</td>
             </tr>
           }
 
@@ -20,7 +20,7 @@ import { ExerciseLogService } from '@services/excercise-log.service';
             <tr class="row">
               <td class="fw-bold col">Total</td>
               <td class="col text-center">{{ exerciseRow.total }} reps</td>
-              <td class="col text-center">{{ exerciseRow.series[0]!.weightKg }}kg</td>
+              <td class="col text-center">{{ exerciseRow.series[0]!.weightInKg }}kg</td>
             </tr>
           }
 
@@ -28,7 +28,7 @@ import { ExerciseLogService } from '@services/excercise-log.service';
             <tr class="row">
               <td class="fw-bold col">Average</td>
               <td class="col text-center">{{ exerciseRow.average }} reps</td>
-              <td class="col text-center">{{ exerciseRow.series[0]!.weightKg }}kg</td>
+              <td class="col text-center">{{ exerciseRow.series[0]!.weightInKg }}kg</td>
             </tr>
           }
 

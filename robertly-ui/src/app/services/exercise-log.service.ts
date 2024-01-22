@@ -1,4 +1,4 @@
-import { Injectable, computed, signal, effect, inject } from '@angular/core';
+import { Injectable, computed, signal, effect, inject, Signal } from '@angular/core';
 import { ExerciseLog } from '@models/excercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -15,6 +15,7 @@ import {
 import { Exercise } from '@models/exercise.model';
 import { DayjsService } from '@services/dayjs.service';
 import { ExerciseRow } from '@models/excercise-row.model';
+import { GroupedLog } from '@models/grouped-log.model';
 
 interface SelectedExcercise {
   name: string;
@@ -30,6 +31,7 @@ type State = {
   selectedMonth: string | null;
   selectedWeight: number | null;
   loaded: boolean;
+  grouped: boolean;
   error: string | null;
 };
 
@@ -49,6 +51,7 @@ export class ExerciseLogService {
     selectedMonth: null,
     selectedWeight: null,
     loaded: false,
+    grouped: false,
     error: null,
   });
 
@@ -71,12 +74,12 @@ export class ExerciseLogService {
   });
 
   public readonly filteredLogs = computed(() => {
-    return this.state().logs.filter(x => !!x.name);
+    return this.state().logs.filter(x => !!x.exercise);
   });
 
   public readonly types = computed(() =>
     R.pipe(
-      this.filteredLogs(),
+      this.exercises(),
       R.map(x => x.type),
       R.uniq()
     )
@@ -109,8 +112,8 @@ export class ExerciseLogService {
   public readonly selectedUsernameLabel = computed(() => this.state().selectedUsername ?? 'All Users');
   public readonly selectedWeightLabel = computed(() => `${this.state().selectedWeight ?? WEIGHT_DEFAULT_LABEL}`);
 
-  public readonly groupedLogs = computed(() => {
-    const groups = groupExcerciseLogs(this.filteredLogs(), this.state().exercises);
+  public readonly groupedLogs: Signal<GroupedLog[]> = computed(() => {
+    const groups = groupExcerciseLogs(this.filteredLogs());
     const selectedUsername = this.state().selectedUsername;
     const selectedExcercise = this.state().selectedExercise;
     const selectedType = this.state().selectedType;
@@ -124,9 +127,8 @@ export class ExerciseLogService {
           R.map(([username, valuesByUsername]) => {
             const filteredValuesByUsername = R.pipe(
               valuesByUsername,
-              R.filter(([_excercise, row]) => (!selectedType ? true : row.type === selectedType)),
-              R.filter(([excercise]) => (!selectedExcercise ? true : excercise === selectedExcercise.name)),
-              R.filter(x => x.length > 0)
+              R.filter((exerciseRow) => (!selectedType ? true : exerciseRow.type === selectedType)),
+              R.filter((exerciseRow) => (!selectedExcercise ? true : exerciseRow.excerciseName === selectedExcercise.name))
             );
 
             return [username, filteredValuesByUsername] as const;
@@ -149,7 +151,7 @@ export class ExerciseLogService {
       this.state().selectedType ? R.filter(x => x.type === this.state().selectedType) : R.identity,
       this.state().selectedExercise ? R.filter(x => x.excerciseName === this.state().selectedExercise?.name) : R.identity,
       this.state().selectedUsername ? R.filter(x => x.username === this.state().selectedUsername) : R.identity,
-      this.state().selectedWeight ? R.filter(x => x.series.map(x => x.weightKg).includes(this.state().selectedWeight)) : R.identity
+      this.state().selectedWeight ? R.filter(x => x.series.map(x => x.weightInKg).includes(this.state().selectedWeight ?? -1)) : R.identity
     );
   });
 
@@ -166,9 +168,9 @@ export class ExerciseLogService {
   public readonly weights = computed(() => {
     return R.pipe(
       this.filteredLogs(),
-      this.state().selectedExercise ? R.filter(x => x.name === this.state().selectedExercise?.name) : R.identity,
+      this.state().selectedExercise ? R.filter(x => x.exercise.name === this.state().selectedExercise?.name) : R.identity,
       this.state().selectedUsername ? R.filter(x => x.user === this.state().selectedUsername) : R.identity,
-      R.map(x => x.weightKg),
+      R.flatMap(x => x.series.map(x => x.weightInKg)),
       R.uniq(),
       R.filter(x => !!x),
       R.sort((a, b) => a! - b!)

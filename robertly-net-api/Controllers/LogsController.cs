@@ -1,58 +1,73 @@
 using Firebase.Database;
-using Google.Apis.Auth.OAuth2;
+using Firebase.Database.Query;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System.Collections.Generic;
+using Microsoft.Extensions.Configuration;
+using System;
+using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace gym_app_net_api.Controllers
+namespace robertly.Controllers
 {
-    record Serie(int Reps, float WeightInKg);
-    record LogPayload(List<Serie> Series);
-    record Log(string User, string Exercise, string Date, LogPayload Payload);
-
     [ApiController]
     [Route("api/[controller]")]
-    public class LogsController : ControllerBase
+    public class LogsController(FirebaseClient client, IConfiguration config) : ControllerBase
     {
-        private readonly GoogleCredentialOptions _googleCredentialOptions;
+        private readonly ChildQuery _logsDb = client.Child($"{config["DatabaseEnvironment"]}/logs");
+        private readonly ChildQuery _exercisesDb = client.Child($"{config["DatabaseEnvironment"]}/exercises");
 
-        public LogsController(IOptions<GoogleCredentialOptions> googleCredentialOptions)
-        {
-            _googleCredentialOptions = googleCredentialOptions.Value;
-        }
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         [HttpGet]
-        public async Task<IEnumerable<object>> Get()
+        public async Task<ActionResult<GetLogsResponse>> Get()
         {
-            var client = new FirebaseClient(
-                _googleCredentialOptions.DatabaseUrl, new()
-                {
-                    AuthTokenAsyncFactory = () => GetAccessToken(),
-                    AsAccessToken = true
-                });
+            var logs = (await _logsDb.OnceAsync<LogDb>()).Select(x => x.Object.ToLog(x.Key));
+            var exercisesDb = (await _exercisesDb.OnceAsync<ExerciseDb>()).Select(x => x.Object.ToExercise(x.Key));
 
-            var logs = await client.Child("logs").OnceAsync<Log>();
+            var logsDtos = logs.Select(log => new LogDto(log.Id, log.User, exercisesDb.FirstOrDefault(x => x.Id == log.ExerciseId), log.Date, log.Series));
 
-            return logs;
+            return Ok(new GetLogsResponse(logsDtos));
         }
 
-        private async Task<string> GetAccessToken()
+        [HttpPost]
+        public async Task<ActionResult> Post([FromBody] PostPutLogRequest request)
         {
-            var credential = GoogleCredential.FromJsonParameters(new JsonCredentialParameters()
-            {
-                ClientEmail = _googleCredentialOptions.ClientEmail,
-                PrivateKey = _googleCredentialOptions.PrivateKey,
-                ProjectId = _googleCredentialOptions.ProjectId,
-                Type = JsonCredentialParameters.ServiceAccountCredentialType,
-            }).CreateScoped(new string[] {
-                "https://www.googleapis.com/auth/firebase.database",
-                "https://www.googleapis.com/auth/userinfo.email",
-            });
+            var logDb = new LogDb(request.User, request.Exercise, request.Date, request.Series);
+            var result = await _logsDb.PostAsync(JsonSerializer.Serialize(logDb, _jsonSerializerOptions));
 
-            var c = credential as ITokenAccess;
-            return await c.GetAccessTokenForRequestAsync();
+            return Ok(logDb.ToLog(result.Key));
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Put([FromRoute] string id, [FromBody] PostPutLogRequest request)
+        {
+            var logDbToUpdate = new LogDb(request.User, request.Exercise, request.Date, request.Series);
+
+            var logDb = await _logsDb.Child(id).OnceSingleAsync<LogDb>();
+
+            if (logDb is null)
+            {
+                return BadRequest($"Log with id '{id}' does not exists.");
+            }
+
+            await _logsDb.Child(id).PutAsync(JsonSerializer.Serialize(logDbToUpdate, _jsonSerializerOptions));
+
+            return Ok(logDbToUpdate.ToLog(id));
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> Delete([FromRoute] string id)
+        {
+            var logDb = await _logsDb.Child(id).OnceSingleAsync<LogDb>();
+
+            if (logDb is null)
+            {
+                return BadRequest($"Log with id '{id}' does not exists.");
+            }
+
+            await _logsDb.Child(id).DeleteAsync();
+
+            return Ok();
         }
     }
 }
