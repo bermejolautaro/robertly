@@ -19,7 +19,7 @@ const routes = [
   {
     path: LOGS_PATH,
     pathMatch: 'full',
-    loadComponent: () => import('@pages/excercise-logs.page.component').then(x => x.ExcerciseLogsPageComponent),
+    loadComponent: () => import('@pages/exercise-logs.page.component').then(x => x.ExerciseLogsPageComponent),
   } as const,
 ] satisfies Routes;
 

@@ -1,20 +1,20 @@
 import { Injectable, computed, signal, effect, inject, Signal } from '@angular/core';
-import { ExerciseLog } from '@models/excercise-log.model';
+import { ExerciseLog } from '@models/exercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
 import { Subject } from 'rxjs';
 import {
   getPersonalRecord,
-  groupExcerciseLogs,
+  groupExerciseLogs,
   amountDaysTrainedByUser,
-  mapGroupedToExcerciseRows,
+  mapGroupedToExerciseRows,
   getSeriesAmountPerUserPerMuscleGroupPerMonth,
   groupByMonth,
-} from '@helpers/excercise-log.helper';
+} from '@helpers/exercise-log.helper';
 import { Exercise } from '@models/exercise.model';
 import { DayjsService } from '@services/dayjs.service';
-import { ExerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/exercise-row.model';
 import { GroupedLog } from '@models/grouped-log.model';
 
 type State = {
@@ -108,9 +108,9 @@ export class ExerciseLogService {
   public readonly selectedWeightLabel = computed(() => `${this.state().selectedWeight ?? WEIGHT_DEFAULT_LABEL}`);
 
   public readonly groupedLogs: Signal<GroupedLog[]> = computed(() => {
-    const groups = groupExcerciseLogs(this.filteredLogs());
+    const groups = groupExerciseLogs(this.filteredLogs());
     const selectedUsername = this.state().selectedUsername;
-    const selectedExcercise = this.state().selectedExercise;
+    const selectedExercise = this.state().selectedExercise;
     const selectedType = this.state().selectedType;
 
     const result = R.pipe(
@@ -123,7 +123,7 @@ export class ExerciseLogService {
             const filteredValuesByUsername = R.pipe(
               valuesByUsername,
               R.filter(exerciseRow => (!selectedType ? true : exerciseRow.type === selectedType)),
-              R.filter(exerciseRow => (!selectedExcercise ? true : exerciseRow.exercise.name === selectedExcercise.name))
+              R.filter(exerciseRow => (!selectedExercise ? true : exerciseRow.exercise.name === selectedExercise.name))
             );
 
             return [username, filteredValuesByUsername] as const;
@@ -140,7 +140,7 @@ export class ExerciseLogService {
   });
 
   public readonly exerciseRows = computed(() => {
-    const rows = mapGroupedToExcerciseRows(this.groupedLogs());
+    const rows = mapGroupedToExerciseRows(this.groupedLogs());
     return R.pipe(
       rows,
       this.state().selectedType ? R.filter(x => x.type === this.state().selectedType) : R.identity,
@@ -151,9 +151,9 @@ export class ExerciseLogService {
   });
 
   public readonly personalRecord = computed(() => {
-    const excercise = this.state().selectedExercise?.name;
+    const exercise = this.state().selectedExercise?.name;
     const username = this.state().selectedUsername;
-    return excercise && username ? getPersonalRecord(this.exerciseRows(), excercise, username) : null;
+    return exercise && username ? getPersonalRecord(this.exerciseRows(), exercise, username) : null;
   });
 
   public readonly amountDaysTrainedPerUser = computed(() => {
@@ -227,11 +227,11 @@ export class ExerciseLogService {
     });
 
     this.selectedExercise$.pipe(takeUntilDestroyed()).subscribe({
-      next: selectedExcercise =>
+      next: selectedExercise =>
         this.state.update(state => ({
           ...state,
-          selectedExercise: selectedExcercise,
-          selectedType: selectedExcercise?.type ?? null,
+          selectedExercise: selectedExercise,
+          selectedType: selectedExercise?.type ?? null,
         })),
     });
 

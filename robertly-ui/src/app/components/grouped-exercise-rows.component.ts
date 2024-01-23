@@ -3,8 +3,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { ExcerciseRowBodyComponent } from '@components/excercise-row-body.component';
-import { ExcerciseRowTitleComponent } from '@components/excercise-row-title.component';
+import { ExerciseRowBodyComponent } from '@components/exercise-row-body.component';
+import { ExerciseRowTitleComponent } from '@components/exercise-row-title.component';
 import { ExerciseLogService } from '@services/exercise-log.service';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 
@@ -21,7 +21,7 @@ import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
   `,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgFor, NgbAccordionModule, TitleCasePipe, ParseToDatePipe, NgClass, ExcerciseRowBodyComponent, ExcerciseRowTitleComponent],
+  imports: [NgFor, NgbAccordionModule, TitleCasePipe, ParseToDatePipe, NgClass, ExerciseRowBodyComponent, ExerciseRowTitleComponent],
 })
 export class GroupedExerciseRowsComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);

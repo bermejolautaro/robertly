@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ExerciseLog } from '@models/excercise-log.model';
+import { ExerciseLog } from '@models/exercise-log.model';
 import { Observable, map } from 'rxjs';
 
 import { NET_API_URL } from 'src/main';

@@ -1,4 +1,4 @@
-import { ExerciseRow } from './excercise-row.model';
+import { ExerciseRow } from './exercise-row.model';
 
 type Date = string;
 type Username = string;

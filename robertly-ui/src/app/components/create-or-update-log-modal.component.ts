@@ -1,7 +1,7 @@
 import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { ExerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/exercise-row.model';
 import { Exercise } from '@models/exercise.model';
 import { NgbActiveModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseLogService } from '@services/exercise-log.service';
@@ -9,7 +9,7 @@ import { Subject, OperatorFunction, Observable, distinctUntilChanged, merge, map
 import { CreateOrUpdateLogFormGroup } from 'src/app/app.component';
 
 @Component({
-  selector: 'app-excercise-row-body',
+  selector: 'app-exercise-row-body',
   templateUrl: './create-or-update-log-modal.component.html',
   styles: ``,
   standalone: true,

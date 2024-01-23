@@ -5,8 +5,8 @@ import * as R from 'remeda';
 
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { getSeriesAmountPerUserPerMuscleGroupPerYear, groupByYear } from '@helpers/excercise-log.helper';
-import { ExerciseRow } from '@models/excercise-row.model';
+import { getSeriesAmountPerUserPerMuscleGroupPerYear, groupByYear } from '@helpers/exercise-log.helper';
+import { ExerciseRow } from '@models/exercise-row.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subject } from 'rxjs';
 import { ExerciseLogService } from '@services/exercise-log.service';

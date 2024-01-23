@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, ElementRef, OnInit, ViewChild, comp
 
 import { ExerciseLogService } from '@services/exercise-log.service';
 import { Chart } from 'chart.js/auto';
-import { getSeriesAmountPerUserPerMuscleGroupPerMonth } from '@helpers/excercise-log.helper';
+import { getSeriesAmountPerUserPerMuscleGroupPerMonth } from '@helpers/exercise-log.helper';
 
 import * as R from 'remeda';
 

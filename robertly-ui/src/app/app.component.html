@@ -1,4 +1,19 @@
-<nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-3">
+<ng-template #content let-offcanvas>
+  <div class="offcanvas-header">
+    <button
+      style="margin-left: auto"
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="offcanvas.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="offcanvas-body">
+    <a>Exercises</a>
+  </div>
+</ng-template>
+
+<nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-1">
   <div class="container-fluid d-flex justify-content-end align-items-center">
     <!-- #region USERNAME DROPDOWN -->
     <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
@@ -24,15 +39,24 @@
       </div>
     </div>
     <!-- #endregion -->
-    <button type="button" class="btn" style="outline: none; border: none; padding: 0">
+
+    <!-- #region REFRESH LOGS -->
+    <button type="button" class="btn me-3" style="outline: none; border: none; padding: 0">
       <i
         class="fa fa-refresh"
-        style="font-size: 20px; color: white"
+        style="font-size: 22px; color: white"
         [ngClass]="{ spin: isSpinning }"
         (click)="isSpinning = true; fetchData()"
         (animationend)="isSpinning = false"
       ></i>
     </button>
+    <!-- #endregion -->
+
+    <!-- #region MENU -->
+    <button type="button" class="btn" style="outline: none; border: none; padding: 0">
+      <i class="fa fa-bars" style="font-size: 22px; color: white" (click)="openEnd(content)"></i>
+    </button>
+    <!-- #endregion -->
   </div>
 </nav>
 

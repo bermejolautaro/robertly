@@ -1,4 +1,4 @@
-import { Component, ElementRef, Injector, OnInit, ViewChild, effect, inject } from '@angular/core';
+import { Component, ElementRef, Injector, OnInit, TemplateRef, ViewChild, effect, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
@@ -24,16 +24,15 @@ import { EXERCISE_DEFAULT_LABEL, ExerciseLogService, WEIGHT_DEFAULT_LABEL } from
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
 
-import { ExerciseLog } from '@models/excercise-log.model';
-import { NgbDropdownModule, NgbModal, NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
+import { ExerciseLog } from '@models/exercise-log.model';
+import { NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule, NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { DayjsService } from '@services/dayjs.service';
 import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ExerciseRow } from '@models/excercise-row.model';
-import { ViewModelApiService } from '@services/viewmodel-api.service';
+import { ExerciseRow } from '@models/exercise-row.model';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -54,8 +53,7 @@ export type CreateOrUpdateLogFormGroup = FormGroup<{
 
 const CLEAR_FILTER_LABEL = 'Clear Filter';
 
-const createOrUpdateLogFormValidator =
-  (exerciseLogService: ExerciseLogService): ValidatorFn =>
+const createOrUpdateLogFormValidator: ValidatorFn =
   control => {
     const typedControl = control as CreateOrUpdateLogFormGroup;
     let errors: Record<string, string> | null = null;
@@ -133,13 +131,13 @@ const createOrUpdateLogFormValidator =
     FormsModule,
     ReactiveFormsModule,
     NgbTypeaheadModule,
+    NgbOffcanvasModule
   ],
 })
 export class AppComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
-  private readonly viewModelApiService = inject(ViewModelApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
@@ -147,6 +145,7 @@ export class AppComponent implements OnInit {
   private readonly dayjs = this.dayjsService.instance;
   private readonly injector = inject(Injector);
   private readonly titleCasePipe = inject(TitleCasePipe);
+  private readonly offcanvasService = inject(NgbOffcanvas);
 
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
     {
@@ -161,7 +160,7 @@ export class AppComponent implements OnInit {
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
       ]),
     },
-    [createOrUpdateLogFormValidator(this.exerciseLogService)]
+    [createOrUpdateLogFormValidator]
   );
 
   public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
@@ -177,7 +176,7 @@ export class AppComponent implements OnInit {
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
       ]),
     },
-    [createOrUpdateLogFormValidator(this.exerciseLogService)]
+    [createOrUpdateLogFormValidator]
   );
 
   public isSpinning: boolean = false;
@@ -397,8 +396,6 @@ export class AppComponent implements OnInit {
       exercises$ = of(cachedExercises);
     }
 
-    this.viewModelApiService.getViewModel().subscribe(x => console.log(x));
-
     forkJoin([this.exerciseLogApiService.getExerciseLogsv2(), exercises$]).subscribe(([exerciseLogs, exercises]) => {
       localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
       localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));
@@ -440,4 +437,8 @@ export class AppComponent implements OnInit {
     this.exerciseLogService.selectedWeight$.next(selectedWeight);
     this.weightTypeaheadInput?.nativeElement.blur();
   }
+
+  public openEnd(content: TemplateRef<unknown>): void {
+		this.offcanvasService.open(content, { position: 'end' });
+	}
 }

@@ -1,10 +1,10 @@
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { ExerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/exercise-row.model';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 
 @Component({
-  selector: 'app-excercise-row-title',
+  selector: 'app-exercise-row-title',
   template: `
     <div class="w-100">
       @if (exerciseRow) {
@@ -40,7 +40,7 @@ import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass, TitleCasePipe, ParseToDatePipe],
 })
-export class ExcerciseRowTitleComponent {
+export class ExerciseRowTitleComponent {
   @Input() showStar: boolean = false;
   @Input() showExercise: boolean = true;
   @Input() showDate: boolean = true;

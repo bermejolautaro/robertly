@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
-import { ExerciseRow } from '@models/excercise-row.model';
+import { ExerciseRow } from '@models/exercise-row.model';
 import { ExerciseLogService } from '@services/exercise-log.service';
 
 @Component({
-  selector: 'app-excercise-row-body',
+  selector: 'app-exercise-row-body',
   template: `
     @if (exerciseRow) {
       <table class="table table-striped table-sm m-0" (click)="exerciseLogService.logClicked$.next(exerciseRow)">
@@ -46,7 +46,7 @@ import { ExerciseLogService } from '@services/exercise-log.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
 })
-export class ExcerciseRowBodyComponent {
+export class ExerciseRowBodyComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
   @Input({ required: true }) exerciseRow!: ExerciseRow;
 }

@@ -1,5 +1,3 @@
-// import { ExerciseLog } from '@models/excercise-log.model';
-
 // type FirstStepResult = {
 //   header: boolean;
 //   value: string | null;
@@ -40,7 +38,7 @@
 
 //     const element = firstColumn[rowIndex] ?? null;
 
-//     // Assume last element is an excercise and not a header
+//     // Assume last element is an exercise and not a header
 //     const isHeader = !prevRow && !nextRow && rowIndex !== firstColumn.length - 1;
 //     const isExerciseName = !isHeader && !!element;
 

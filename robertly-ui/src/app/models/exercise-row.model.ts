@@ -1,4 +1,4 @@
-import { Serie } from '@models/excercise-log.model';
+import { Serie } from '@models/exercise-log.model';
 import { Exercise } from './exercise.model';
 
 export interface ExerciseRow {
