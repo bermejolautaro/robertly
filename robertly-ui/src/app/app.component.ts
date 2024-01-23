@@ -29,7 +29,6 @@ import { NgbDropdownModule, NgbModal, NgbTypeaheadModule, NgbTypeaheadSelectItem
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
-import { parseDate } from '@helpers/date.helper';
 import { DayjsService } from '@services/dayjs.service';
 import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -44,7 +43,7 @@ const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
 export type CreateOrUpdateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
   date: FormControl<string | null>;
-  exercise: FormControl<string | null>;
+  exercise: FormControl<Exercise | null>;
   series: FormArray<
     FormGroup<{
       reps: FormControl<number | null>;
@@ -75,16 +74,8 @@ const createOrUpdateLogFormValidator =
       errors = { ...(errors ?? {}), ...{ exerciseRequired: 'Exercise is required' } };
     }
 
-    if (typedControl.value.exercise === 'peron') {
+    if (typedControl.value.exercise?.name?.toLowerCase() === 'peron') {
       errors = { ...(errors ?? {}), ...{ exerciseInvalidPeron: 'Peron is not allowed' } };
-    }
-
-    const exerciseExists = exerciseLogService
-      .exercises()
-      .find(x => x.name.toLowerCase() === typedControl.value.exercise?.toLowerCase());
-
-    if (!exerciseExists) {
-      errors = { ...(errors ?? {}), ...{ exerciseDoesNotExist: 'Exercise does not exists' } };
     }
 
     if (typedControl.controls.series.value.map(x => (x.reps ?? 0) > 0 && (x.weightInKg ?? 0) > 0).every(x => !x)) {
@@ -160,7 +151,7 @@ export class AppComponent implements OnInit {
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
     {
       user: new FormControl(''),
-      exercise: new FormControl(''),
+      exercise: new FormControl<Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
@@ -176,7 +167,7 @@ export class AppComponent implements OnInit {
   public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
     {
       user: new FormControl(''),
-      exercise: new FormControl(''),
+      exercise: new FormControl<Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
@@ -297,7 +288,7 @@ export class AppComponent implements OnInit {
     this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseRow => {
       this.updateLogFormGroup.reset();
       this.updateLogFormGroup.patchValue({
-        exercise: exerciseRow.excerciseName,
+        exercise: exerciseRow.exercise,
         date: this.dayjsService.parseDate(exerciseRow.date).format('YYYY-MM-DD'),
         user: exerciseRow.username,
         series: exerciseRow.series.map(x => ({ reps: x.reps, weightInKg: x.weightInKg })),
@@ -344,7 +335,7 @@ export class AppComponent implements OnInit {
 
           const request = {
             date: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
-            exercise: this.createLogFormGroup.value.exercise!.toLowerCase(),
+            exerciseId: this.createLogFormGroup.value.exercise!.id,
             user: this.createLogFormGroup.value.user!.toLowerCase(),
             series: (this.createLogFormGroup.value.series ?? [])
               .filter(x => !!x.reps && !!x.weightInKg)
@@ -369,7 +360,7 @@ export class AppComponent implements OnInit {
           const request = {
             id: exerciseRow!.id,
             date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
-            exercise: this.updateLogFormGroup.value.exercise!.toLowerCase(),
+            exerciseId: this.updateLogFormGroup.value.exercise!.id,
             user: this.updateLogFormGroup.value.user!.toLowerCase(),
             series: (this.updateLogFormGroup.value.series ?? [])
               .filter(x => !!x.reps && !!x.weightInKg)
@@ -427,9 +418,7 @@ export class AppComponent implements OnInit {
       selectedExercise = null;
     }
 
-    this.exerciseLogService.selectedExercise$.next(
-      selectedExercise ? { name: selectedExercise.name, type: selectedExercise.type } : null
-    );
+    this.exerciseLogService.selectedExercise$.next(selectedExercise ? selectedExercise : null);
     this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel();
     this.exerciseTypeaheadInput?.nativeElement.blur();
 

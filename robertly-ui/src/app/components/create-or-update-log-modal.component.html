@@ -61,11 +61,13 @@
           [formControl]="createOrUpdateLogFormGroup.controls.exercise"
           (selectItem)="createOrUpdateLogFormGroup.controls.exercise.patchValue($event.item)"
           [ngbTypeahead]="exerciseSearch"
+          [inputFormatter]="exerciseFormatter"
+          [resultFormatter]="exerciseFormatter"
           [popupClass]="'typeahead'"
-          (focus)="exerciseFocus$.next(createOrUpdateLogFormGroup.value.exercise || '')"
+          (focus)="exerciseFocus$.next(createOrUpdateLogFormGroup.value.exercise?.name || '')"
           #exerciseTypeaheadInput
         />
-        <button class="btn btn-outline-secondary" type="button" (click)="createOrUpdateLogFormGroup.controls.exercise.patchValue('')">
+        <button class="btn btn-outline-secondary" type="button" (click)="createOrUpdateLogFormGroup.controls.exercise.patchValue(null)">
           <i class="fa fa-times"></i>
         </button>
       </div>

@@ -11,7 +11,7 @@ import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
         <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-semibold' : null">
           @if (showExercise) {
             <div class="col d-flex align-items-center gap-1" [style.fontSize.rem]="1">
-              {{ exerciseRow.excerciseName | titlecase }}
+              {{ exerciseRow.exercise.name | titlecase }}
               @if (showStar) {
                 <i class="fa fa-star"></i>
               }

@@ -32,7 +32,7 @@ namespace robertly.Controllers
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] PostPutLogRequest request)
         {
-            var logDb = new LogDb(request.User, request.Exercise, request.Date, request.Series);
+            var logDb = new LogDb(request.User, request.ExerciseId, request.Date, request.Series);
             var result = await _logsDb.PostAsync(JsonSerializer.Serialize(logDb, _jsonSerializerOptions));
 
             return Ok(logDb.ToLog(result.Key));
@@ -41,7 +41,7 @@ namespace robertly.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult> Put([FromRoute] string id, [FromBody] PostPutLogRequest request)
         {
-            var logDbToUpdate = new LogDb(request.User, request.Exercise, request.Date, request.Series);
+            var logDbToUpdate = new LogDb(request.User, request.ExerciseId, request.Date, request.Series);
 
             var logDb = await _logsDb.Child(id).OnceSingleAsync<LogDb>();
 

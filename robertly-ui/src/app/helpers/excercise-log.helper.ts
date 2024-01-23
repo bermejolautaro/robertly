@@ -39,7 +39,7 @@ function mapToExcerciseRow(log: ExerciseLog): ExerciseRow {
     id: log.id,
     date: log.date.toString(),
     username: log.user.toString(),
-    excerciseName: log.exercise.name.toString(),
+    exercise: log.exercise,
     type: log.exercise.type,
     series: [...log.series],
     highlighted: log.series.every(x => x.weightInKg === firstSerie?.weightInKg)
@@ -77,7 +77,7 @@ export function amountDaysTrained(logs: ExerciseLog[]): number {
 export function getPersonalRecord(rows: ExerciseRow[], excerciseName: string, username: string): ExerciseRow | null {
   const result = R.pipe(
     rows,
-    R.filter(x => x.username === username && x.excerciseName === excerciseName),
+    R.filter(x => x.username === username && x.exercise.name === excerciseName),
     R.sort((a, b) => {
       const bestSerieFromA = R.first(R.sort(a.series, sortByWeightAndRepsDesc))!;
       const bestSerieFromB = R.first(R.sort(b.series, sortByWeightAndRepsDesc))!;

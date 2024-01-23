@@ -2,6 +2,7 @@ import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ElementRef, Input, ViewChild, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ExerciseRow } from '@models/excercise-row.model';
+import { Exercise } from '@models/exercise.model';
 import { NgbActiveModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseLogService } from '@services/exercise-log.service';
 import { Subject, OperatorFunction, Observable, distinctUntilChanged, merge, map } from 'rxjs';
@@ -35,7 +36,9 @@ export class CreateOrUpdateLogModalComponent {
 
         return this.createOrUpdateLogFormGroup.value.user === ''
           ? usernames
-          : usernames.filter(x => !!x).filter(v => v.toLowerCase().includes(this.createOrUpdateLogFormGroup.value.user?.toLowerCase() ?? ''));
+          : usernames
+              .filter(x => !!x)
+              .filter(v => v.toLowerCase().includes(this.createOrUpdateLogFormGroup.value.user?.toLowerCase() ?? ''));
       })
     );
   };
@@ -43,17 +46,17 @@ export class CreateOrUpdateLogModalComponent {
   @ViewChild('exerciseTypeaheadInput', { static: true }) exerciseTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
   public readonly exerciseFocus$: Subject<string> = new Subject<string>();
 
-  public readonly exerciseSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
+  public readonly exerciseSearch: OperatorFunction<string, readonly Exercise[]> = (text$: Observable<string>) => {
     const debouncedText$ = text$.pipe(distinctUntilChanged());
 
     return merge(debouncedText$, this.exerciseFocus$).pipe(
-      map(() => {
-        const exercises = this.exerciseLogService.exercises().map(x => x.name);
+      map(text => {
+        const exercises = this.exerciseLogService.exercises().map(x => x);
 
-        return this.createOrUpdateLogFormGroup.value.exercise === ''
-          ? exercises
-          : exercises.filter(x => !!x).filter(x => x.toLowerCase().includes(this.createOrUpdateLogFormGroup.value.exercise?.toLowerCase() ?? ''));
+        return !text ? exercises : exercises.filter(x => !!x).filter(x => x.name.includes(text));
       })
     );
   };
+
+  public exerciseFormatter = (exercise: Exercise) => exercise.name;
 }

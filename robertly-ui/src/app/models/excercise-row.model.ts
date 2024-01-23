@@ -1,9 +1,10 @@
 import { Serie } from '@models/excercise-log.model';
+import { Exercise } from './exercise.model';
 
 export interface ExerciseRow {
   id: string;
   date: string;
-  excerciseName: string;
+  exercise: Exercise;
   type: string;
   username: string;
   series: Serie[];

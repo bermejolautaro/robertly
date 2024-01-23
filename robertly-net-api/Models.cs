@@ -23,7 +23,7 @@ public record GetLogsResponse(IEnumerable<LogDto> Data);
 public record PostPutLogRequest()
 {
     public required string User { get; set; }
-    public required string Exercise { get; set; }
+    public required string ExerciseId { get; set; }
     public required DateTime Date { get; set; }
     public required IEnumerable<Serie> Series { get; set; } = [];
 };

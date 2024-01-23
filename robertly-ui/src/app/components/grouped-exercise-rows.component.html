@@ -26,7 +26,7 @@
                             [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
                           >
                             <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
-                              {{ exerciseRow.excerciseName | titlecase }}
+                              {{ exerciseRow.exercise.name | titlecase }}
                             </td>
                             @for (serie of exerciseRow.series; track $index) {
                               <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
@@ -69,7 +69,7 @@
                                     [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
                                   >
                                     <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
-                                      {{ exerciseRow.excerciseName | titlecase }}
+                                      {{ exerciseRow.exercise.name | titlecase }}
                                     </td>
                                     @for (serie of exerciseRow.series; track $index) {
                                       <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">

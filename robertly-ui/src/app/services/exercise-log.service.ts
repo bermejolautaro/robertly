@@ -17,15 +17,10 @@ import { DayjsService } from '@services/dayjs.service';
 import { ExerciseRow } from '@models/excercise-row.model';
 import { GroupedLog } from '@models/grouped-log.model';
 
-interface SelectedExcercise {
-  name: string;
-  type: string;
-}
-
 type State = {
   logs: ExerciseLog[];
   exercises: Exercise[];
-  selectedExercise: SelectedExcercise | null;
+  selectedExercise: Exercise | null;
   selectedUsername: string | null;
   selectedType: string | null;
   selectedMonth: string | null;
@@ -61,7 +56,7 @@ export class ExerciseLogService {
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly appendLogs$: Subject<ExerciseLog[]> = new Subject();
   public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
-  public readonly selectedExercise$: Subject<SelectedExcercise | null> = new Subject();
+  public readonly selectedExercise$: Subject<Exercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
   public readonly selectedType$: Subject<string | null> = new Subject();
   public readonly selectedMonth$: Subject<string | null> = new Subject();
@@ -127,8 +122,8 @@ export class ExerciseLogService {
           R.map(([username, valuesByUsername]) => {
             const filteredValuesByUsername = R.pipe(
               valuesByUsername,
-              R.filter((exerciseRow) => (!selectedType ? true : exerciseRow.type === selectedType)),
-              R.filter((exerciseRow) => (!selectedExcercise ? true : exerciseRow.excerciseName === selectedExcercise.name))
+              R.filter(exerciseRow => (!selectedType ? true : exerciseRow.type === selectedType)),
+              R.filter(exerciseRow => (!selectedExcercise ? true : exerciseRow.exercise.name === selectedExcercise.name))
             );
 
             return [username, filteredValuesByUsername] as const;
@@ -149,7 +144,7 @@ export class ExerciseLogService {
     return R.pipe(
       rows,
       this.state().selectedType ? R.filter(x => x.type === this.state().selectedType) : R.identity,
-      this.state().selectedExercise ? R.filter(x => x.excerciseName === this.state().selectedExercise?.name) : R.identity,
+      this.state().selectedExercise ? R.filter(x => x.exercise.name === this.state().selectedExercise?.name) : R.identity,
       this.state().selectedUsername ? R.filter(x => x.username === this.state().selectedUsername) : R.identity,
       this.state().selectedWeight ? R.filter(x => x.series.map(x => x.weightInKg).includes(this.state().selectedWeight ?? -1)) : R.identity
     );

@@ -11,7 +11,7 @@ type GetExerciseLogsV2Response = {
 
 type CreateExerciseLogRequest = {
   user: string;
-  exercise: string;
+  exerciseId: string;
   date: string;
   series: { reps: number; weightInKg: number }[];
 };
@@ -19,7 +19,7 @@ type CreateExerciseLogRequest = {
 type UpdateExerciseLogRequest = {
   id: string;
   user: string;
-  exercise: string;
+  exerciseId: string;
   date: string;
   series: { reps: number; weightInKg: number }[];
 };
