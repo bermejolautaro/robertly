@@ -1,3 +1,5 @@
+<app-filters></app-filters>
+
 @if (exerciseLogService.loaded()) {
   <div class="container my-4">
     <app-series-per-muscle-group-weekly class="mb-4" [rows]="exerciseLogService.exerciseRows()"></app-series-per-muscle-group-weekly>

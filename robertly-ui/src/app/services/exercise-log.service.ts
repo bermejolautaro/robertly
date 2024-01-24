@@ -207,7 +207,7 @@ export class ExerciseLogService {
   });
 
   public constructor() {
-    effect(() => console.log(this.state()));
+    // effect(() => console.log(this.state()));
 
     this.updateLogs$.pipe(takeUntilDestroyed()).subscribe({
       next: logs =>

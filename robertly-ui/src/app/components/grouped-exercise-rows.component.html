@@ -2,98 +2,99 @@
   <div class="col">
     <!-- #region DATE -->
     <div ngbAccordion>
-      <div ngbAccordionItem *ngFor="let exerciseLogsPerExerciseNamePerUsernamePerDate of exerciseLogService.groupedLogs()">
-        <h2 ngbAccordionHeader>
-          <button ngbAccordionButton>
-            <div class="row w-100">
-              <div class="col d-flex align-items-center justify-content-center text-center">
-                {{ exerciseLogsPerExerciseNamePerUsernamePerDate[0] | parseToDate }}
-              </div>
-            </div>
-          </button>
-        </h2>
-        <div ngbAccordionCollapse>
-          <div ngbAccordionBody [ngClass]="{ 'p-0': exerciseLogService.selectedUsername() }">
-            <ng-template>
-              @if (exerciseLogService.selectedUsername()) {
-                <div class="table-responsive">
-                  <table class="table table-bordered m-0 table-slim">
-                    <tbody>
-                      @for (exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]; track $index) {
-                        @for (exerciseRow of exerciseLogsPerExerciseNamePerUsername[1]; track $index) {
-                          <tr
-                            (click)="exerciseLogService.logClicked$.next(exerciseRow)"
-                            [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
-                          >
-                            <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
-                              {{ exerciseRow.exercise.name | titlecase }}
-                            </td>
-                            @for (serie of exerciseRow.series; track $index) {
-                              <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
-                                <div>{{ serie.reps }} reps</div>
-                                <div>{{ serie.weightInKg }}kg</div>
-                              </td>
-                            }
-                          </tr>
-                        }
-                      }
-                    </tbody>
-                  </table>
+      @for (exerciseLogsPerExerciseNamePerUsernamePerDate of exerciseLogService.groupedLogs(); track $index) {
+        <div ngbAccordionItem>
+          <h2 ngbAccordionHeader>
+            <button ngbAccordionButton>
+              <div class="row w-100">
+                <div class="col d-flex align-items-center justify-content-center text-center">
+                  {{ exerciseLogsPerExerciseNamePerUsernamePerDate[0] | parseToDate }}
                 </div>
-              } @else {
-                <!-- #region USER -->
-                <div ngbAccordion>
-                  <div
-                    ngbAccordionItem
-                    *ngFor="let exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]"
-                  >
-                    <h2 ngbAccordionHeader>
-                      <button ngbAccordionButton>
-                        <div class="row w-100">
-                          <div class="col d-flex align-items-center justify-content-center text-center">
-                            {{ exerciseLogsPerExerciseNamePerUsername[0] | titlecase }}
+              </div>
+            </button>
+          </h2>
+          <div ngbAccordionCollapse>
+            <div ngbAccordionBody [ngClass]="{ 'p-0': exerciseLogService.selectedUsername() }">
+              <ng-template>
+                @if (exerciseLogService.selectedUsername()) {
+                  <div class="table-responsive">
+                    <table class="table table-bordered m-0 table-slim">
+                      <tbody>
+                        @for (exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]; track $index) {
+                          @for (exerciseRow of exerciseLogsPerExerciseNamePerUsername[1]; track $index) {
+                            <tr
+                              (click)="exerciseLogService.logClicked$.next(exerciseRow)"
+                              [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
+                            >
+                              <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
+                                {{ exerciseRow.exercise.name | titlecase }}
+                              </td>
+                              @for (serie of exerciseRow.series; track $index) {
+                                <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
+                                  <div>{{ serie.reps }} reps</div>
+                                  <div>{{ serie.weightInKg }}kg</div>
+                                </td>
+                              }
+                            </tr>
+                          }
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                } @else {
+                  <!-- #region USER -->
+                  <div ngbAccordion>
+                    @for (exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]; track $index) {
+                      <div ngbAccordionItem>
+                        <h2 ngbAccordionHeader>
+                          <button ngbAccordionButton>
+                            <div class="row w-100">
+                              <div class="col d-flex align-items-center justify-content-center text-center">
+                                {{ exerciseLogsPerExerciseNamePerUsername[0] | titlecase }}
+                              </div>
+                            </div>
+                          </button>
+                        </h2>
+                        <div ngbAccordionCollapse>
+                          <div ngbAccordionBody class="p-0">
+                            <ng-template>
+                              <!-- #region EXERCISE -->
+                              <div class="table-responsive">
+                                <table class="table table-bordered m-0 table-slim">
+                                  <tbody>
+                                    @for (exerciseRow of exerciseLogsPerExerciseNamePerUsername[1]; track $index) {
+                                      <tr
+                                        (click)="exerciseLogService.logClicked$.next(exerciseRow)"
+                                        [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
+                                      >
+                                        <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
+                                          {{ exerciseRow.exercise.name | titlecase }}
+                                        </td>
+                                        @for (serie of exerciseRow.series; track $index) {
+                                          <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
+                                            <div>{{ serie.reps }} reps</div>
+                                            <div>{{ serie.weightInKg }}kg</div>
+                                          </td>
+                                        }
+                                      </tr>
+                                    }
+                                  </tbody>
+                                </table>
+                              </div>
+                              <!-- #endregion -->
+                            </ng-template>
                           </div>
                         </div>
-                      </button>
-                    </h2>
-                    <div ngbAccordionCollapse>
-                      <div ngbAccordionBody class="p-0">
-                        <ng-template>
-                          <!-- #region EXERCISE -->
-                          <div class="table-responsive">
-                            <table class="table table-bordered m-0 table-slim">
-                              <tbody>
-                                @for (exerciseRow of exerciseLogsPerExerciseNamePerUsername[1]; track $index) {
-                                  <tr
-                                    (click)="exerciseLogService.logClicked$.next(exerciseRow)"
-                                    [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null"
-                                  >
-                                    <td class="table-slim-cell fw-bold" style="width: 20%; vertical-align: middle">
-                                      {{ exerciseRow.exercise.name | titlecase }}
-                                    </td>
-                                    @for (serie of exerciseRow.series; track $index) {
-                                      <td class="table-slim-cell" style="text-wrap: nowrap; vertical-align: middle; text-align: center">
-                                        <div>{{ serie.reps }} reps</div>
-                                        <div>{{ serie.weightInKg }}kg</div>
-                                      </td>
-                                    }
-                                  </tr>
-                                }
-                              </tbody>
-                            </table>
-                          </div>
-                          <!-- #endregion -->
-                        </ng-template>
                       </div>
-                    </div>
+                    }
                   </div>
-                </div>
-                <!-- #endregion -->
-              }
-            </ng-template>
+                  <!-- #endregion -->
+                }
+              </ng-template>
+            </div>
           </div>
         </div>
-      </div>
+      }
     </div>
     <!-- #endregion -->
   </div>

@@ -40,6 +40,12 @@ public record GetExercisesResponse(IEnumerable<Exercise> Data);
 #endregion
 
 #region Requests
+public record PostPutExerciseRequest()
+{
+    public required string Name { get; set; }
+    public required string MuscleGroup { get; set; }
+    public required string Type{ get; set; }
+};
 #endregion
 
 #endregion

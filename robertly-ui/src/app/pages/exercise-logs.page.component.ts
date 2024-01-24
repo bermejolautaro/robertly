@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/cor
 import { FormsModule } from '@angular/forms';
 
 import { ExerciseRowsComponent } from '@components/exercise-rows.component';
+import { FiltersComponent } from '@components/filters.component';
 import { GroupedExerciseRowsComponent } from '@components/grouped-exercise-rows.component';
 import { PersonalRecordComponent } from '@components/personal-record.component';
 import { ExerciseLogService } from '@services/exercise-log.service';
@@ -19,6 +20,7 @@ import { ExerciseLogService } from '@services/exercise-log.service';
     PersonalRecordComponent,
     GroupedExerciseRowsComponent,
     ExerciseRowsComponent,
+    FiltersComponent
   ],
 })
 export class ExerciseLogsPageComponent implements OnInit {

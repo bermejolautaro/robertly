@@ -10,8 +10,14 @@ import { environment } from './environments/environment';
 
 export const LOGS_PATH = '';
 export const STATS_PATH = 'stats';
+export const EXERCISES_PATH = 'exercises';
 
 const routes = [
+  {
+    path: EXERCISES_PATH,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/exercises.page.component').then(x => x.ExercisesPageComponent),
+  } as const,
   {
     path: STATS_PATH,
     loadComponent: () => import('@pages/stats.page.component').then(x => x.StatsPageComponent),
@@ -25,8 +31,7 @@ const routes = [
 
 export type RoutePath = (typeof routes)[number]['path'];
 
-export const BACKEND_URL = new InjectionToken<string>('BACKEND_URL');
-export const NET_API_URL = new InjectionToken<string>('NET_API_URL');
+export const API_URL = new InjectionToken<string>('API_URL');
 
 bootstrapApplication(AppComponent, {
   providers: [
@@ -35,8 +40,7 @@ bootstrapApplication(AppComponent, {
     provideHttpClient(),
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
-    { provide: BACKEND_URL, useValue: environment.apiUrl },
-    { provide: NET_API_URL, useValue: environment.netApiUrl },
+    { provide: API_URL, useValue: environment.apiUrl },
 
   ],
 }).catch(err => console.error(err));

@@ -1,38 +1,25 @@
-import { Component, ElementRef, Injector, OnInit, TemplateRef, ViewChild, effect, inject } from '@angular/core';
+import { Component, Injector, OnInit, TemplateRef, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import {
-  Observable,
-  OperatorFunction,
-  Subject,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  first,
-  forkJoin,
-  map,
-  merge,
-  of,
-  switchMap,
-  tap,
-} from 'rxjs';
-import { LOGS_PATH, STATS_PATH } from 'src/main';
+import { debounceTime, filter, first, forkJoin, of, switchMap, tap } from 'rxjs';
+import { EXERCISES_PATH, LOGS_PATH, STATS_PATH } from 'src/main';
 
-import { EXERCISE_DEFAULT_LABEL, ExerciseLogService, WEIGHT_DEFAULT_LABEL } from '@services/exercise-log.service';
+import { ExerciseLogService } from '@services/exercise-log.service';
 
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
 
 import { ExerciseLog } from '@models/exercise-log.model';
-import { NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule, NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
+import { NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
-import { FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { DayjsService } from '@services/dayjs.service';
 import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseRow } from '@models/exercise-row.model';
+import { FiltersComponent } from '@components/filters.component';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -51,41 +38,38 @@ export type CreateOrUpdateLogFormGroup = FormGroup<{
   >;
 }>;
 
-const CLEAR_FILTER_LABEL = 'Clear Filter';
+const createOrUpdateLogFormValidator: ValidatorFn = control => {
+  const typedControl = control as CreateOrUpdateLogFormGroup;
+  let errors: Record<string, string> | null = null;
 
-const createOrUpdateLogFormValidator: ValidatorFn =
-  control => {
-    const typedControl = control as CreateOrUpdateLogFormGroup;
-    let errors: Record<string, string> | null = null;
+  const userRequiredErrors = Validators.required(typedControl.controls.user);
+  if (userRequiredErrors) {
+    errors = { ...(errors ?? {}), ...{ userRequired: 'Username is required' } };
+  }
 
-    const userRequiredErrors = Validators.required(typedControl.controls.user);
-    if (userRequiredErrors) {
-      errors = { ...(errors ?? {}), ...{ userRequired: 'Username is required' } };
-    }
+  if (typedControl.value.user === 'peron') {
+    errors = { ...(errors ?? {}), ...{ userInvalidPeron: 'Peron is not allowed' } };
+  }
 
-    if (typedControl.value.user === 'peron') {
-      errors = { ...(errors ?? {}), ...{ userInvalidPeron: 'Peron is not allowed' } };
-    }
+  const exerciseRequiredErrors = Validators.required(typedControl.controls.exercise);
+  if (exerciseRequiredErrors) {
+    errors = { ...(errors ?? {}), ...{ exerciseRequired: 'Exercise is required' } };
+  }
 
-    const exerciseRequiredErrors = Validators.required(typedControl.controls.exercise);
-    if (exerciseRequiredErrors) {
-      errors = { ...(errors ?? {}), ...{ exerciseRequired: 'Exercise is required' } };
-    }
+  if (typedControl.value.exercise?.name?.toLowerCase() === 'peron') {
+    errors = { ...(errors ?? {}), ...{ exerciseInvalidPeron: 'Peron is not allowed' } };
+  }
 
-    if (typedControl.value.exercise?.name?.toLowerCase() === 'peron') {
-      errors = { ...(errors ?? {}), ...{ exerciseInvalidPeron: 'Peron is not allowed' } };
-    }
+  if (typedControl.controls.series.value.map(x => (x.reps ?? 0) > 0 && (x.weightInKg ?? 0) > 0).every(x => !x)) {
+    errors = { ...(errors ?? {}), ...{ seriesAllSeriesAreEmpty: 'Needs at least one serie' } };
+  }
 
-    if (typedControl.controls.series.value.map(x => (x.reps ?? 0) > 0 && (x.weightInKg ?? 0) > 0).every(x => !x)) {
-      errors = { ...(errors ?? {}), ...{ seriesAllSeriesAreEmpty: 'Needs at least one serie' } };
-    }
+  if (typedControl.controls.series.value.some(x => !Number.isInteger(x.reps ?? 0))) {
+    errors = { ...(errors ?? {}), ...{ seriesRepsMustBeInteger: 'Reps needs to be whole numbers' } };
+  }
 
-    if (typedControl.controls.series.value.some(x => !Number.isInteger(x.reps ?? 0))) {
-      errors = { ...(errors ?? {}), ...{ seriesRepsMustBeInteger: 'Reps needs to be whole numbers' } };
-    }
-
-    return errors;
-  };
+  return errors;
+};
 
 @Component({
   selector: 'app-root',
@@ -123,15 +107,13 @@ const createOrUpdateLogFormValidator: ValidatorFn =
   providers: [ExerciseLogService],
   imports: [
     NgClass,
+    TitleCasePipe,
+    FiltersComponent,
     RouterLinkWithHref,
     RouterLinkActive,
     RouterOutlet,
-    TitleCasePipe,
     NgbDropdownModule,
-    FormsModule,
-    ReactiveFormsModule,
-    NgbTypeaheadModule,
-    NgbOffcanvasModule
+    NgbOffcanvasModule,
   ],
 })
 export class AppComponent implements OnInit {
@@ -144,7 +126,6 @@ export class AppComponent implements OnInit {
   private readonly dayjsService = inject(DayjsService);
   private readonly dayjs = this.dayjsService.instance;
   private readonly injector = inject(Injector);
-  private readonly titleCasePipe = inject(TitleCasePipe);
   private readonly offcanvasService = inject(NgbOffcanvas);
 
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
@@ -183,65 +164,9 @@ export class AppComponent implements OnInit {
 
   public readonly STATS_PATH = STATS_PATH;
   public readonly LOGS_PATH = LOGS_PATH;
-
-  public exerciseTypeahead: string = '';
-
-  @ViewChild('exerciseTypeaheadInput', { static: true }) exerciseTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
-  public readonly exerciseFocus$: Subject<string> = new Subject<string>();
-
-  public readonly exerciseSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
-    const debouncedText$ = text$.pipe(distinctUntilChanged());
-
-    return merge(debouncedText$, this.exerciseFocus$).pipe(
-      map(() => {
-        const selectedType = this.exerciseLogService.selectedType();
-        const exercises = this.exerciseLogService
-          .exercises()
-          .filter(x => (!!selectedType ? x.type.toLowerCase() === selectedType.toLowerCase() : true))
-          .map(x => x.name);
-
-        if (this.exerciseLogService.selectedExercise()) {
-          exercises.unshift(CLEAR_FILTER_LABEL);
-        }
-
-        return this.exerciseTypeahead === '' || this.exerciseTypeahead === EXERCISE_DEFAULT_LABEL
-          ? exercises
-          : exercises.filter(x => !!x).filter(x => x.toLowerCase().includes(this.exerciseTypeahead.toLowerCase()));
-      })
-    );
-  };
-
-  public weightTypeahead: string = '';
-
-  @ViewChild('weightTypeaheadInput', { static: true }) weightTypeaheadInput: ElementRef<HTMLInputElement> | null = null;
-  public readonly weightFocus$: Subject<string> = new Subject<string>();
-
-  public readonly weightSearch: OperatorFunction<string, readonly string[]> = (text$: Observable<string>) => {
-    const debouncedText$ = text$.pipe(distinctUntilChanged());
-
-    return merge(debouncedText$, this.weightFocus$).pipe(
-      map(() => {
-        const weights = this.exerciseLogService.weights().map(x => `${x}`);
-
-        if (this.exerciseLogService.selectedWeight()) {
-          weights.unshift(CLEAR_FILTER_LABEL);
-        }
-
-        return this.weightTypeahead === '' || this.weightTypeahead === WEIGHT_DEFAULT_LABEL
-          ? weights
-          : weights.filter(x => !!x).filter(x => x.includes(this.weightTypeahead));
-      })
-    );
-  };
-
-  public readonly exerciseFormatter = (x: string) => {
-    return this.titleCasePipe.transform(x);
-  };
-  public readonly weightFormatter = (x: string) => (!isNaN(parseInt(x)) ? `${x}kg` : x);
+  public readonly EXERCISES_PATH = EXERCISES_PATH;
 
   public constructor() {
-    effect(() => (this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel()));
-    effect(() => (this.weightTypeahead = this.exerciseLogService.selectedWeightLabel()));
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
     let shouldFetchExerciseLogs = false;
@@ -404,41 +329,7 @@ export class AppComponent implements OnInit {
     });
   }
 
-  public onExerciseTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void {
-    let selectedExercise =
-      this.exerciseLogService
-        .exercises()
-        .filter(x => x.name === event.item)
-        .at(0) ?? null;
-
-    if (event.item === CLEAR_FILTER_LABEL) {
-      selectedExercise = null;
-    }
-
-    this.exerciseLogService.selectedExercise$.next(selectedExercise ? selectedExercise : null);
-    this.exerciseTypeahead = this.exerciseLogService.selectedExerciseLabel();
-    this.exerciseTypeaheadInput?.nativeElement.blur();
-
-    this.exerciseLogService.selectedWeight$.next(null);
-    this.weightTypeahead = this.exerciseLogService.selectedWeightLabel();
+  public openSidebar(content: TemplateRef<unknown>): void {
+    this.offcanvasService.open(content, { position: 'end' });
   }
-
-  public onWeightTypeaheadChange(event: NgbTypeaheadSelectItemEvent<string>): void {
-    let selectedWeight =
-      this.exerciseLogService
-        .weights()
-        .filter(x => `${x}` === event.item)
-        .at(0) ?? null;
-
-    if (event.item === CLEAR_FILTER_LABEL) {
-      selectedWeight = null;
-    }
-
-    this.exerciseLogService.selectedWeight$.next(selectedWeight);
-    this.weightTypeaheadInput?.nativeElement.blur();
-  }
-
-  public openEnd(content: TemplateRef<unknown>): void {
-		this.offcanvasService.open(content, { position: 'end' });
-	}
 }

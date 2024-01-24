@@ -1,4 +1,4 @@
-import { NgClass, NgFor, TitleCasePipe } from '@angular/common';
+import { NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
@@ -21,7 +21,7 @@ import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
   `,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgFor, NgbAccordionModule, TitleCasePipe, ParseToDatePipe, NgClass, ExerciseRowBodyComponent, ExerciseRowTitleComponent],
+  imports: [NgbAccordionModule, TitleCasePipe, ParseToDatePipe, NgClass, ExerciseRowBodyComponent, ExerciseRowTitleComponent],
 })
 export class GroupedExerciseRowsComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);

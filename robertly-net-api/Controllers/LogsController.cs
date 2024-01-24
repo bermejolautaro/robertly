@@ -47,7 +47,7 @@ namespace robertly.Controllers
 
             if (logDb is null)
             {
-                return BadRequest($"Log with id '{id}' does not exists.");
+                return BadRequest($"Log with id '{id}' does not exist.");
             }
 
             await _logsDb.Child(id).PutAsync(JsonSerializer.Serialize(logDbToUpdate, _jsonSerializerOptions));
@@ -62,7 +62,7 @@ namespace robertly.Controllers
 
             if (logDb is null)
             {
-                return BadRequest($"Log with id '{id}' does not exists.");
+                return BadRequest($"Log with id '{id}' does not exist.");
             }
 
             await _logsDb.Child(id).DeleteAsync();

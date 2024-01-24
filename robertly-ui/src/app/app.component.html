@@ -9,7 +9,7 @@
     ></button>
   </div>
   <div class="offcanvas-body">
-    <a>Exercises</a>
+    <a [routerLink]="EXERCISES_PATH" (click)="offcanvas.dismiss()">Exercises</a>
   </div>
 </ng-template>
 
@@ -54,78 +54,11 @@
 
     <!-- #region MENU -->
     <button type="button" class="btn" style="outline: none; border: none; padding: 0">
-      <i class="fa fa-bars" style="font-size: 22px; color: white" (click)="openEnd(content)"></i>
+      <i class="fa fa-bars" style="font-size: 22px; color: white" (click)="openSidebar(content)"></i>
     </button>
     <!-- #endregion -->
   </div>
 </nav>
-
-<!-- #region FILTERS -->
-<div class="container my-4">
-  <!-- #region DROPDOWN TYPE -->
-  <div class="row mb-2 gx-2">
-    <div class="col-12">
-      <div ngbDropdown class="d-flex justify-content-center">
-        <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-          {{ exerciseLogService.selectedTypeLabel() | titlecase }}
-        </button>
-        <div ngbDropdownMenu class="w-100">
-          @if (exerciseLogService.selectedType()) {
-            <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
-          }
-          @for (type of exerciseLogService.types(); track type) {
-            <button
-              ngbDropdownItem
-              [ngClass]="{ active: type === exerciseLogService.selectedType() }"
-              (click)="exerciseLogService.selectedType$.next(type)"
-            >
-              {{ type | titlecase }}
-            </button>
-          }
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- #endregion -->
-
-  <!-- #region TYPEAHEAD EXERCISE -->
-  <div class="col-12">
-    <input
-      type="text"
-      class="form-control mb-2"
-      [(ngModel)]="exerciseTypeahead"
-      (selectItem)="onExerciseTypeaheadChange($event)"
-      [ngbTypeahead]="exerciseSearch"
-      (focus)="exerciseTypeahead = ''; exerciseFocus$.next(exerciseTypeahead)"
-      (blur)="exerciseTypeahead = exerciseLogService.selectedExerciseLabel()"
-      [popupClass]="'typeahead'"
-      [resultFormatter]="exerciseFormatter"
-      [inputFormatter]="exerciseFormatter"
-      #exerciseTypeaheadInput
-    />
-  </div>
-  <!-- #endregion -->
-
-  <!-- #region WEIGHT EXERCISE -->
-
-  <div class="col-12">
-    <input
-      type="text"
-      class="form-control mb-2"
-      [(ngModel)]="weightTypeahead"
-      (selectItem)="onWeightTypeaheadChange($event)"
-      [ngbTypeahead]="weightSearch"
-      (focus)="weightTypeahead = ''; weightFocus$.next(weightTypeahead)"
-      (blur)="weightTypeahead = exerciseLogService.selectedWeightLabel()"
-      [popupClass]="'typeahead'"
-      [resultFormatter]="weightFormatter"
-      [inputFormatter]="weightFormatter"
-      #weightTypeaheadInput
-    />
-  </div>
-  <!-- #endregion -->
-</div>
-<!-- #endregion -->
 
 <div [style.marginBottom.rem]="8">
   <router-outlet></router-outlet>

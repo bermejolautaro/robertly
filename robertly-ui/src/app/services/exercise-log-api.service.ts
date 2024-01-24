@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { ExerciseLog } from '@models/exercise-log.model';
 import { Observable, map } from 'rxjs';
 
-import { NET_API_URL } from 'src/main';
+import { API_URL } from 'src/main';
 
 type GetExerciseLogsV2Response = {
   data: ExerciseLog[];
@@ -35,7 +35,7 @@ export type DeleteLogRequest = {
 })
 export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
-  private readonly netApiUrl = inject(NET_API_URL);
+  private readonly netApiUrl = inject(API_URL);
 
   public getExerciseLogsv2(): Observable<ExerciseLog[]> {
     return this.http.get<GetExerciseLogsV2Response>(`${this.netApiUrl}/logs`).pipe(map(x => x.data));

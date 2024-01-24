@@ -8,11 +8,12 @@ import { SeriesPerMuscleGroupYearlyComponent } from '@components/series-per-musc
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { SeriesPerMuscleGroupGraphMonthlyComponent } from '@components/series-per-muscle-group-graph-monthly.component';
 import { SeriesPerMuscleGroupSummaryMonthlyComponent } from '@components/series-per-muscle-group-summary-monthly.component';
+import { FiltersComponent } from '@components/filters.component';
 
 @Component({
   selector: 'app-stats-page',
   templateUrl: './stats.page.component.html',
-  styles: [``],
+  styles: ``,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -24,6 +25,7 @@ import { SeriesPerMuscleGroupSummaryMonthlyComponent } from '@components/series-
     SeriesPerMuscleGroupGraphMonthlyComponent,
     SeriesPerMuscleGroupSummaryMonthlyComponent,
     SeriesPerMuscleGroupYearlyComponent,
+    FiltersComponent
   ],
 })
 export class StatsPageComponent implements OnInit {

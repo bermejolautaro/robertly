@@ -1,0 +1,58 @@
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Edit Exercise</h4>
+    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+  </div>
+  <div class="modal-body">
+    <form>
+      <!-- #region INPUT NAME -->
+      <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Name" [formControl]="exerciseForm.controls.name" />
+      </div>
+      <!-- #region INPUT MUSCLE GROUP -->
+      <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Muscle Group" [formControl]="exerciseForm.controls.muscleGroup" />
+      </div>
+      <!-- #endregion -->
+
+      <!-- #region INPUT TYPE -->
+      <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Type" [formControl]="exerciseForm.controls.type" />
+      </div>
+      <!-- #endregion -->
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="modal.close()" [disabled]="exerciseForm.invalid || exerciseForm.pristine">Save</button>
+  </div>
+</ng-template>
+
+<div class="container py-3">
+  <div class="d-flex justify-content-end mb-3">
+    <button type="button" class="btn btn-primary">
+      <i class="fa fa-plus me-2"></i>
+      <span (click)="open(content, null)">Add Exercise</span>
+    </button>
+  </div>
+  <ul class="list-group">
+    @for (exercise of exerciseLogService.exercises(); track exercise.id) {
+      <li class="list-group-item d-flex align-items-center" (click)="open(content, exercise)">
+        <span>{{ exercise.name | titlecase }}</span>
+        <button
+          style="margin-left: auto; padding: 0.075rem 0.35rem"
+          class="btn btn-danger"
+          type="button"
+          (click)="deleteExercise(exercise); $event.stopPropagation()"
+        >
+          <i class="fa fa-trash"></i>
+        </button>
+      </li>
+    } @empty {
+      <div class="position-absolute top-50 start-50 translate-middle">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    }
+  </ul>
+</div>
