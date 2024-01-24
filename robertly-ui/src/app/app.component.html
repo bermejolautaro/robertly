@@ -13,6 +13,14 @@
   </div>
 </ng-template>
 
+<div class="toast-container">
+  @for (toast of toastService.toasts; track toast) {
+    <ngb-toast [autohide]="true" [delay]="toast.delay || 3000" (hidden)="toastService.remove(toast)">
+      <ngb-alert [type]="toast.type" (closed)="toastService.remove(toast)">{{ toast.text }}</ngb-alert>
+    </ngb-toast>
+  }
+</div>
+
 <nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-1">
   <div class="container-fluid d-flex justify-content-end align-items-center">
     <!-- #region USERNAME DROPDOWN -->

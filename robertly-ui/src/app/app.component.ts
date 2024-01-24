@@ -2,7 +2,7 @@ import { Component, Injector, OnInit, TemplateRef, inject } from '@angular/core'
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
-import { debounceTime, filter, first, forkJoin, of, switchMap, tap } from 'rxjs';
+import { debounceTime, filter, forkJoin, of, switchMap, tap } from 'rxjs';
 import { EXERCISES_PATH, LOGS_PATH, STATS_PATH } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
@@ -11,7 +11,7 @@ import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
 
 import { ExerciseLog } from '@models/exercise-log.model';
-import { NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbAlertModule, NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
@@ -20,6 +20,7 @@ import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-lo
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseRow } from '@models/exercise-row.model';
 import { FiltersComponent } from '@components/filters.component';
+import { ToastService } from '@services/toast.service';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -102,6 +103,18 @@ const createOrUpdateLogFormValidator: ValidatorFn = control => {
 
         z-index: 4;
       }
+
+      .toast-container {
+        position: fixed;
+        top: 15px;
+        left: 50%;
+        transform: translate(-50%);
+        z-index: 1200;
+
+        & > :not(:last-child) {
+          --bs-toast-spacing: .5rem;
+        }
+      }
     `,
   standalone: true,
   providers: [ExerciseLogService],
@@ -114,10 +127,13 @@ const createOrUpdateLogFormValidator: ValidatorFn = control => {
     RouterOutlet,
     NgbDropdownModule,
     NgbOffcanvasModule,
+    NgbToastModule,
+    NgbAlertModule,
   ],
 })
 export class AppComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
+  public readonly toastService = inject(ToastService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
@@ -185,21 +201,22 @@ export class AppComponent implements OnInit {
     }
 
     if (shouldFetchExerciseLogs) {
-      this.fetchData();
+      this.fetchData(true);
     } else {
       const exerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
       const exercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
-      this.exerciseLogService.updateLogs$.next(exerciseLogs);
-      this.exerciseLogService.updateExercises$.next(exercises);
+      this.exerciseLogService.updateLogs(of([exerciseLogs, exercises]));
     }
 
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
     this.serviceWorkerUpdates.versionUpdates
       .pipe(
-        tap(x => console.log(x)),
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-        first()
+        tap(x => {
+          console.log(x);
+          this.toastService.show({ text: x.type, type: 'secondary' });
+        }),
+        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
       )
       .subscribe(() => {
         this.document.location.reload();
@@ -222,7 +239,14 @@ export class AppComponent implements OnInit {
 
     this.exerciseLogService.deleteLog$
       .pipe(
-        switchMap(x => this.exerciseLogApiService.deleteExerciseLog(x.id).pipe(tap(() => this.fetchData(false, false)))),
+        switchMap(x =>
+          this.exerciseLogApiService.deleteExerciseLog(x.id).pipe(
+            tap(() => {
+              this.fetchData();
+              this.toastService.ok('Log deleted successfully!');
+            })
+          )
+        ),
         takeUntilDestroyed()
       )
       .subscribe();
@@ -270,10 +294,12 @@ export class AppComponent implements OnInit {
             next: () => {
               this.createLogFormGroup.reset();
               localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-              this.fetchData(false, false);
+              this.fetchData();
+              this.toastService.ok('Log created successfully!');
             },
             error: () => {
-              this.fetchData(true, false);
+              this.fetchData();
+              this.toastService.error();
             },
           });
         } else {
@@ -294,10 +320,12 @@ export class AppComponent implements OnInit {
           this.exerciseLogApiService.updateExerciseLog(request).subscribe({
             next: () => {
               this.updateLogFormGroup.reset();
-              this.fetchData(false, false);
+              this.fetchData();
+              this.toastService.ok('Log updated successfully!');
             },
             error: () => {
-              this.fetchData(true, false);
+              this.fetchData();
+              this.toastService.error();
             },
           });
         }
@@ -309,24 +337,23 @@ export class AppComponent implements OnInit {
     );
   }
 
-  public fetchData(showLoading: boolean = true, fetchExercises: boolean = true): void {
-    if (showLoading) {
-      this.exerciseLogService.startLoading$.next();
-    }
-
+  public fetchData(fetchExercises: boolean = false): void {
     const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
     let exercises$ = this.exerciseApiService.getExercises();
 
     if (!fetchExercises && cachedExercises.length) {
       exercises$ = of(cachedExercises);
     }
-
-    forkJoin([this.exerciseLogApiService.getExerciseLogsv2(), exercises$]).subscribe(([exerciseLogs, exercises]) => {
-      localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
-      localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));
-      this.exerciseLogService.updateLogs$.next(exerciseLogs);
-      this.exerciseLogService.updateExercises$.next(exercises);
-    });
+    this.exerciseLogService.updateLogs(
+      forkJoin([this.exerciseLogApiService.getExerciseLogsv2(), exercises$]).pipe(
+        tap(([exerciseLogs, exercises]) => {
+          localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
+          localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));
+          this.exerciseLogService.updateLogs$.next(exerciseLogs);
+          this.exerciseLogService.updateExercises$.next(exercises);
+        })
+      )
+    );
   }
 
   public openSidebar(content: TemplateRef<unknown>): void {

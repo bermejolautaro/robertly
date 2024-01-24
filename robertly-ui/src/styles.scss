@@ -99,3 +99,12 @@
   overflow-x: hidden;
   max-height: 400px;
 }
+
+.alert {
+  --bs-alert-margin-bottom: 0;
+}
+
+.toast {
+  --bs-toast-padding-x: 0;
+  --bs-toast-padding-y: 0;
+}

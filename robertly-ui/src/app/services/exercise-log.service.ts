@@ -1,9 +1,9 @@
-import { Injectable, computed, signal, effect, inject, Signal } from '@angular/core';
+import { Injectable, computed, signal, inject, Signal } from '@angular/core';
 import { ExerciseLog } from '@models/exercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import {
   getPersonalRecord,
   groupExerciseLogs,
@@ -50,17 +50,22 @@ export class ExerciseLogService {
     error: null,
   });
 
+  public readonly startLoading$: Subject<void> = new Subject();
+  public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
+
   public readonly logClicked$: Subject<ExerciseRow> = new Subject();
   public readonly deleteLog$: Subject<ExerciseRow> = new Subject();
-  public readonly startLoading$: Subject<void> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
-  public readonly appendLogs$: Subject<ExerciseLog[]> = new Subject();
-  public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
   public readonly selectedExercise$: Subject<Exercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
   public readonly selectedType$: Subject<string | null> = new Subject();
   public readonly selectedMonth$: Subject<string | null> = new Subject();
   public readonly selectedWeight$: Subject<number | null> = new Subject();
+
+  public updateLogs(obs: Observable<[ExerciseLog[], Exercise[]]>): void {
+    this.startLoading$.next();
+    obs.subscribe();
+  }
 
   public readonly loaded = computed(() => this.state().loaded);
 
@@ -123,7 +128,7 @@ export class ExerciseLogService {
             const filteredValuesByUsername = R.pipe(
               valuesByUsername,
               R.filter(exerciseRow => (!selectedType ? true : exerciseRow.type === selectedType)),
-              R.filter(exerciseRow => (!selectedExercise ? true : exerciseRow.exercise.name === selectedExercise.name))
+              R.filter(exerciseRow => (!selectedExercise ? true : exerciseRow.exercise.id === selectedExercise.id))
             );
 
             return [username, filteredValuesByUsername] as const;
@@ -215,14 +220,6 @@ export class ExerciseLogService {
           ...state,
           logs,
           loaded: true,
-        })),
-    });
-
-    this.appendLogs$.pipe(takeUntilDestroyed()).subscribe({
-      next: logs =>
-        this.state.update(state => ({
-          ...state,
-          logs: [...state.logs, ...logs],
         })),
     });
 
