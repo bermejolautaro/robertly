@@ -58,6 +58,7 @@
           type="text"
           class="form-control"
           placeholder="Exercise"
+          [selectOnExact]="true"
           [formControl]="createOrUpdateLogFormGroup.controls.exercise"
           (selectItem)="createOrUpdateLogFormGroup.controls.exercise.patchValue($event.item)"
           [ngbTypeahead]="exerciseSearch"

@@ -3,7 +3,7 @@ import { ExerciseLog } from '@models/exercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
-import { Observable, Subject } from 'rxjs';
+import { Observable, Subject, first, switchMap, tap } from 'rxjs';
 import {
   getPersonalRecord,
   groupExerciseLogs,
@@ -50,7 +50,9 @@ export class ExerciseLogService {
     error: null,
   });
 
-  public readonly startLoading$: Subject<void> = new Subject();
+  private readonly startLoading$: Subject<void> = new Subject();
+  private readonly stopLoading$: Subject<void> = new Subject();
+
   public readonly updateLogs$: Subject<ExerciseLog[]> = new Subject();
 
   public readonly logClicked$: Subject<ExerciseRow> = new Subject();
@@ -62,9 +64,15 @@ export class ExerciseLogService {
   public readonly selectedMonth$: Subject<string | null> = new Subject();
   public readonly selectedWeight$: Subject<number | null> = new Subject();
 
-  public updateLogs(obs: Observable<[ExerciseLog[], Exercise[]]>): void {
+  public withLoading<T>(obs$: Observable<T>): void {
+    this.startLoading$
+      .pipe(
+        first(),
+        switchMap(() => obs$.pipe(tap(() => this.stopLoading$.next())))
+      )
+      .subscribe();
+
     this.startLoading$.next();
-    obs.subscribe();
   }
 
   public readonly loaded = computed(() => this.state().loaded);
@@ -218,8 +226,7 @@ export class ExerciseLogService {
       next: logs =>
         this.state.update(state => ({
           ...state,
-          logs,
-          loaded: true,
+          logs
         })),
     });
 
@@ -274,9 +281,10 @@ export class ExerciseLogService {
     });
 
     this.updateExercises$.pipe(takeUntilDestroyed()).subscribe({
-      next: exercises => this.state.update(state => ({ ...state, exercises, loaded: true })),
+      next: exercises => this.state.update(state => ({ ...state, exercises })),
     });
 
     this.startLoading$.pipe(takeUntilDestroyed()).subscribe({ next: () => this.state.update(state => ({ ...state, loaded: false })) });
+    this.stopLoading$.pipe(takeUntilDestroyed()).subscribe({ next: () => this.state.update(state => ({ ...state, loaded: true })) });
   }
 }

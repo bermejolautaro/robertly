@@ -54,7 +54,7 @@
         class="fa fa-refresh"
         style="font-size: 22px; color: white"
         [ngClass]="{ spin: isSpinning }"
-        (click)="isSpinning = true; fetchData()"
+        (click)="isSpinning = true; fetchData(true, true)"
         (animationend)="isSpinning = false"
       ></i>
     </button>

@@ -27,6 +27,8 @@ const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
 const EXERCISES_CACHE_KEY = 'robertly-exercises';
 const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
 
+const MINUTES_5 = 5 * 60;
+
 export type CreateOrUpdateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
   date: FormControl<string | null>;
@@ -185,28 +187,22 @@ export class AppComponent implements OnInit {
   public constructor() {
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
 
-    let shouldFetchExerciseLogs = false;
+    let shouldFetchFromBackend = false;
 
     if (!cacheTimestamp) {
       localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
-      shouldFetchExerciseLogs = true;
+      shouldFetchFromBackend = true;
     } else {
       const x = this.dayjs.unix(+cacheTimestamp);
       const difference = this.dayjs().diff(x, 'seconds');
 
-      if (difference > 5 * 60) {
-        shouldFetchExerciseLogs = true;
+      if (difference > MINUTES_5) {
+        shouldFetchFromBackend = true;
         localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
       }
     }
 
-    if (shouldFetchExerciseLogs) {
-      this.fetchData(true);
-    } else {
-      const exerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
-      const exercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
-      this.exerciseLogService.updateLogs(of([exerciseLogs, exercises]));
-    }
+    this.fetchData(shouldFetchFromBackend, shouldFetchFromBackend);
 
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
@@ -337,15 +333,23 @@ export class AppComponent implements OnInit {
     );
   }
 
-  public fetchData(fetchExercises: boolean = false): void {
+  public fetchData(fetchExercises: boolean = false, fetchExercisesLogs: boolean = false): void {
     const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
+    const cachedExerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
+
     let exercises$ = this.exerciseApiService.getExercises();
+    let exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsv2();
 
     if (!fetchExercises && cachedExercises.length) {
       exercises$ = of(cachedExercises);
     }
-    this.exerciseLogService.updateLogs(
-      forkJoin([this.exerciseLogApiService.getExerciseLogsv2(), exercises$]).pipe(
+
+    if (!fetchExercisesLogs && cachedExerciseLogs.length) {
+      exerciseLogs$ = of(cachedExerciseLogs);
+    }
+
+    this.exerciseLogService.withLoading(
+      forkJoin([exerciseLogs$, exercises$]).pipe(
         tap(([exerciseLogs, exercises]) => {
           localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
           localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));

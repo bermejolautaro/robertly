@@ -53,7 +53,7 @@ export class CreateOrUpdateLogModalComponent {
       map(text => {
         const exercises = this.exerciseLogService.exercises().map(x => x);
 
-        return !text ? exercises : exercises.filter(x => !!x).filter(x => x.name.includes(text));
+        return !text ? exercises : exercises.filter(x => !!x).filter(x => x.name.toLowerCase().includes(text.toLowerCase()));
       })
     );
   };
