@@ -1,3 +1,5 @@
+using Firebase.Auth;
+using Firebase.Auth.Providers;
 using Firebase.Database;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Builder;
@@ -16,7 +18,7 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddScoped((serviceProvider) =>
+builder.Services.AddScoped(serviceProvider =>
 {
     var googleCredentialOptions = serviceProvider.GetService<IOptions<GoogleCredentialOptions>>()?.Value;
 
@@ -43,6 +45,29 @@ builder.Services.AddScoped((serviceProvider) =>
                     },
                     AsAccessToken = true
                 });
+});
+
+builder.Services.AddScoped(serviceProvider =>
+{
+    var googleCredentialOptions = serviceProvider.GetService<IOptions<GoogleCredentialOptions>>()?.Value;
+
+    if (googleCredentialOptions is null)
+    {
+        throw new Exception("Missing google credentials");
+    }
+
+    var authConfig = new FirebaseAuthConfig()
+    {
+        ApiKey = googleCredentialOptions.ApiKey,
+        AuthDomain = googleCredentialOptions.AuthDomain,
+        Providers = new[]
+        {
+            new GoogleProvider().AddScopes("email"),
+            new EmailProvider()
+        },
+    };
+
+    return new FirebaseAuthClient(authConfig);
 });
 
 builder.Services.AddApplicationInsightsTelemetry();
@@ -75,4 +100,6 @@ public class GoogleCredentialOptions
     public string PrivateKey { get; set; } = "";
     public string ProjectId { get; set; } = "";
     public string DatabaseUrl { get; set; } = "";
+    public string ApiKey { get; set; } = "";
+    public string AuthDomain { get; set; } = "";
 }

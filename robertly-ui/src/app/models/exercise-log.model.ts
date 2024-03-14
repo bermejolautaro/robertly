@@ -8,6 +8,7 @@ export interface Serie {
 export interface ExerciseLog {
   id: string;
   user: string;
+  userId: string;
   exercise: Exercise;
   date: string;
   series: Serie[];

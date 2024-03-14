@@ -1,0 +1,17 @@
+<div class="container my-3">
+  <div class="input-group">
+    <input type="text" class="form-control" placeholder="Email" [(ngModel)]="email" />
+  </div>
+  <div class="input-group my-1">
+    <input type="password" class="form-control" placeholder="Password" [(ngModel)]="password"/>
+  </div>
+  <div class="d-flex justify-content-end my-2">
+    <button type="button" class="btn btn-primary me-2" (click)="onClickSignIn()">Sign In</button>
+  </div>
+  <div class="d-flex justify-content-center my-5">
+    <button type="button" class="btn btn-primary" (click)="onClickSignInWithGoogle()">
+      <i class="fa fa-google"></i>
+      Sign In with Google
+    </button>
+  </div>
+</div>

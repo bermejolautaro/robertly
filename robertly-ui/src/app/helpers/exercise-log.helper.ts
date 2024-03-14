@@ -38,7 +38,8 @@ function mapToExerciseRow(log: ExerciseLog): ExerciseRow {
   return {
     id: log.id,
     date: log.date.toString(),
-    username: log.user.toString(),
+    username: log.user,
+    userId: log.userId,
     exercise: log.exercise,
     type: log.exercise.type,
     series: [...log.series],

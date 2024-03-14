@@ -7,6 +7,7 @@ export interface ExerciseRow {
   exercise: Exercise;
   type: string;
   username: string;
+  userId: string;
   series: Serie[];
   highlighted: 'green' | 'yellow' | null;
   total: number | null;

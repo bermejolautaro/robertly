@@ -1,5 +1,8 @@
-﻿using Firebase.Database;
+﻿using Firebase.Auth;
+using Firebase.Auth.Providers;
+using Firebase.Database;
 using Firebase.Database.Query;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
@@ -10,16 +13,28 @@ namespace robertly.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ExercisesController(FirebaseClient client, IConfiguration config) : ControllerBase
+    public class ExercisesController : ControllerBase
     {
-        private readonly ChildQuery _exercisesDb = client.Child($"{config["DatabaseEnvironment"]}/exercises");
 
+        private readonly FirebaseClient _client;
+        private readonly FirebaseAuthClient _authClient;
+
+        private readonly ChildQuery _exercisesDb;
+        private readonly ChildQuery _usersDb;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
+        public ExercisesController(FirebaseClient client, FirebaseAuthClient authClient, IConfiguration config)
+        {
+            _client = client;
+            _authClient = authClient;
+            _exercisesDb = _client.ChildExercises(config);
+            _usersDb = _client.ChildUsers(config);
+        }
 
         [HttpGet]
         public async Task<ActionResult<GetExercisesResponse>> Get()
         {
+            var userId = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
             var logs = (await _exercisesDb.OnceAsync<ExerciseDb>())
                 .Select(x => x.Object.ToExercise(x.Key));
 

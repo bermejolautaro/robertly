@@ -3,7 +3,7 @@ import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/rou
 import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 
 import { debounceTime, filter, forkJoin, of, switchMap, tap } from 'rxjs';
-import { EXERCISES_PATH, LOGS_PATH, STATS_PATH } from 'src/main';
+import { Paths } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
 
@@ -31,6 +31,7 @@ const MINUTES_5 = 5 * 60;
 
 export type CreateOrUpdateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
+  userId: FormControl<string | null>;
   date: FormControl<string | null>;
   exercise: FormControl<Exercise | null>;
   series: FormArray<
@@ -117,6 +118,11 @@ const createOrUpdateLogFormValidator: ValidatorFn = control => {
           --bs-toast-spacing: .5rem;
         }
       }
+
+      .offcanvas-body {
+        display: flex;
+        flex-direction: column;
+      }
     `,
   standalone: true,
   providers: [ExerciseLogService],
@@ -149,6 +155,7 @@ export class AppComponent implements OnInit {
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
     {
       user: new FormControl(''),
+      userId: new FormControl(''),
       exercise: new FormControl<Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
@@ -165,6 +172,7 @@ export class AppComponent implements OnInit {
   public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
     {
       user: new FormControl(''),
+      userId: new FormControl(''),
       exercise: new FormControl<Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
@@ -180,9 +188,7 @@ export class AppComponent implements OnInit {
 
   public isSpinning: boolean = false;
 
-  public readonly STATS_PATH = STATS_PATH;
-  public readonly LOGS_PATH = LOGS_PATH;
-  public readonly EXERCISES_PATH = EXERCISES_PATH;
+  public readonly Paths = Paths;
 
   public constructor() {
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
@@ -277,10 +283,16 @@ export class AppComponent implements OnInit {
             return;
           }
 
+          const user: ExerciseLog | null =
+            this.exerciseLogService
+              .logs()
+              .find(x => x.user.toLowerCase() === this.createLogFormGroup.value.user?.toLowerCase() && !!x.userId) ?? null;
+
           const request = {
             date: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
             exerciseId: this.createLogFormGroup.value.exercise!.id,
-            user: this.createLogFormGroup.value.user!.toLowerCase(),
+            user: user?.user ?? this.createLogFormGroup.value.user!.toLowerCase(),
+            userId: user?.userId ?? null,
             series: (this.createLogFormGroup.value.series ?? [])
               .filter(x => !!x.reps && !!x.weightInKg)
               .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
@@ -303,11 +315,17 @@ export class AppComponent implements OnInit {
             return;
           }
 
+          const user: ExerciseLog | null =
+            this.exerciseLogService
+              .logs()
+              .find(x => x.user.toLowerCase() === this.updateLogFormGroup.value.user?.toLowerCase() && !!x.userId) ?? null;
+
           const request = {
             id: exerciseRow!.id,
             date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
             exerciseId: this.updateLogFormGroup.value.exercise!.id,
-            user: this.updateLogFormGroup.value.user!.toLowerCase(),
+            user: user?.user ?? this.updateLogFormGroup.value.user!.toLowerCase(),
+            userId: user?.userId ?? null,
             series: (this.updateLogFormGroup.value.series ?? [])
               .filter(x => !!x.reps && !!x.weightInKg)
               .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
@@ -333,7 +351,7 @@ export class AppComponent implements OnInit {
     );
   }
 
-  public fetchData(fetchExercises: boolean = false, fetchExercisesLogs: boolean = false): void {
+  public fetchData(fetchExercises: boolean = false, fetchExercisesLogs: boolean = true): void {
     const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
     const cachedExerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
 

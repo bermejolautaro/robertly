@@ -13,35 +13,47 @@ namespace robertly.Controllers
     [Route("api/[controller]")]
     public class LogsController(FirebaseClient client, IConfiguration config) : ControllerBase
     {
-        private readonly ChildQuery _logsDb = client.Child($"{config["DatabaseEnvironment"]}/logs");
-        private readonly ChildQuery _exercisesDb = client.Child($"{config["DatabaseEnvironment"]}/exercises");
+        private readonly ChildQuery _logsDb = client.ChildLogs(config);
+        private readonly ChildQuery _exercisesDb = client.ChildExercises(config);
+        private readonly ChildQuery _usersDb = client.ChildUsers(config);
 
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
         [HttpGet]
-        public async Task<ActionResult<GetLogsResponse>> Get()
+        public async Task<ActionResult<GetLogsResponseV2>> Get()
         {
-            var logs = (await _logsDb.OnceAsync<LogDb>()).Select(x => x.Object.ToLog(x.Key));
-            var exercisesDb = (await _exercisesDb.OnceAsync<ExerciseDb>()).Select(x => x.Object.ToExercise(x.Key));
+            var userId = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
-            var logsDtos = logs.Select(log => new LogDto(log.Id, log.User, exercisesDb.FirstOrDefault(x => x.Id == log.ExerciseId), log.Date, log.Series));
+            var logs = (await _logsDb.OnceAsync<LogDbV2>()).Select(x => x.Object.ToLogV2(x.Key));
+            var exercises = (await _exercisesDb.OnceAsync<ExerciseDb>()).Select(x => x.Object.ToExercise(x.Key));
+            var users = (await _usersDb.OnceAsync<UserDb>()).Select(x => x.Object.ToUser(x.Key));
 
-            return Ok(new GetLogsResponse(logsDtos));
+            var logsDtos = logs.Select(
+                log => new LogDtoV2(
+                    log.Id, 
+                    users.FirstOrDefault(x => x.Uid == log.UserId)?.DisplayName ?? log.User, 
+                    log.UserId, 
+                    exercises.FirstOrDefault(x => x.Id == log.ExerciseId), 
+                    log.Date, 
+                    log.Series))
+                .Where(x => string.IsNullOrEmpty(userId) || x.UserId == userId);
+
+            return Ok(new GetLogsResponseV2(logsDtos));
         }
 
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] PostPutLogRequest request)
         {
-            var logDb = new LogDb(request.User, request.ExerciseId, request.Date, request.Series);
+            var logDb = new LogDbV2(request.UserId, request.UserId is null ? request.User : null, request.ExerciseId, request.Date, request.Series);
             var result = await _logsDb.PostAsync(JsonSerializer.Serialize(logDb, _jsonSerializerOptions));
 
-            return Ok(logDb.ToLog(result.Key));
+            return Ok(logDb.ToLogV2(result.Key));
         }
 
         [HttpPut("{id}")]
         public async Task<ActionResult> Put([FromRoute] string id, [FromBody] PostPutLogRequest request)
         {
-            var logDbToUpdate = new LogDb(request.User, request.ExerciseId, request.Date, request.Series);
+            var logDbToUpdate = new LogDbV2(request.UserId, request.UserId is null ? request.User : null, request.ExerciseId, request.Date, request.Series);
 
             var logDb = await _logsDb.Child(id).OnceSingleAsync<LogDb>();
 
@@ -52,7 +64,7 @@ namespace robertly.Controllers
 
             await _logsDb.Child(id).PutAsync(JsonSerializer.Serialize(logDbToUpdate, _jsonSerializerOptions));
 
-            return Ok(logDbToUpdate.ToLog(id));
+            return Ok(logDbToUpdate.ToLogV2(id));
         }
 
         [HttpDelete("{id}")]

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static System.IO.File;
@@ -14,10 +15,18 @@ namespace robertly.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class MigrationController(FirebaseClient client, IConfiguration config) : Controller
+    public class MigrationController : Controller
     {
-        private readonly FirebaseClient _client = client;
-        private readonly ChildQuery _exercisesDb = client.Child($"{config["DatabaseEnvironment"]}/exercises");
+        private readonly FirebaseClient _client;
+        private readonly ChildQuery _exercisesDb;
+        private readonly ChildQuery _logsDb;
+
+        public MigrationController(FirebaseClient client, IConfiguration config)
+        {
+            _client = client;
+            _logsDb = client.ChildLogs(config);
+            _exercisesDb = client.ChildExercises(config);
+        }
 
 
         [HttpGet]
@@ -58,6 +67,29 @@ namespace robertly.Controllers
             var result = JsonSerializer.Serialize(
                 logsDb.Database.ToDictionary(x => x.Key, x => x.Value.Deserialize<LogDb>()),
                 new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        }
+
+        [HttpGet("{userName}/{userId}")]
+        public async Task<string> MigrateUser(string userName, string userId)
+        {
+            var logs = (await _logsDb.OnceAsync<LogDb>()).ToDictionary(x => x.Key, x => x.Object.ToLog(x.Key));
+            var logsV2 = logs.ToDictionary(x => x.Key, x =>
+            {
+                if (x.Value.User == userName)
+                {
+                    return new LogDbV2(userId, null, x.Value.ExerciseId, x.Value.Date, x.Value.Series);
+                }
+                else
+                {
+                    return new LogDbV2(null, x.Value.User, x.Value.ExerciseId, x.Value.Date, x.Value.Series);
+                }
+            });
+
+            var result = JsonSerializer.Serialize(
+                logsV2,
+                new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            return result;
         }
     }
 }

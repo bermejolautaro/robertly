@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ExerciseLog } from '@models/exercise-log.model';
+import { ExerciseLog, Serie } from '@models/exercise-log.model';
 import { Observable, map } from 'rxjs';
 
 import { API_URL } from 'src/main';
@@ -11,23 +11,19 @@ type GetExerciseLogsV2Response = {
 
 type CreateExerciseLogRequest = {
   user: string;
+  userId: string | null;
   exerciseId: string;
   date: string;
-  series: { reps: number; weightInKg: number }[];
+  series: Serie[];
 };
 
 type UpdateExerciseLogRequest = {
   id: string;
   user: string;
+  userId: string | null;
   exerciseId: string;
   date: string;
-  series: { reps: number; weightInKg: number }[];
-};
-
-export type DeleteLogRequest = {
-  user: string;
-  exercise: string;
-  date: string;
+  series: Serie[];
 };
 
 @Injectable({
