@@ -20,7 +20,9 @@ export class SignInComponent implements OnInit {
   public constructor() {}
 
   public async ngOnInit(): Promise<void> {
-    await this.authApiService.handleRedirectResult();
+    setTimeout(async () => {
+      await this.authApiService.handleRedirectResult();
+    }, 5000)
   }
 
   public async onClickSignIn(): Promise<void> {
