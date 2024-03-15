@@ -4,6 +4,7 @@ import { Observable, tap, firstValueFrom } from 'rxjs';
 import { API_URL } from 'src/main';
 import { Auth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut } from '@angular/fire/auth';
 import { ToastService } from './toast.service';
+import { signInWithPopup } from '@firebase/auth';
 
 export interface SignInRequest {
   email: string;
@@ -39,7 +40,19 @@ export class AuthApiService {
 
     this.auth.useDeviceLanguage();
 
-    await signInWithRedirect(this.auth, provider);
+    const result = await signInWithPopup(this.auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+
+    if (credential) {
+      const idToken = await firstValueFrom(
+        this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: credential.accessToken }, { responseType: 'text' })
+      );
+      localStorage.setItem(IDTOKEN_KEY, idToken);
+
+      this.toastService.ok('Successfully signed in with Google');
+    }
+
+    // await signInWithRedirect(this.auth, provider);
   }
 
   public async signOut(): Promise<void> {
@@ -66,10 +79,8 @@ export class AuthApiService {
         const credential = GoogleAuthProvider.credentialFromResult(result);
 
         if (credential) {
-          const token = credential.accessToken;
-
           const idToken = await firstValueFrom(
-            this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: token }, { responseType: 'text' })
+            this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: credential.accessToken }, { responseType: 'text' })
           );
           localStorage.setItem(IDTOKEN_KEY, idToken);
 
