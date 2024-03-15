@@ -2,7 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, tap, firstValueFrom } from 'rxjs';
 import { API_URL } from 'src/main';
-import { Auth, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from '@angular/fire/auth';
+import { Auth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut } from '@angular/fire/auth';
+import { ToastService } from './toast.service';
 
 export interface SignInRequest {
   email: string;
@@ -22,6 +23,7 @@ export class AuthApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
   private readonly auth = inject(Auth);
+  private readonly toastService = inject(ToastService);
 
   public signIn(request: SignInRequest): Observable<string> {
     return this.http.post(`${this.apiUrl}/auth/signin`, request, { responseType: 'text' }).pipe(
@@ -40,6 +42,15 @@ export class AuthApiService {
     await signInWithRedirect(this.auth, provider);
   }
 
+  public async signOut(): Promise<void> {
+    try {
+      await signOut(this.auth);
+      this.toastService.ok('Successfully signed out')
+    } catch (err: unknown) {
+      this.toastService.error(JSON.stringify(err));
+    }
+  }
+
   public async handleRedirectResult(): Promise<void> {
     try {
       const result = await getRedirectResult(this.auth);
@@ -50,11 +61,10 @@ export class AuthApiService {
         this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: token }, { responseType: 'text' })
       );
       localStorage.setItem(IDTOKEN_KEY, idToken);
+      this.toastService.ok('Successfully signed in with Google');
     } catch (err: unknown) {
       const error = err as { code: string; message: string; customData: { email: string } };
-      const errorCode = error.code;
-      const errorMessage = error.message;
-      const email = error.customData.email;
+      this.toastService.error(JSON.stringify(err));
     }
   }
 }

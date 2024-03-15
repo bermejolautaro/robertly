@@ -21,6 +21,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseRow } from '@models/exercise-row.model';
 import { FiltersComponent } from '@components/filters.component';
 import { ToastService } from '@services/toast.service';
+import { AuthApiService } from '@services/auth-api.service';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -142,6 +143,7 @@ const createOrUpdateLogFormValidator: ValidatorFn = control => {
 export class AppComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
   public readonly toastService = inject(ToastService);
+  public readonly authApiService = inject(AuthApiService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
