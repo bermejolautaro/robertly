@@ -53,16 +53,34 @@ export class AuthApiService {
   }
 
   public async handleRedirectResult(): Promise<void> {
+    window.addEventListener("beforeunload", () => {
+      const pendingRedirectKey = Object.keys(window.sessionStorage).find(key => /^firebase:pendingRedirect:/.test(key));
+      if (!pendingRedirectKey) {
+        console.log("firebase:pendingRedirect: key missing from sessionStorage, getRedirectResult() will return null");
+      }
+    });
     try {
       const result = await getRedirectResult(this.auth);
-      const credential = GoogleAuthProvider.credentialFromResult(result!);
-      const token = credential!.accessToken;
 
-      const idToken = await firstValueFrom(
-        this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: token }, { responseType: 'text' })
-      );
-      localStorage.setItem(IDTOKEN_KEY, idToken);
-      this.toastService.ok('Successfully signed in with Google');
+      if (result) {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+
+        if (credential) {
+          const token = credential.accessToken;
+
+          const idToken = await firstValueFrom(
+            this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: token }, { responseType: 'text' })
+          );
+          localStorage.setItem(IDTOKEN_KEY, idToken);
+
+          this.toastService.ok('Successfully signed in with Google');
+        } else {
+          this.toastService.error(`Couldn't get credential from result.`);
+        }
+
+      } else {
+        this.toastService.error(`Couldn't get a response from redirect.`);
+      }
     } catch (err: unknown) {
       const error = err as { code: string; message: string; customData: { email: string } };
       this.toastService.error(JSON.stringify(err));

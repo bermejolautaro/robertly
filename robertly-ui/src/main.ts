@@ -63,7 +63,7 @@ bootstrapApplication(AppComponent, {
           appId: '1:1063566206093:web:a3154a1ae143b91f05eec4',
           storageBucket: 'gymtracker-b0b72.appspot.com',
           apiKey: 'AIzaSyCA0ExS-7mRUULdk7CYFORL5zwYXd4lJ-E',
-          authDomain: 'gymtracker-b0b72.firebaseapp.com',
+          authDomain: 'auth.robertly.ar',
           messagingSenderId: '1063566206093',
         })
       )
