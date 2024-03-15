@@ -45,7 +45,8 @@ export class AuthApiService {
   public async signOut(): Promise<void> {
     try {
       await signOut(this.auth);
-      this.toastService.ok('Successfully signed out')
+      this.toastService.ok('Successfully signed out');
+      localStorage.removeItem(IDTOKEN_KEY);
     } catch (err: unknown) {
       this.toastService.error(JSON.stringify(err));
     }
