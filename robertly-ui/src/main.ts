@@ -17,6 +17,7 @@ export const Paths = {
   EXERCISES: 'exercises',
   SIGN_IN: 'signin',
   SIGN_UP: 'signup',
+  DEVELOPER: 'developer'
 } as const;
 
 const routes = [
@@ -36,6 +37,11 @@ const routes = [
     path: Paths.LOGS,
     pathMatch: 'full',
     loadComponent: () => import('@pages/exercise-logs.page.component').then(x => x.ExerciseLogsPageComponent),
+  } as const,
+  {
+    path: Paths.DEVELOPER,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/developer.page.component').then(x => x.DeveloperPageComponent),
   } as const,
 ] satisfies Routes;
 
