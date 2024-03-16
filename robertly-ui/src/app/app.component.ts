@@ -1,8 +1,8 @@
 import { Component, Injector, OnInit, TemplateRef, inject } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
-import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
+import { SwUpdate } from '@angular/service-worker';
 
-import { debounceTime, filter, forkJoin, of, switchMap, tap } from 'rxjs';
+import { debounceTime, forkJoin, of, switchMap, tap } from 'rxjs';
 import { Paths } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
@@ -22,6 +22,8 @@ import { ExerciseRow } from '@models/exercise-row.model';
 import { FiltersComponent } from '@components/filters.component';
 import { ToastService } from '@services/toast.service';
 import { AuthApiService } from '@services/auth-api.service';
+import { HeaderComponent } from '@components/header.component';
+import { FooterComponent } from '@components/footer.component';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -79,58 +81,15 @@ const createOrUpdateLogFormValidator: ValidatorFn = control => {
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styles: `
-      nav.navbar.fixed-bottom {
-        padding-bottom: max(env(safe-area-inset-bottom), 0.8rem);
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
-      }
-
-      button:focus i.fa.fa-refresh.spin {
-        animation: rotate 1s ease-in-out 0s;
-      }
-
-      @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(720deg); }
-      }
-
-      button:has(.fa.fa-plus) {
-        border-radius: 100%;
-        position: fixed;
-        right: 25px;
-        bottom: 75px;
-
-        @supports (-webkit-hyphens: none) {
-          bottom: 100px;
-        }
-
-        z-index: 4;
-      }
-
-      .toast-container {
-        position: fixed;
-        top: 15px;
-        left: 50%;
-        transform: translate(-50%);
-        z-index: 1200;
-
-        & > :not(:last-child) {
-          --bs-toast-spacing: .5rem;
-        }
-      }
-
-      .offcanvas-body {
-        display: flex;
-        flex-direction: column;
-      }
-    `,
+  styleUrl: './app.component.scss',
   standalone: true,
   providers: [ExerciseLogService],
   imports: [
     NgClass,
     TitleCasePipe,
     FiltersComponent,
+    HeaderComponent,
+    FooterComponent,
     RouterLinkWithHref,
     RouterLinkActive,
     RouterOutlet,
@@ -188,9 +147,10 @@ export class AppComponent implements OnInit {
     [createOrUpdateLogFormValidator]
   );
 
-  public isSpinning: boolean = false;
-
   public readonly Paths = Paths;
+  public hasAppLoaded: boolean = false;
+  public preloaderMessage: string = 'Searching for updates...';
+  public preloaderProgress: number = 10;
 
   public constructor() {
     const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
@@ -214,17 +174,28 @@ export class AppComponent implements OnInit {
 
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
-    this.serviceWorkerUpdates.versionUpdates
-      .pipe(
-        tap(x => {
-          console.log(x);
-          this.toastService.show({ text: x.type, type: 'secondary' });
-        }),
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY')
-      )
-      .subscribe(() => {
+    this.serviceWorkerUpdates.versionUpdates.subscribe(evnt => {
+      if (evnt.type === 'VERSION_DETECTED') {
+        this.preloaderMessage = 'New version found. Preparing to install...';
+        this.preloaderProgress = 60;
+      } else if (evnt.type === 'NO_NEW_VERSION_DETECTED') {
+        this.preloaderMessage = 'Everything up to date';
+        this.preloaderProgress = 100;
+        setTimeout(() => {
+          this.hasAppLoaded = true;
+        }, 500);
+      } else if (evnt.type === 'VERSION_READY') {
         this.document.location.reload();
-      });
+      } else if (evnt.type === 'VERSION_INSTALLATION_FAILED') {
+        this.preloaderMessage = 'Failed to install new version';
+        this.preloaderProgress = 100;
+        setTimeout(() => {
+          this.hasAppLoaded = true;
+        }, 500);
+      } else {
+        throw new Error('Impossible state');
+      }
+    });
 
     this.createLogFormGroup.valueChanges
       .pipe(takeUntilDestroyed(), debounceTime(1000))

@@ -25,97 +25,30 @@
   }
 </div>
 
-<nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-1">
-  <div class="container-fluid d-flex justify-content-end align-items-center">
-    <!-- #region USERNAME DROPDOWN -->
-    @if (exerciseLogService.usernames().length > 1) {
-      <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
-        <button
-          type="button"
-          class="btn d-flex justify-content-between align-items-center me-3"
-          style="outline: none; border: none; color: white; font-weight: 500"
-          ngbDropdownToggle
-        >
-          {{ exerciseLogService.selectedUsernameLabel() | titlecase }}
-        </button>
-        <div ngbDropdownMenu>
-          <button ngbDropdownItem (click)="exerciseLogService.selectedUsername$.next(null)">All Users</button>
-          @for (username of exerciseLogService.usernames(); track username) {
-            <button
-              ngbDropdownItem
-              [ngClass]="{ active: username === exerciseLogService.selectedUsername() }"
-              (click)="exerciseLogService.selectedUsername$.next(username)"
-            >
-              {{ username | titlecase }}
-            </button>
-          }
-        </div>
-      </div>
-    } @else {
-      <div display="dynamic" class="d-flex justify-content-end">
-        <button
-          type="button"
-          class="btn d-flex justify-content-between align-items-center me-3"
-          style="outline: none; border: none; color: white; font-weight: 500"
-        >
-          {{ exerciseLogService.usernames()[0] | titlecase }}
-        </button>
-      </div>
-    }
-    <!-- #endregion -->
+@if (hasAppLoaded) {
+  <app-header (logsRefreshClicked)="fetchData(true, true)" (menuSidebarClicked)="openSidebar(content)"></app-header>
 
-    <!-- #region REFRESH LOGS -->
-    <button type="button" class="btn me-3" style="outline: none; border: none; padding: 0">
-      <i
-        class="fa fa-refresh"
-        style="font-size: 22px; color: white"
-        [ngClass]="{ spin: isSpinning }"
-        (click)="isSpinning = true; fetchData(true, true)"
-        (animationend)="isSpinning = false"
-      ></i>
-    </button>
-    <!-- #endregion -->
-
-    <!-- #region MENU -->
-    <button type="button" class="btn" style="outline: none; border: none; padding: 0">
-      <i class="fa fa-bars" style="font-size: 22px; color: white" (click)="openSidebar(content)"></i>
-    </button>
-    <!-- #endregion -->
+  <div [style.marginBottom.rem]="8">
+    <router-outlet></router-outlet>
   </div>
-</nav>
 
-<div [style.marginBottom.rem]="8">
-  <router-outlet></router-outlet>
-</div>
+  @if (exerciseLogService.loaded()) {
+    <button class="btn btn-lg btn-primary" (click)="open('create')">
+      <i class="fa fa-plus"></i>
+    </button>
+  }
 
-@if (exerciseLogService.loaded()) {
-  <button class="btn btn-lg btn-primary" (click)="open('create')">
-    <i class="fa fa-plus"></i>
-  </button>
+  <app-footer></app-footer>
+} @else {
+  <div class="preloader">
+    <div class="preloader-content">
+      <div class="preloader-title">ROBERTLY</div>
+      <div class="progress">
+        <div class="progress-bar" [style.width.%]="preloaderProgress"></div>
+      </div>
+      <div class="preloader-message">
+        {{ preloaderMessage }}
+      </div>
+    </div>
+  </div>
 }
-
-<nav class="navbar navbar-dark bg-primary bg-gradient fixed-bottom fw-bold">
-  <div class="container-fluid">
-    <ul class="navbar-nav flex-row gap-3 justify-content-center w-100">
-      <li class="nav-item w-100">
-        <a
-          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
-          [routerLink]="Paths.LOGS"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-        >
-          Logs <i class="fa fa-history"></i>
-        </a>
-      </li>
-      <li class="nav-item w-100">
-        <a
-          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
-          [routerLink]="Paths.STATS"
-          routerLinkActive="active"
-        >
-          Stats <i class="fa fa-bar-chart"></i>
-        </a>
-      </li>
-    </ul>
-  </div>
-</nav>

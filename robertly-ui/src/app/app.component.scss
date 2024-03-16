@@ -1,0 +1,65 @@
+button:has(.fa.fa-plus) {
+  border-radius: 100%;
+  position: fixed;
+  right: 25px;
+  bottom: 75px;
+
+  @supports (-webkit-hyphens: none) {
+    bottom: 100px;
+  }
+
+  z-index: 4;
+}
+
+.toast-container {
+  position: fixed;
+  top: 15px;
+  left: 50%;
+  transform: translate(-50%);
+  z-index: 1200;
+
+  & > :not(:last-child) {
+    --bs-toast-spacing: 0.5rem;
+  }
+}
+
+.offcanvas-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.preloader {
+  background-color: var(--bs-primary);
+  height: 100vh;
+  width: 100vw;
+
+  .preloader-content {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    padding-top: 80%;
+    color: white;
+
+    .preloader-title {
+      font-weight: bold;
+      font-size: 36px;
+    }
+
+    .progress {
+      width: 180px;
+      height: 5px;
+      border-radius: 0;
+      background-color: rgba(255, 255, 255, .3);
+
+      .progress-bar {
+        background-color: white;
+      }
+    }
+
+    .preloader-message {
+      padding-top: .3rem;
+      font-size: 14px;
+    }
+
+  }
+}

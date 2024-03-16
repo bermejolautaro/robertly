@@ -1,0 +1,42 @@
+button:focus i.fa.fa-refresh.spin {
+  animation: rotate 1s ease-in-out 0s;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(720deg);
+  }
+}
+
+@-webkit-keyframes rotate {
+  0% {
+    -webkit-transform: rotate(0deg);
+  }
+  12% {
+    -webkit-transform: rotate(90deg);
+  }
+  25% {
+    -webkit-transform: rotate(180deg);
+  }
+  37% {
+    -webkit-transform: rotate(270deg);
+  }
+  50% {
+    -webkit-transform: rotate(360deg);
+  }
+  62% {
+    -webkit-transform: rotate(450deg);
+  }
+  75% {
+    -webkit-transform: rotate(540deg);
+  }
+  87% {
+    -webkit-transform: rotate(630deg);
+  }
+  100% {
+    -webkit-transform: rotate(720deg);
+  }
+}

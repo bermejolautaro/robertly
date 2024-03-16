@@ -55,7 +55,7 @@ bootstrapApplication(AppComponent, {
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([jwtInterceptor])),
     provideRouter(routes),
-    provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
+    provideServiceWorker('ngsw-worker.js', { enabled: true }),
     importProvidersFrom(
       provideFirebaseApp(() =>
         initializeApp({

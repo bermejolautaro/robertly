@@ -1,4 +1,4 @@
-import { Injectable, computed, signal, inject, Signal } from '@angular/core';
+import { Injectable, computed, signal, inject, Signal, effect } from '@angular/core';
 import { ExerciseLog } from '@models/exercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 

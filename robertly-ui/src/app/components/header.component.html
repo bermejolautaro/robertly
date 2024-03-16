@@ -1,0 +1,58 @@
+<nav class="navbar navbar-dark bg-primary bg-gradient fw-bold px-1">
+  <div class="container-fluid d-flex justify-content-end align-items-center">
+    <!-- #region USERNAME DROPDOWN -->
+    @if (exerciseLogService.usernames().length > 1) {
+      <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
+        <button
+          type="button"
+          class="btn d-flex justify-content-between align-items-center me-3"
+          style="outline: none; border: none; color: white; font-weight: 500"
+          ngbDropdownToggle
+        >
+          {{ exerciseLogService.selectedUsernameLabel() | titlecase }}
+        </button>
+        <div ngbDropdownMenu>
+          <button ngbDropdownItem (click)="exerciseLogService.selectedUsername$.next(null)">All Users</button>
+          @for (username of exerciseLogService.usernames(); track username) {
+            <button
+              ngbDropdownItem
+              [ngClass]="{ active: username === exerciseLogService.selectedUsername() }"
+              (click)="exerciseLogService.selectedUsername$.next(username)"
+            >
+              {{ username | titlecase }}
+            </button>
+          }
+        </div>
+      </div>
+    } @else {
+      <div display="dynamic" class="d-flex justify-content-end">
+        <button
+          type="button"
+          class="btn d-flex justify-content-between align-items-center me-3"
+          style="outline: none; border: none; color: white; font-weight: 500"
+        >
+          {{ exerciseLogService.usernames()[0] | titlecase }}
+        </button>
+      </div>
+    }
+    <!-- #endregion -->
+
+    <!-- #region REFRESH LOGS -->
+    <button type="button" class="btn me-3" style="outline: none; border: none; padding: 0">
+      <i
+        class="fa fa-refresh"
+        style="font-size: 22px; color: white"
+        [ngClass]="{ spin: isSpinning }"
+        (click)="isSpinning = true; this.logsRefreshClicked.emit()"
+        (animationend)="isSpinning = false"
+      ></i>
+    </button>
+    <!-- #endregion -->
+
+    <!-- #region MENU -->
+    <button type="button" class="btn" style="outline: none; border: none; padding: 0">
+      <i class="fa fa-bars" style="font-size: 22px; color: white" (click)="menuSidebarClicked.emit()"></i>
+    </button>
+    <!-- #endregion -->
+  </div>
+</nav>
