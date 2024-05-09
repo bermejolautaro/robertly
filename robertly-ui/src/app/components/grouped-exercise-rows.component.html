@@ -16,7 +16,7 @@
           <div ngbAccordionCollapse>
             <div ngbAccordionBody [ngClass]="{ 'p-0': exerciseLogService.selectedUsername() }">
               <ng-template>
-                @if (exerciseLogService.selectedUsername()) {
+                @if (exerciseLogService.selectedUsername() || exerciseLogService.usernames().length === 1) {
                   <div class="table-responsive">
                     <table class="table table-bordered m-0 table-slim">
                       <tbody>

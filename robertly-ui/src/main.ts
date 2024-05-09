@@ -17,7 +17,8 @@ export const Paths = {
   EXERCISES: 'exercises',
   SIGN_IN: 'signin',
   SIGN_UP: 'signup',
-  DEVELOPER: 'developer'
+  DEVELOPER: 'developer',
+  FOODS: 'foods'
 } as const;
 
 const routes = [
@@ -43,6 +44,11 @@ const routes = [
     pathMatch: 'full',
     loadComponent: () => import('@pages/developer.page.component').then(x => x.DeveloperPageComponent),
   } as const,
+  {
+    path: Paths.FOODS,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/foods.page.component').then(x => x.FoodsPageComponent),
+  } as const,
 ] satisfies Routes;
 
 export type RoutePath = (typeof routes)[number]['path'];
@@ -55,7 +61,7 @@ bootstrapApplication(AppComponent, {
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([jwtInterceptor])),
     provideRouter(routes),
-    provideServiceWorker('ngsw-worker.js', { enabled: true }),
+    provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
     importProvidersFrom(
       provideFirebaseApp(() =>
         initializeApp({

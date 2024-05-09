@@ -1,6 +1,7 @@
 using Firebase.Auth;
 using Firebase.Auth.Providers;
 using Firebase.Database;
+using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +19,30 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+var getGoogleCredential = (GoogleCredentialOptions googleCredentialOptions) =>
+    GoogleCredential.FromJsonParameters(new JsonCredentialParameters()
+    {
+        ClientEmail = googleCredentialOptions.ClientEmail,
+        PrivateKey = googleCredentialOptions.PrivateKey,
+        ProjectId = googleCredentialOptions.ProjectId,
+        Type = JsonCredentialParameters.ServiceAccountCredentialType,
+    }).CreateScoped([
+        "https://www.googleapis.com/auth/firebase.database",
+        "https://www.googleapis.com/auth/userinfo.email",
+    ]);
+
+builder.Services.AddSingleton(serviceProvider =>
+{
+    var googleCredentialOptions = serviceProvider.GetService<IOptions<GoogleCredentialOptions>>()?.Value;
+
+    return googleCredentialOptions is null
+        ? throw new Exception("Missing google credentials")
+        : FirebaseApp.Create(new AppOptions()
+        {
+            Credential = getGoogleCredential(googleCredentialOptions)
+        });
+});
+
 builder.Services.AddScoped(serviceProvider =>
 {
     var googleCredentialOptions = serviceProvider.GetService<IOptions<GoogleCredentialOptions>>()?.Value;
@@ -29,16 +54,7 @@ builder.Services.AddScoped(serviceProvider =>
                 {
                     AuthTokenAsyncFactory = async () =>
                     {
-                        var credential = GoogleCredential.FromJsonParameters(new JsonCredentialParameters()
-                        {
-                            ClientEmail = googleCredentialOptions.ClientEmail,
-                            PrivateKey = googleCredentialOptions.PrivateKey,
-                            ProjectId = googleCredentialOptions.ProjectId,
-                            Type = JsonCredentialParameters.ServiceAccountCredentialType,
-                        }).CreateScoped([
-                            "https://www.googleapis.com/auth/firebase.database",
-                            "https://www.googleapis.com/auth/userinfo.email",
-                        ]);
+                        var credential = getGoogleCredential(googleCredentialOptions);
 
                         var c = credential as ITokenAccess;
                         return await c.GetAccessTokenForRequestAsync();

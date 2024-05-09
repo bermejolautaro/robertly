@@ -1,8 +1,13 @@
 using Firebase.Database;
 using Firebase.Database.Query;
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -11,17 +16,50 @@ namespace robertly.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class LogsController(FirebaseClient client, IConfiguration config) : ControllerBase
+    public class LogsController : ControllerBase
     {
-        private readonly ChildQuery _logsDb = client.ChildLogs(config);
-        private readonly ChildQuery _exercisesDb = client.ChildExercises(config);
-        private readonly ChildQuery _usersDb = client.ChildUsers(config);
-
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        private readonly FirebaseApp _app;
+        private readonly FirebaseClient _client;
+        private readonly IConfiguration _config;
+        private readonly IOptions<GoogleCredentialOptions> _googleCredentialOptions1;
+        private readonly GoogleCredentialOptions _googleCredentialOptions;
+        private readonly ChildQuery _logsDb;
+        private readonly ChildQuery _exercisesDb;
+        private readonly ChildQuery _usersDb;
+
+        public LogsController(FirebaseApp app, FirebaseClient client, IConfiguration config, IOptions<GoogleCredentialOptions> googleCredentialOptions)
+        {
+            _app = app;
+            _client = client;
+            _config = config;
+            _googleCredentialOptions1 = googleCredentialOptions;
+            _googleCredentialOptions = googleCredentialOptions.Value;
+            _logsDb = _client.ChildLogs(_config);
+            _exercisesDb = _client.ChildExercises(_config);
+            _usersDb = _client.ChildUsers(_config);
+        }
 
         [HttpGet]
         public async Task<ActionResult<GetLogsResponseV2>> Get()
         {
+            try
+            {
+                var token = await FirebaseAuth.GetAuth(_app).VerifyIdTokenAsync(Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "") ?? "");
+            }
+            catch (ArgumentException ex)
+            {
+
+            }
+            catch (FirebaseAuthException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             var userId = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
             var logs = (await _logsDb.OnceAsync<LogDbV2>()).Select(x => x.Object.ToLogV2(x.Key));

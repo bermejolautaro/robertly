@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, tap, firstValueFrom } from 'rxjs';
 import { API_URL } from 'src/main';
-import { Auth, GoogleAuthProvider, signInWithRedirect, getRedirectResult, signOut } from '@angular/fire/auth';
+import { Auth, GoogleAuthProvider, signOut } from '@angular/fire/auth';
 import { ToastService } from './toast.service';
 import { signInWithPopup } from '@firebase/auth';
 
@@ -27,6 +27,8 @@ export class AuthApiService {
   private readonly toastService = inject(ToastService);
 
   public signIn(request: SignInRequest): Observable<string> {
+    this.auth.currentUser?.getIdToken(true);
+
     return this.http.post(`${this.apiUrl}/auth/signin`, request, { responseType: 'text' }).pipe(
       tap(idToken => {
         localStorage.setItem(IDTOKEN_KEY, idToken);
@@ -37,6 +39,9 @@ export class AuthApiService {
   public async signInWithGoogle(): Promise<void> {
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/userinfo.email');
+    provider.setCustomParameters({
+      prompt: 'select_account'
+    });
 
     this.auth.useDeviceLanguage();
 
@@ -51,50 +56,25 @@ export class AuthApiService {
 
       this.toastService.ok('Successfully signed in with Google');
     }
-
-    // await signInWithRedirect(this.auth, provider);
   }
 
   public async signOut(): Promise<void> {
     try {
       await signOut(this.auth);
       this.toastService.ok('Successfully signed out');
-      localStorage.removeItem(IDTOKEN_KEY);
+      // localStorage.removeItem(IDTOKEN_KEY);
     } catch (err: unknown) {
       this.toastService.error(JSON.stringify(err));
     }
   }
 
-  public async handleRedirectResult(): Promise<void> {
-    window.addEventListener("beforeunload", () => {
-      const pendingRedirectKey = Object.keys(window.sessionStorage).find(key => /^firebase:pendingRedirect:/.test(key));
-      if (!pendingRedirectKey) {
-        console.log("firebase:pendingRedirect: key missing from sessionStorage, getRedirectResult() will return null");
-      }
-    });
-    try {
-      const result = await getRedirectResult(this.auth);
+  public async tryRefreshToken(): Promise<void> {
+    const newToken = await this.auth.currentUser?.getIdToken(true);
 
-      if (result) {
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-
-        if (credential) {
-          const idToken = await firstValueFrom(
-            this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: credential.accessToken }, { responseType: 'text' })
-          );
-          localStorage.setItem(IDTOKEN_KEY, idToken);
-
-          this.toastService.ok('Successfully signed in with Google');
-        } else {
-          this.toastService.error(`Couldn't get credential from result.`);
-        }
-
-      } else {
-        this.toastService.error(`Couldn't get a response from redirect.`);
-      }
-    } catch (err: unknown) {
-      const error = err as { code: string; message: string; customData: { email: string } };
-      this.toastService.error(JSON.stringify(err));
+    if (newToken) {
+      localStorage.setItem(IDTOKEN_KEY, newToken);
+    } else {
+      localStorage.removeItem(IDTOKEN_KEY);
     }
   }
 }

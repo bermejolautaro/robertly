@@ -1,4 +1,4 @@
-import { Component, Injector, OnInit, TemplateRef, inject } from '@angular/core';
+import { Component, Injector, OnInit, TemplateRef, inject, isDevMode } from '@angular/core';
 import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
@@ -24,6 +24,7 @@ import { ToastService } from '@services/toast.service';
 import { AuthApiService } from '@services/auth-api.service';
 import { HeaderComponent } from '@components/header.component';
 import { FooterComponent } from '@components/footer.component';
+import { AuthService } from '@services/auth.service';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -103,6 +104,7 @@ export class AppComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);
   public readonly toastService = inject(ToastService);
   public readonly authApiService = inject(AuthApiService);
+  public readonly authService = inject(AuthService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
@@ -148,7 +150,7 @@ export class AppComponent implements OnInit {
   );
 
   public readonly Paths = Paths;
-  public hasAppLoaded: boolean = false;
+  public hasAppLoaded: boolean = isDevMode();
   public preloaderMessage: string = 'Searching for updates...';
   public preloaderProgress: number = 10;
 

@@ -62,11 +62,7 @@ public record PostPutExerciseRequest()
 #region Auth
 
 #region Requests
-public record SignInRequest()
-{
-    public required string Email { get; set; }
-    public required string Password { get; set; }
-}
+public record SignInRequest(string Email, string Password);
 
 public record SignUpRequest()
 {
