@@ -1,0 +1,1 @@
+import{Lb as i,Sb as s,ra as n,yb as a,zb as d}from"./chunk-L6N6VOQT.js";var p=(()=>{let e=class e{};e.\u0275fac=function(o){return new(o||e)},e.\u0275cmp=n({type:e,selectors:[["app-foods-page"]],standalone:!0,features:[s],decls:2,vars:0,template:function(o,c){o&1&&(a(0,"p"),i(1,"foods works!"),d())},changeDetection:0});let t=e;return t})();export{p as FoodsPageComponent};
