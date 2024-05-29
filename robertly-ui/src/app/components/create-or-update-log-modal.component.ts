@@ -1,4 +1,4 @@
-import { JsonPipe, KeyValuePipe, NgClass } from '@angular/common';
+import { JsonPipe, KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Exercise } from '@models/exercise.model';
@@ -19,10 +19,11 @@ import { ExerciseLogDto } from '@models/exercise-log.model';
 export class CreateOrUpdateLogModalComponent {
   public readonly modal = inject(NgbActiveModal);
   public readonly exerciseLogService = inject(ExerciseLogService);
+  private readonly titleCasePipe = inject(TitleCasePipe);
 
   @Input({ required: true }) public mode: 'update' | 'create' = null!;
   @Input({ required: true }) public createOrUpdateLogFormGroup: CreateOrUpdateLogFormGroup = null!;
   @Input() public originalValue: ExerciseLogDto = null!;
 
-  public readonly exerciseSelector = (x: string | Exercise | null) => typeof x === 'string' ? '': x?.name ?? '';
+  public readonly exerciseSelector = (x: string | Exercise | null) => typeof x === 'string' ? '': this.titleCasePipe.transform(x?.name) ?? '';
 }

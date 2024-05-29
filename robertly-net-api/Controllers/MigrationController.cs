@@ -88,7 +88,7 @@ namespace robertly.Controllers
 
                 foreach (var serie in log.Series)
                 {
-                    sb2.Append($"INSERT INTO ExerciseLogs (ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg) VALUES ");
+                    sb2.Append($"INSERT INTO Series (ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg) VALUES ");
                     sb2.Append($"(0, '{log.Id}', {serie.Reps}, {serie.WeightInKg.ToString(CultureInfo.InvariantCulture)});");
                     sb2.AppendLine();
                 }

@@ -6,6 +6,7 @@ using Firebase.Database.Query;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -22,6 +23,7 @@ namespace robertly.Controllers
         private readonly ChildQuery _exercisesDb;
         private readonly ChildQuery _usersDb;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+        private readonly string _schema;
 
         public ExercisesController(FirebaseClient client, FirebaseAuthClient authClient, IConfiguration config)
         {
@@ -30,6 +32,7 @@ namespace robertly.Controllers
             _config = config;
             _exercisesDb = _client.ChildExercises(config);
             _usersDb = _client.ChildUsers(config);
+            _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is not null");
         }
 
         [HttpGet]
@@ -38,13 +41,13 @@ namespace robertly.Controllers
             using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
             var exercises = await connection.QueryAsync<Exercise>(
-                """
+                $"""
                 SELECT
                      E.ExerciseId
                     ,E.Name
                     ,E.MuscleGroup
                     ,E.Type
-                FROM Exercises E
+                FROM {_schema}.Exercises E
                 """);
 
             return Ok(new GetExercisesResponse(exercises));

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using System;
 using System.Threading.Tasks;
 
 namespace robertly.Controllers;
@@ -11,10 +12,12 @@ namespace robertly.Controllers;
 public class UsersController
 {
     private readonly IConfiguration _config;
+    private readonly string _schema;
 
     public UsersController(IConfiguration config) 
     {
         _config = config;
+        _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
     }
 
     [HttpGet("firebase-uuid/{firebaseUuid}")]
@@ -23,13 +26,13 @@ public class UsersController
 
         using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
         var query =
-            """
+            $"""
             SELECT 
                  UserId
                 ,UserFirebaseUuid
                 ,Email
                 ,Name
-            FROM Users
+            FROM {_schema}.Users
             WHERE UserFirebaseUuid = @FirebaseUuid
             """;
 
