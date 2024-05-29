@@ -60,7 +60,7 @@ type State = {
                   @if (selectedWeek(); as selectedWeek) {
                     @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerWeek()[selectedWeek] | keyvalue; track $index) {
                       <td class="text-center">
-                        {{ seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 }}
+                        {{ seriesPerMuscleGroupPerUser.value[muscleGroup!] || 0 }}
                       </td>
                     }
                   }

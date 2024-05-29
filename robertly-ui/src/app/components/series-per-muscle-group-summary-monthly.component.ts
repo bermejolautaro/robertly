@@ -10,7 +10,7 @@ import { ExerciseLogService } from '@services/exercise-log.service';
   selector: 'app-series-per-muscle-group-summary-monthly',
   template: `
     <div class="table-responsive">
-      <table class="table table-sm m-0 mb-3">
+      <!-- <table class="table table-sm m-0 mb-3">
         <thead>
           <tr>
             <td scope="col" class="fw-semibold">Muscle Group</td>
@@ -43,7 +43,7 @@ import { ExerciseLogService } from '@services/exercise-log.service';
             </tr>
           }
         </tbody>
-      </table>
+      </table> -->
     </div>
   `,
   styles: [

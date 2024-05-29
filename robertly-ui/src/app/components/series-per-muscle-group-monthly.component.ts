@@ -22,7 +22,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
               {{ this.exerciseLogService.selectedMonth() | parseToMonth: DEFAULT_MONTH_LABEL }}
             </button>
             <div ngbDropdownMenu class="w-100">
-              @for (month of exerciseLogService.months(); track $index) {
+              <!-- @for (month of exerciseLogService.months(); track $index) {
                 <button
                   ngbDropdownItem
                   [ngClass]="{ active: month === this.exerciseLogService.selectedMonth() }"
@@ -30,7 +30,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
                 >
                   {{ month | parseToMonth: DEFAULT_MONTH_LABEL }}
                 </button>
-              }
+              } -->
             </div>
           </div>
         </div>
@@ -75,8 +75,8 @@ export class SeriesPerMuscleGroupMonthlyComponent implements OnInit {
   public readonly DEFAULT_MONTH_LABEL = DEFAULT_MONTH_LABEL;
 
   public ngOnInit(): void {
-    if (!this.exerciseLogService.selectedMonth()) {
-      this.exerciseLogService.selectedMonth$.next(this.exerciseLogService.months()[0] ?? null);
-    }
+    // if (!this.exerciseLogService.selectedMonth()) {
+    //   this.exerciseLogService.selectedMonth$.next(this.exerciseLogService.months()[0] ?? null);
+    // }
   }
 }

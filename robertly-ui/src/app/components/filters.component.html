@@ -1,66 +1,49 @@
 <!-- #region FILTERS -->
-<div class="container my-4">
-    <!-- #region DROPDOWN TYPE -->
-    <div class="row mb-2 gx-2">
-      <div class="col-12">
-        <div ngbDropdown class="d-flex justify-content-center">
-          <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
-            {{ exerciseLogService.selectedTypeLabel() | titlecase }}
-          </button>
-          <div ngbDropdownMenu class="w-100">
-            @if (exerciseLogService.selectedType()) {
-              <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
-            }
-            @for (type of exerciseLogService.types(); track type) {
-              <button
-                ngbDropdownItem
-                [ngClass]="{ active: type === exerciseLogService.selectedType() }"
-                (click)="exerciseLogService.selectedType$.next(type)"
-              >
-                {{ type | titlecase }}
-              </button>
-            }
-          </div>
+<div class="container">
+  <!-- #region DROPDOWN TYPE -->
+  <div class="row mb-2 gx-2">
+    <div class="col-12">
+      <app-dropdown [control]="typeControl" [items]="exerciseLogService.types"></app-dropdown>
+
+      <div ngbDropdown class="d-flex justify-content-center">
+        <button type="button" class="btn btn-outline-primary w-100 d-flex justify-content-between align-items-center" ngbDropdownToggle>
+          <!-- {{ exerciseLogService.selectedTypeLabel() | titlecase }} -->
+        </button>
+        <div ngbDropdownMenu class="w-100">
+          @if (exerciseLogService.selectedType()) {
+            <button ngbDropdownItem (click)="exerciseLogService.selectedType$.next(null)">Clear filter</button>
+          }
+          @for (type of exerciseLogService.types(); track type) {
+            <button
+              ngbDropdownItem
+              [ngClass]="{ active: type === exerciseLogService.selectedType() }"
+              (click)="exerciseLogService.selectedType$.next(type!)"
+            >
+              {{ type | titlecase }}
+            </button>
+          }
         </div>
       </div>
     </div>
-    <!-- #endregion -->
-
-    <!-- #region TYPEAHEAD EXERCISE -->
-    <div class="col-12">
-      <input
-        type="text"
-        class="form-control mb-2"
-        [(ngModel)]="exerciseTypeahead"
-        (selectItem)="onExerciseTypeaheadChange($event)"
-        [ngbTypeahead]="exerciseSearch"
-        (focus)="exerciseTypeahead = ''; exerciseFocus$.next(exerciseTypeahead)"
-        (blur)="exerciseTypeahead = exerciseLogService.selectedExerciseLabel()"
-        [popupClass]="'typeahead'"
-        [resultFormatter]="exerciseFormatter"
-        [inputFormatter]="exerciseFormatter"
-        #exerciseTypeaheadInput
-      />
-    </div>
-    <!-- #endregion -->
-
-    <!-- #region WEIGHT EXERCISE -->
-
-    <div class="col-12">
-      <input
-        type="text"
-        class="form-control mb-2"
-        [(ngModel)]="weightTypeahead"
-        (selectItem)="onWeightTypeaheadChange($event)"
-        [ngbTypeahead]="weightSearch"
-        (focus)="weightTypeahead = ''; weightFocus$.next(weightTypeahead)"
-        (blur)="weightTypeahead = exerciseLogService.selectedWeightLabel()"
-        [popupClass]="'typeahead'"
-        [resultFormatter]="weightFormatter"
-        [inputFormatter]="weightFormatter"
-        #weightTypeaheadInput
-      />
-    </div>
-    <!-- #endregion -->
   </div>
   <!-- #endregion -->
+
+  <!-- #region TYPEAHEAD EXERCISE -->
+  <div class="col-12 mb-2">
+    <app-typeahead
+      placeholder="Exercise"
+      [control]="exerciseControl"
+      [items]="exercisesFilteredByType"
+      [itemSelector]="exerciseSelector"
+    ></app-typeahead>
+  </div>
+  <!-- #endregion -->
+
+  <!-- #region WEIGHT EXERCISE -->
+
+  <div class="col-12 mb-2">
+    <app-typeahead placeholder="Weight (kg)" [control]="weightControl" [items]="weightsFilteredByExercise"></app-typeahead>
+  </div>
+  <!-- #endregion -->
+</div>
+<!-- #endregion -->

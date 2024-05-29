@@ -12,13 +12,13 @@ import { ExerciseRow } from '@models/exercise-row.model';
       <div ngbAccordionItem class="accordion-highlight light-blue">
         <h2 ngbAccordionHeader>
           <button ngbAccordionButton>
-            <app-exercise-row-title [exerciseRow]="personalRecord" [showStar]="true"></app-exercise-row-title>
+            <!-- <app-exercise-row-title [exerciseRow]="personalRecord" [showStar]="true"></app-exercise-row-title> -->
           </button>
         </h2>
         <div ngbAccordionCollapse>
           <div ngbAccordionBody>
             <ng-template>
-              <app-exercise-row-body [exerciseRow]="personalRecord"></app-exercise-row-body>
+              <!-- <app-exercise-row-body [exerciseRow]="personalRecord"></app-exercise-row-body> -->
             </ng-template>
           </div>
         </div>

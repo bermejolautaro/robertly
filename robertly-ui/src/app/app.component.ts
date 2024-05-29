@@ -7,18 +7,17 @@ import { Paths } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
 
-import { ExerciseLogApiService } from '@services/exercise-log-api.service';
-import { DOCUMENT, NgClass, TitleCasePipe } from '@angular/common';
+import { CreateExerciseLogRequest, ExerciseLogApiService } from '@services/exercise-log-api.service';
+import { DOCUMENT, JsonPipe, NgClass, TitleCasePipe } from '@angular/common';
 
-import { ExerciseLog } from '@models/exercise-log.model';
+import { ExerciseLogDto } from '@models/exercise-log.model';
 import { NgbAlertModule, NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
-import { ExerciseApiService } from '@services/exercises-api.service';
+import { CreateExerciseRequest, ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { DayjsService } from '@services/dayjs.service';
 import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ExerciseRow } from '@models/exercise-row.model';
 import { FiltersComponent } from '@components/filters.component';
 import { ToastService } from '@services/toast.service';
 import { AuthApiService } from '@services/auth-api.service';
@@ -37,7 +36,7 @@ export type CreateOrUpdateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
   userId: FormControl<string | null>;
   date: FormControl<string | null>;
-  exercise: FormControl<Exercise | null>;
+  exercise: FormControl<string | Exercise | null>;
   series: FormArray<
     FormGroup<{
       reps: FormControl<number | null>;
@@ -48,35 +47,44 @@ export type CreateOrUpdateLogFormGroup = FormGroup<{
 
 const createOrUpdateLogFormValidator: ValidatorFn = control => {
   const typedControl = control as CreateOrUpdateLogFormGroup;
-  let errors: Record<string, string> | null = null;
+  const errorsMap: Map<string, Record<string, string>> = new Map();
 
   const userRequiredErrors = Validators.required(typedControl.controls.user);
   if (userRequiredErrors) {
-    errors = { ...(errors ?? {}), ...{ userRequired: 'Username is required' } };
+    errorsMap.set('user', { ...errorsMap.get('user'), ...{ required: 'Username is required' } });
   }
 
   if (typedControl.value.user === 'peron') {
-    errors = { ...(errors ?? {}), ...{ userInvalidPeron: 'Peron is not allowed' } };
+    errorsMap.set('user', { ...errorsMap.get('user'), ...{ invalidPeron: 'Peron is not allowed' } });
   }
 
   const exerciseRequiredErrors = Validators.required(typedControl.controls.exercise);
   if (exerciseRequiredErrors) {
-    errors = { ...(errors ?? {}), ...{ exerciseRequired: 'Exercise is required' } };
+    errorsMap.set('exercise', { ...errorsMap.get('exercise'), ...{ exerciseRequired: 'Exercise is required' } });
   }
 
-  if (typedControl.value.exercise?.name?.toLowerCase() === 'peron') {
-    errors = { ...(errors ?? {}), ...{ exerciseInvalidPeron: 'Peron is not allowed' } };
+  if (typeof typedControl.value.exercise === 'string') {
+    if (typedControl.value.exercise?.toLowerCase() === 'peron') {
+      errorsMap.set('exercise', { ...errorsMap.get('exercise'), ...{ invalidPeron: 'Peron is not allowed' } });
+    }
+  } else {
   }
 
   if (typedControl.controls.series.value.map(x => (x.reps ?? 0) > 0 && (x.weightInKg ?? 0) > 0).every(x => !x)) {
-    errors = { ...(errors ?? {}), ...{ seriesAllSeriesAreEmpty: 'Needs at least one serie' } };
+    errorsMap.set('series', { ...errorsMap.get('series'), ...{ allSeriesAreEmpty: 'Needs at least one serie' } });
   }
 
   if (typedControl.controls.series.value.some(x => !Number.isInteger(x.reps ?? 0))) {
-    errors = { ...(errors ?? {}), ...{ seriesRepsMustBeInteger: 'Reps needs to be whole numbers' } };
+    errorsMap.set('series', { ...errorsMap.get('series'), ...{ repsMustBeInteger: 'Reps needs to be whole numbers' } });
   }
 
-  return errors;
+  const result: Record<string, Record<string, string>> = {};
+
+  for (const [key, value] of errorsMap.entries()) {
+    result[key] = value;
+  }
+
+  return result;
 };
 
 @Component({
@@ -88,6 +96,7 @@ const createOrUpdateLogFormValidator: ValidatorFn = control => {
   imports: [
     NgClass,
     TitleCasePipe,
+    JsonPipe,
     FiltersComponent,
     HeaderComponent,
     FooterComponent,
@@ -119,7 +128,7 @@ export class AppComponent implements OnInit {
     {
       user: new FormControl(''),
       userId: new FormControl(''),
-      exercise: new FormControl<Exercise | null>(null),
+      exercise: new FormControl<string | Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
@@ -136,7 +145,7 @@ export class AppComponent implements OnInit {
     {
       user: new FormControl(''),
       userId: new FormControl(''),
-      exercise: new FormControl<Exercise | null>(null),
+      exercise: new FormControl<string | Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
         new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
@@ -203,15 +212,19 @@ export class AppComponent implements OnInit {
       .pipe(takeUntilDestroyed(), debounceTime(1000))
       .subscribe(value => localStorage.setItem(CREATE_LOG_VALUE_CACHE_KEY, JSON.stringify(value)));
 
-    this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseRow => {
+    this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseLog => {
       this.updateLogFormGroup.reset();
       this.updateLogFormGroup.patchValue({
-        exercise: exerciseRow.exercise,
-        date: this.dayjsService.parseDate(exerciseRow.date).format('YYYY-MM-DD'),
-        user: exerciseRow.username,
-        series: exerciseRow.series.map(x => ({ reps: x.reps, weightInKg: x.weightInKg })),
+        exercise: exerciseLog.exercise,
+        date: this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'),
+        user: exerciseLog.user.name,
+        series: exerciseLog.series.map(x => ({ reps: x.reps, weightInKg: x.weightInKg })),
       });
-      this.open('update', exerciseRow);
+      this.open('update', exerciseLog);
+    });
+
+    this.exerciseLogService.createLogClicked$.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.open('create');
     });
 
     this.exerciseLogService.deleteLog$
@@ -237,8 +250,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  public open(mode: 'update' | 'create', exerciseRow?: ExerciseRow): void {
-    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, { centered: true, injector: this.injector });
+  public open(mode: 'update' | 'create', exerciseLog?: ExerciseLogDto): void {
+    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, { injector: this.injector, fullscreen: true });
     const instance = modalRef.componentInstance as CreateOrUpdateLogModalComponent;
     instance.createOrUpdateLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
     instance.mode = mode;
@@ -247,8 +260,8 @@ export class AppComponent implements OnInit {
       this.createLogFormGroup.controls.date.patchValue(this.dayjs().format('YYYY-MM-DD'));
     }
 
-    if (exerciseRow) {
-      instance.originalValue = exerciseRow;
+    if (exerciseLog) {
+      instance.originalValue = exerciseLog;
     }
 
     modalRef.result.then(
@@ -258,19 +271,29 @@ export class AppComponent implements OnInit {
             return;
           }
 
-          const user: ExerciseLog | null =
-            this.exerciseLogService
-              .logs()
-              .find(x => x.user.toLowerCase() === this.createLogFormGroup.value.user?.toLowerCase() && !!x.userId) ?? null;
+          if (typeof this.createLogFormGroup.value.exercise === 'string') {
+            return;
+          }
 
-          const request = {
-            date: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
-            exerciseId: this.createLogFormGroup.value.exercise!.id,
-            user: user?.user ?? this.createLogFormGroup.value.user!.toLowerCase(),
-            userId: user?.userId ?? null,
-            series: (this.createLogFormGroup.value.series ?? [])
-              .filter(x => !!x.reps && !!x.weightInKg)
-              .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+          const user = this.authService.user();
+
+          const request: CreateExerciseLogRequest = {
+            exerciseLog: {
+              exerciseLogUsername: user?.name ?? this.createLogFormGroup.value.user!.toLocaleLowerCase(),
+              exerciseLogUserId: user?.userId,
+              exerciseLogExerciseId: this.createLogFormGroup.value.exercise!.exerciseId,
+              exerciseLogDate: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
+              series: (this.createLogFormGroup.value.series ?? [])
+                .filter(x => !!x.reps && !!x.weightInKg)
+                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+
+            },
+            // exerciseId: this.createLogFormGroup.value.exercise!.id,
+            // user: user?.user.name ?? this.createLogFormGroup.value.user!.toLowerCase(),
+            // userId: user?.user.id ?? null,
+            // series: (this.createLogFormGroup.value.series ?? [])
+            //   .filter(x => !!x.reps && !!x.weightInKg)
+            //   .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
           };
 
           this.exerciseLogApiService.createExerciseLog(request).subscribe({
@@ -290,17 +313,21 @@ export class AppComponent implements OnInit {
             return;
           }
 
-          const user: ExerciseLog | null =
+          const user: ExerciseLogDto | null =
             this.exerciseLogService
               .logs()
-              .find(x => x.user.toLowerCase() === this.updateLogFormGroup.value.user?.toLowerCase() && !!x.userId) ?? null;
+              .find(x => x.user.name.toLowerCase() === this.updateLogFormGroup.value.user?.toLowerCase() && !!x.user.userId) ?? null;
+
+          if (typeof this.updateLogFormGroup.value.exercise === 'string') {
+            return;
+          }
 
           const request = {
-            id: exerciseRow!.id,
+            id: exerciseLog!.id,
             date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
-            exerciseId: this.updateLogFormGroup.value.exercise!.id,
-            user: user?.user ?? this.updateLogFormGroup.value.user!.toLowerCase(),
-            userId: user?.userId ?? null,
+            exerciseId: this.updateLogFormGroup.value.exercise!.exerciseId!,
+            user: user?.user.name ?? this.updateLogFormGroup.value.user!.toLowerCase(),
+            userId: user?.user.userId ?? null,
             series: (this.updateLogFormGroup.value.series ?? [])
               .filter(x => !!x.reps && !!x.weightInKg)
               .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
@@ -328,18 +355,18 @@ export class AppComponent implements OnInit {
 
   public fetchData(fetchExercises: boolean = false, fetchExercisesLogs: boolean = true): void {
     const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
-    const cachedExerciseLogs: ExerciseLog[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
+    const cachedExerciseLogs: ExerciseLogDto[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
 
     let exercises$ = this.exerciseApiService.getExercises();
     let exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsv2();
 
-    if (!fetchExercises && cachedExercises.length) {
-      exercises$ = of(cachedExercises);
-    }
+    // if (!fetchExercises && cachedExercises.length) {
+    //   exercises$ = of(cachedExercises);
+    // }
 
-    if (!fetchExercisesLogs && cachedExerciseLogs.length) {
-      exerciseLogs$ = of(cachedExerciseLogs);
-    }
+    // if (!fetchExercisesLogs && cachedExerciseLogs.length) {
+    //   exerciseLogs$ = of(cachedExerciseLogs);
+    // }
 
     this.exerciseLogService.withLoading(
       forkJoin([exerciseLogs$, exercises$]).pipe(

@@ -1,14 +1,14 @@
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
-import { ExerciseRow } from '@models/exercise-row.model';
+import { ExerciseLogDto } from '@models/exercise-log.model';
 import { ExerciseLogService } from '@services/exercise-log.service';
 
 @Component({
   selector: 'app-exercise-row-body',
   template: `
-    @if (exerciseRow) {
-      <table class="table table-striped table-sm m-0" (click)="exerciseLogService.logClicked$.next(exerciseRow)">
+    @if (exerciseLog) {
+      <table class="table table-striped table-sm m-0" (click)="exerciseLogService.logClicked$.next(exerciseLog)">
         <tbody>
-          @for (serie of exerciseRow.series; track $index) {
+          @for (serie of exerciseLog.series; track $index) {
             <tr class="row">
               <td class="fw-bold col">Serie {{ $index + 1 }}</td>
               <td class="col text-center">{{ serie.reps }} reps</td>
@@ -16,26 +16,26 @@ import { ExerciseLogService } from '@services/exercise-log.service';
             </tr>
           }
 
-          @if (exerciseRow.total) {
+          @if (exerciseLog.totalReps) {
             <tr class="row">
               <td class="fw-bold col">Total</td>
-              <td class="col text-center">{{ exerciseRow.total }} reps</td>
-              <td class="col text-center">{{ exerciseRow.series[0]!.weightInKg }}kg</td>
+              <td class="col text-center">{{ exerciseLog.totalReps }} reps</td>
+              <td class="col text-center">{{ exerciseLog.series[0]!.weightInKg }}kg</td>
             </tr>
           }
 
-          @if (exerciseRow.average) {
+          @if (exerciseLog.average) {
             <tr class="row">
               <td class="fw-bold col">Average</td>
-              <td class="col text-center">{{ exerciseRow.average }} reps</td>
-              <td class="col text-center">{{ exerciseRow.series[0]!.weightInKg }}kg</td>
+              <td class="col text-center">{{ exerciseLog.average }} reps</td>
+              <td class="col text-center">{{ exerciseLog.series[0]!.weightInKg }}kg</td>
             </tr>
           }
 
           <tr class="row">
             <td class="fw-bold col">Tonnage</td>
             <td class="col text-center">&nbsp;</td>
-            <td class="col text-center">{{ exerciseRow.tonnage }}kg</td>
+            <td class="col text-center">{{ exerciseLog.tonnage }}kg</td>
           </tr>
         </tbody>
       </table>
@@ -48,5 +48,5 @@ import { ExerciseLogService } from '@services/exercise-log.service';
 })
 export class ExerciseRowBodyComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
-  @Input({ required: true }) exerciseRow!: ExerciseRow;
+  @Input({ required: true }) exerciseLog!: ExerciseLogDto;
 }

@@ -1,6 +1,6 @@
 export interface Exercise {
-  id: string;
-  name: string;
-  type: string;
-  muscleGroup: string;
+  exerciseId?: number;
+  name?: string;
+  type?: string;
+  muscleGroup?: string;
 }

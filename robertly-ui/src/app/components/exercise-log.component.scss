@@ -1,0 +1,18 @@
+.log {
+  background-color: var(--light-bg);
+  color: var(--font-color);
+  margin-bottom: 8px;
+  border-radius: 5px;
+  padding: .2rem .6rem .2rem .6rem;
+
+  .title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+
+  .hint {
+    font-size: 12px;
+    opacity: .8;
+  }
+}

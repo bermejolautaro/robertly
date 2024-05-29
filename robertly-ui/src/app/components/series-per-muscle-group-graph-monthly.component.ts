@@ -35,37 +35,37 @@ export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit {
   private chart: Chart | null = null;
 
   public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => {
-    const seriesAmountPerUserPerMuscleGroupPerMonth = getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseLogService.exerciseRows());
+    // const seriesAmountPerUserPerMuscleGroupPerMonth = getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseLogService.logs());
     const muscleGroups = this.exerciseLogService.muscleGroups();
     const selectedMonth = this.exerciseLogService.selectedMonth();
 
-    if (selectedMonth) {
-      let seriesAmountPerUserPerMuscleGroup = seriesAmountPerUserPerMuscleGroupPerMonth[selectedMonth];
+    // if (selectedMonth) {
+    //   let seriesAmountPerUserPerMuscleGroup = seriesAmountPerUserPerMuscleGroupPerMonth[selectedMonth];
 
-      if (seriesAmountPerUserPerMuscleGroup) {
-        const result: ChartDataSetItem[] = [];
+    //   if (seriesAmountPerUserPerMuscleGroup) {
+    //     const result: ChartDataSetItem[] = [];
 
-        for (const x of R.toPairs(seriesAmountPerUserPerMuscleGroup)) {
-          const name = x[0];
-          const values = x[1];
+    //     for (const x of R.toPairs(seriesAmountPerUserPerMuscleGroup)) {
+    //       const name = x[0];
+    //       const values = x[1];
 
-          let seriesAmount: number[] = [];
+    //       let seriesAmount: number[] = [];
 
-          for (const muscleGroup of muscleGroups) {
-            const value = values[muscleGroup] || 0;
-            seriesAmount.push(value);
-          }
+    //       for (const muscleGroup of muscleGroups) {
+    //         const value = values[muscleGroup] || 0;
+    //         seriesAmount.push(value);
+    //       }
 
-          result.push({
-            label: this.titleCasePipe.transform(name),
-            data: seriesAmount,
-            borderWidth: 1,
-          });
-        }
+    //       result.push({
+    //         label: this.titleCasePipe.transform(name),
+    //         data: seriesAmount,
+    //         borderWidth: 1,
+    //       });
+    //     }
 
-        return result;
-      }
-    }
+    //     return result;
+    //   }
+    // }
 
     return [];
   });

@@ -2,39 +2,20 @@
   <h4 class="modal-title" id="modal-basic-title">{{ mode === 'update' ? 'Edit' : 'Create' }} Log</h4>
   <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
 </div>
+
 <div class="modal-body">
   <form>
     <!-- #region TYPEAHEAD USERNAME -->
     <div class="mb-3">
       <div class="input-group">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Username"
-          [formControl]="createOrUpdateLogFormGroup.controls.user"
-          (selectItem)="createOrUpdateLogFormGroup.controls.user.patchValue($event.item)"
-          [ngbTypeahead]="usernameSearch"
-          [popupClass]="'typeahead'"
-          (focus)="usernameFocus$.next(createOrUpdateLogFormGroup.value.user || '')"
-          #usernameTypeaheadInput
-        />
-        <button class="btn btn-outline-secondary" type="button" (click)="createOrUpdateLogFormGroup.controls.user.patchValue('')">
-          <i class="fa fa-times"></i>
-        </button>
+        <app-typeahead placeholder="Username" [items]="exerciseLogService.usernames" [control]="createOrUpdateLogFormGroup.controls.user">
+        </app-typeahead>
       </div>
-      @if (
-        !createOrUpdateLogFormGroup.controls.user.pristine &&
-        createOrUpdateLogFormGroup.errors &&
-        createOrUpdateLogFormGroup.errors['userRequired']
-      ) {
-        <div class="d-block invalid-feedback">{{ createOrUpdateLogFormGroup.errors['userRequired'] }}</div>
-      }
-      @if (
-        !createOrUpdateLogFormGroup.controls.user.pristine &&
-        createOrUpdateLogFormGroup.errors &&
-        createOrUpdateLogFormGroup.errors['userInvalidPeron']
-      ) {
-        <div class="d-block invalid-feedback">{{ createOrUpdateLogFormGroup.errors['userInvalidPeron'] }}</div>
+
+      @if (!createOrUpdateLogFormGroup.controls.user.pristine) {
+        @for (error of createOrUpdateLogFormGroup.errors?.['user'] | keyvalue; track $index) {
+          <div class="d-block invalid-feedback">{{ error.value }}</div>
+        }
       }
     </div>
     <!-- #endregion -->
@@ -54,44 +35,18 @@
     <!-- #region TYPEAHEAD EXERCISE -->
     <div class="mb-3">
       <div class="input-group">
-        <input
-          type="text"
-          class="form-control"
+        <app-typeahead
           placeholder="Exercise"
-          [selectOnExact]="true"
-          [formControl]="createOrUpdateLogFormGroup.controls.exercise"
-          (selectItem)="createOrUpdateLogFormGroup.controls.exercise.patchValue($event.item)"
-          [ngbTypeahead]="exerciseSearch"
-          [inputFormatter]="exerciseFormatter"
-          [resultFormatter]="exerciseFormatter"
-          [popupClass]="'typeahead'"
-          (focus)="exerciseFocus$.next(createOrUpdateLogFormGroup.value.exercise?.name || '')"
-          #exerciseTypeaheadInput
-        />
-        <button class="btn btn-outline-secondary" type="button" (click)="createOrUpdateLogFormGroup.controls.exercise.patchValue(null)">
-          <i class="fa fa-times"></i>
-        </button>
+          [items]="exerciseLogService.exercises"
+          [control]="createOrUpdateLogFormGroup.controls.exercise"
+          [itemSelector]="exerciseSelector"
+        ></app-typeahead>
       </div>
-      @if (
-        !createOrUpdateLogFormGroup.controls.exercise.pristine &&
-        createOrUpdateLogFormGroup.errors &&
-        createOrUpdateLogFormGroup.errors['exerciseRequired']
-      ) {
-        <div class="d-block invalid-feedback">{{ createOrUpdateLogFormGroup.errors['exerciseRequired'] }}</div>
-      }
-      @if (
-        !createOrUpdateLogFormGroup.controls.exercise.pristine &&
-        createOrUpdateLogFormGroup.errors &&
-        createOrUpdateLogFormGroup.errors['exerciseInvalidPeron']
-      ) {
-        <div class="d-block invalid-feedback">{{ createOrUpdateLogFormGroup.errors['exerciseInvalidPeron'] }}</div>
-      }
-      @if (
-        !createOrUpdateLogFormGroup.controls.exercise.pristine &&
-        createOrUpdateLogFormGroup.errors &&
-        createOrUpdateLogFormGroup.errors['exerciseDoesNotExist']
-      ) {
-        <div class="d-block invalid-feedback">{{ createOrUpdateLogFormGroup.errors['exerciseDoesNotExist'] }}</div>
+
+      @if (!createOrUpdateLogFormGroup.controls.exercise.pristine) {
+        @for (error of createOrUpdateLogFormGroup.errors?.['exercise'] | keyvalue; track $index) {
+          <div class="d-block invalid-feedback">{{ error.value }}</div>
+        }
       }
     </div>
     <!-- #endregion -->
@@ -103,28 +58,27 @@
         <input type="number" class="form-control" placeholder="Kg" [formControl]="serieControl.controls.weightInKg" />
       </div>
     }
-    @if (
-      !createOrUpdateLogFormGroup.controls.series.pristine &&
-      createOrUpdateLogFormGroup.errors &&
-      createOrUpdateLogFormGroup.errors['seriesAllSeriesAreEmpty']
-    ) {
-      <div class="d-block invalid-feedback">{{ createOrUpdateLogFormGroup.errors['seriesAllSeriesAreEmpty'] }}</div>
-    }
-    @if (
-      !createOrUpdateLogFormGroup.controls.series.pristine &&
-      createOrUpdateLogFormGroup.errors &&
-      createOrUpdateLogFormGroup.errors['seriesRepsMustBeInteger']
-    ) {
-      <div class="d-block invalid-feedback">{{ createOrUpdateLogFormGroup.errors['seriesRepsMustBeInteger'] }}</div>
+
+    @if (!createOrUpdateLogFormGroup.controls.series.pristine) {
+      @for (error of createOrUpdateLogFormGroup.errors?.['series'] | keyvalue; track $index) {
+        <div class="d-block invalid-feedback">{{ error.value }}</div>
+      }
     }
   </form>
 </div>
 <div class="modal-footer" [ngClass]="{ 'justify-content-between': mode === 'update' }">
   @if (mode === 'update') {
-    <button type="button" class="btn btn-danger" (click)="exerciseLogService.deleteLog$.next(originalValue); modal.dismiss()">
+    <!-- <button type="button" class="btn btn-danger" (click)="exerciseLogService.deleteLog$.next(originalValue); modal.dismiss()">
       Delete
-    </button>
+    </button> -->
   }
+  <button
+    type="button"
+    class="btn btn-secondary"
+    (click)="modal.dismiss()"
+  >
+    Cancel
+  </button>
   <button
     type="button"
     class="btn"

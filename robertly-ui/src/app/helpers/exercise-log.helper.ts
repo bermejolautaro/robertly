@@ -1,61 +1,61 @@
 import { parseAndCompare, parseDate } from '@helpers/date.helper';
-import { Serie, type ExerciseLog } from '@models/exercise-log.model';
+import { Serie, type ExerciseLogDto } from '@models/exercise-log.model';
 import { type ExerciseRow } from '@models/exercise-row.model';
 import { type GroupedLog } from '@models/grouped-log.model';
 import * as R from 'remeda';
 
-export function groupExerciseLogs(exerciseLogs: ExerciseLog[]) {
-  const result = R.pipe(
-    exerciseLogs,
-    R.groupBy(x => x.date),
-    R.mapValues(x =>
-      R.pipe(
-        x,
-        R.groupBy(y => y.user),
-        R.mapValues(y => y.map(mapToExerciseRow)),
-        R.toPairs
-      )
-    ),
-    R.toPairs,
-    R.sort(([dateA], [dateB]) => parseAndCompare(dateA, dateB))
-  );
+// export function groupExerciseLogs(exerciseLogs: ExerciseLog[]) {
+//   const result = R.pipe(
+//     exerciseLogs,
+//     R.groupBy(x => x.date),
+//     R.mapValues(x =>
+//       R.pipe(
+//         x,
+//         R.groupBy(y => y.user),
+//         R.mapValues(y => y.map(mapToExerciseRow)),
+//         R.toPairs
+//       )
+//     ),
+//     R.toPairs,
+//     R.sort(([dateA], [dateB]) => parseAndCompare(dateA, dateB))
+//   );
 
-  return result;
-}
+//   return result;
+// }
 
-export function amountDaysTrainedByUser(exerciseLogs: ExerciseLog[]) {
-  return R.pipe(
-    exerciseLogs,
-    R.groupBy(x => x.user),
-    R.mapValues(logs => amountDaysTrained(logs))
-  );
-}
+// export function amountDaysTrainedByUser(exerciseLogs: ExerciseLog[]) {
+//   return R.pipe(
+//     exerciseLogs,
+//     R.groupBy(x => x.user),
+//     R.mapValues(logs => amountDaysTrained(logs))
+//   );
+// }
 
-function mapToExerciseRow(log: ExerciseLog): ExerciseRow {
-  const firstSerie = log.series.at(0);
-  const total = log.series.every(x => x.weightInKg === firstSerie?.weightInKg) ? R.sumBy(log.series, x => x.reps!) : null;
+// function mapToExerciseRow(log: ExerciseLog): ExerciseRow {
+//   const firstSerie = log.series.at(0);
+//   const total = log.series.every(x => x.weightInKg === firstSerie?.weightInKg) ? R.sumBy(log.series, x => x.reps!) : null;
 
-  return {
-    id: log.id,
-    date: log.date.toString(),
-    username: log.user,
-    userId: log.userId,
-    exercise: log.exercise,
-    type: log.exercise.type,
-    series: [...log.series],
-    highlighted: log.series.every(x => x.weightInKg === firstSerie?.weightInKg)
-      ? log.series.every(x => x.reps! >= 12)
-        ? ('green' as const)
-        : log.series.every(x => x.reps! >= 8)
-          ? ('yellow' as const)
-          : null
-      : null,
-    total,
-    tonnage: log.series.reduce((prev, curr) => prev + curr.reps! * curr.weightInKg!, 0),
-    average: total ? Math.ceil(total / log.series.length) : null,
-    muscleGroup: log.exercise.muscleGroup,
-  };
-}
+//   return {
+//     id: log.id,
+//     date: log.date.toString(),
+//     username: log.user.name,
+//     userId: log.user.id,
+//     exercise: log.exercise,
+//     type: log.exercise.type,
+//     series: [...log.series],
+//     highlighted: log.series.every(x => x.weightInKg === firstSerie?.weightInKg)
+//       ? log.series.every(x => x.reps! >= 12)
+//         ? ('green' as const)
+//         : log.series.every(x => x.reps! >= 8)
+//           ? ('yellow' as const)
+//           : null
+//       : null,
+//     total,
+//     tonnage: log.series.reduce((prev, curr) => prev + curr.reps! * curr.weightInKg!, 0),
+//     average: total ? Math.ceil(total / log.series.length) : null,
+//     muscleGroup: log.exercise.muscleGroup,
+//   };
+// }
 
 export function mapGroupedToExerciseRows(groupedLogs: GroupedLog[]): ExerciseRow[] {
   return R.pipe(
@@ -65,7 +65,7 @@ export function mapGroupedToExerciseRows(groupedLogs: GroupedLog[]): ExerciseRow
   );
 }
 
-export function amountDaysTrained(logs: ExerciseLog[]): number {
+export function amountDaysTrained(logs: ExerciseLogDto[]): number {
   const result = R.pipe(
     logs,
     R.map(x => x.date),
@@ -176,7 +176,7 @@ export function getSeriesAmountPerUserPerMuscleGroupPerYear(exerciseRows: Exerci
   );
 }
 
-export function groupByWeek(exerciseRows: ExerciseLog[]) {
+export function groupByWeek(exerciseRows: ExerciseLogDto[]) {
   return R.pipe(
     exerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('isoWeek').format('DD/MM/YYYY')),
@@ -184,7 +184,7 @@ export function groupByWeek(exerciseRows: ExerciseLog[]) {
   );
 }
 
-export function groupByMonth(exerciseRows: ExerciseLog[]) {
+export function groupByMonth(exerciseRows: ExerciseLogDto[]) {
   return R.pipe(
     exerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('month').format('DD/MM/YYYY')),
@@ -192,7 +192,7 @@ export function groupByMonth(exerciseRows: ExerciseLog[]) {
   );
 }
 
-export function groupByYear(exerciseRows: ExerciseLog[]) {
+export function groupByYear(exerciseRows: ExerciseLogDto[]) {
   return R.pipe(
     exerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('year').format('DD/MM/YYYY')),

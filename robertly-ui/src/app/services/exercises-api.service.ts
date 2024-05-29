@@ -15,7 +15,7 @@ export type CreateExerciseRequest = {
 };
 
 export type UpdateExerciseRequest = {
-  id: string;
+  id: number;
   name: string;
   muscleGroup: string;
   type: string;
@@ -40,7 +40,7 @@ export class ExerciseApiService {
     return this.http.put<void>(`${this.netApiUrl}/exercises/${request.id}`, request);
   }
 
-  public deleteExercise(id: string): Observable<void> {
+  public deleteExercise(id: number): Observable<void> {
     return this.http.delete<void>(`${this.netApiUrl}/exercises/${id}`);
   }
 }

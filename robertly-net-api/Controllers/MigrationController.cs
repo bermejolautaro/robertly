@@ -5,8 +5,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using static System.IO.File;
@@ -19,6 +21,7 @@ namespace robertly.Controllers
     {
         private readonly FirebaseClient _client;
         private readonly ChildQuery _exercisesDb;
+        private readonly ChildQuery _usersDb;
         private readonly ChildQuery _logsDb;
 
         public MigrationController(FirebaseClient client, IConfiguration config)
@@ -26,8 +29,73 @@ namespace robertly.Controllers
             _client = client;
             _logsDb = client.ChildLogs(config);
             _exercisesDb = client.ChildExercises(config);
+            _usersDb = client.ChildUsers(config);
         }
 
+        [HttpGet("InsertScriptExercises")]
+        public async Task<string> CreateInsertScriptExercises()
+        {
+            var exercisesDb = (await _exercisesDb.OnceAsync<ExerciseDb>()).Select(x => x.Object.ToExercise(x.Key));
+
+            var sb = new StringBuilder();
+
+            foreach(var exercise in exercisesDb)
+            {
+                sb.Append($"INSERT INTO Exercises (ExerciseFirebaseId, Name, MuscleGroup, Type) VALUES ");
+                sb.Append($"('{exercise.ExerciseId}', '{exercise.Name}', '{exercise.MuscleGroup}', '{exercise.Type}');");
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
+        [HttpGet("InsertScriptUsers")]
+        public async Task<string> CreateInsertScriptUsers()
+        {
+            var usersDb = (await _usersDb.OnceAsync<UserDb>()).Select(x => x.Object.ToUser(x.Key));
+
+            var sb = new StringBuilder();
+
+            foreach (var user in usersDb)
+            {
+                sb.Append($"INSERT INTO Users (UserFirebaseUuid, Email, Name) VALUES ");
+                sb.Append($"('{user.UserFirebaseUuid}', '{user.Email}', '{user.Name}');");
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
+        }
+
+
+        [HttpGet("InsertScriptLogs")]
+        public async Task<string> CreateInsertScriptLogs()
+        {
+            var logsDb = (await _logsDb.OnceAsync<LogDbV2>()).Select(x => x.Object.ToLogV2(x.Key));
+
+            var sb = new StringBuilder();
+            var sb2 = new StringBuilder();
+
+            static string map(string? input)
+            {
+                return input is null ? "NULL" : $"'{input}'";
+            }
+
+            foreach (var log in logsDb)
+            {
+                sb.Append($"INSERT INTO ExerciseLogs (ExerciseLogFirebaseId, Username, UserId, UserFirebaseUuid, ExerciseId, ExerciseFirebaseId, Date) VALUES ");
+                sb.Append($"('{log.Id}', {map(log.User)}, 0, {map(log.UserId)}, 0, '{log.ExerciseId}', '{log.Date.ToString("yyyy-MM-dd")}');");
+                sb.AppendLine();
+
+                foreach (var serie in log.Series)
+                {
+                    sb2.Append($"INSERT INTO ExerciseLogs (ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg) VALUES ");
+                    sb2.Append($"(0, '{log.Id}', {serie.Reps}, {serie.WeightInKg.ToString(CultureInfo.InvariantCulture)});");
+                    sb2.AppendLine();
+                }
+            }
+
+            return sb.AppendLine(sb2.ToString()).ToString();
+        }
 
         [HttpGet]
         public async Task Migrate()
@@ -47,7 +115,7 @@ namespace robertly.Controllers
 
                         return new LogDb(
                             firstSerie.User,
-                            exercisesDb.FirstOrDefault(x => x.Name == firstSerie.Name!)?.Id,
+                            $"{exercisesDb.FirstOrDefault(x => x.Name == firstSerie.Name!)?.ExerciseId}",
                             new DateTime(year, month, date),
                             firstSerie.Name is null ? [] : y.Select(z => new Serie(z.Reps ?? -1, z.WeightKg ?? -1))
                         );

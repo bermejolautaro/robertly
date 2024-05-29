@@ -2,7 +2,7 @@
   <app-filters></app-filters>
 
   <div class="container my-4">
-    <app-series-per-muscle-group-weekly class="mb-4" [rows]="exerciseLogService.exerciseRows()"></app-series-per-muscle-group-weekly>
+    <!-- <app-series-per-muscle-group-weekly class="mb-4" [rows]="exerciseLogService.logs()"></app-series-per-muscle-group-weekly> -->
 
     <!-- #region MONTHLY -->
     <ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
@@ -26,7 +26,7 @@
     <div [ngbNavOutlet]="nav" class="mt-2"></div>
     <!-- #endregion -->
 
-    <app-series-per-muscle-group-yearly class="mb-4" [rows]="exerciseLogService.exerciseRows()"></app-series-per-muscle-group-yearly>
+    <!-- <app-series-per-muscle-group-yearly class="mb-4" [rows]="exerciseLogService.logs()"></app-series-per-muscle-group-yearly> -->
     <div class="card border-0 shadow-material-1">
       <div class="card-body">
         <div class="card-title mb-3">
@@ -34,12 +34,12 @@
           <table class="table table-sm m-0 mb-3">
             <tbody>
               <th colspan="2" style="font-weight: 500">Days Trained</th>
-              @for (daysByUser of exerciseLogService.amountDaysTrainedPerUser() | keyvalue; track daysByUser.key) {
+              <!-- @for (daysByUser of exerciseLogService.amountDaysTrainedPerUser() | keyvalue; track daysByUser.key) {
                 <tr>
                   <td>{{ daysByUser.key | titlecase }}</td>
                   <td>{{ daysByUser.value }}</td>
                 </tr>
-              }
+              } -->
             </tbody>
           </table>
         </div>

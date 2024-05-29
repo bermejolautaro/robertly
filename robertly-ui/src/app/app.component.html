@@ -10,15 +10,15 @@
     ></button>
   </div>
   <div class="offcanvas-body">
-    @if (!authService.user) {
+    @if (!authService.user()) {
       <a [routerLink]="Paths.SIGN_IN" (click)="offcanvas.dismiss()">Sign In</a>
       <a [routerLink]="Paths.SIGN_UP" (click)="offcanvas.dismiss()">Sign Up</a>
     }
-    @if (!!authService.user) {
+    @if (!!authService.user()) {
       <a (click)="authApiService.signOut(); offcanvas.dismiss()" class="link-primary" style="cursor: pointer">Sign Out</a>
     }
     <a [routerLink]="Paths.EXERCISES" (click)="offcanvas.dismiss()">Exercises</a>
-    @if (!!authService.user) {
+    @if (!!authService.user()) {
       <a [routerLink]="Paths.FOODS" (click)="offcanvas.dismiss()">Food Tracker</a>
       <a [routerLink]="Paths.DEVELOPER" (click)="offcanvas.dismiss()">Developer</a>
     }
@@ -36,15 +36,9 @@
 @if (hasAppLoaded) {
   <app-header (logsRefreshClicked)="fetchData(true, true)" (menuSidebarClicked)="openSidebar(content)"></app-header>
 
-  <div [style.marginBottom.rem]="8">
+  <div class="main">
     <router-outlet></router-outlet>
   </div>
-
-  @if (exerciseLogService.loaded()) {
-    <button class="btn btn-lg btn-primary" (click)="open('create')">
-      <i class="fa fa-plus"></i>
-    </button>
-  }
 
   <app-footer></app-footer>
 } @else {

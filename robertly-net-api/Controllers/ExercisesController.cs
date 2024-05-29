@@ -1,11 +1,11 @@
-﻿using Firebase.Auth;
+﻿using Dapper;
+using Firebase.Auth;
 using Firebase.Auth.Providers;
 using Firebase.Database;
 using Firebase.Database.Query;
-using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
-using System.Linq;
+using Npgsql;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -18,7 +18,7 @@ namespace robertly.Controllers
 
         private readonly FirebaseClient _client;
         private readonly FirebaseAuthClient _authClient;
-
+        private readonly IConfiguration _config;
         private readonly ChildQuery _exercisesDb;
         private readonly ChildQuery _usersDb;
         private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -27,6 +27,7 @@ namespace robertly.Controllers
         {
             _client = client;
             _authClient = authClient;
+            _config = config;
             _exercisesDb = _client.ChildExercises(config);
             _usersDb = _client.ChildUsers(config);
         }
@@ -34,11 +35,19 @@ namespace robertly.Controllers
         [HttpGet]
         public async Task<ActionResult<GetExercisesResponse>> Get()
         {
-            var userId = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
-            var logs = (await _exercisesDb.OnceAsync<ExerciseDb>())
-                .Select(x => x.Object.ToExercise(x.Key));
+            using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
-            return Ok(new GetExercisesResponse(logs));
+            var exercises = await connection.QueryAsync<Exercise>(
+                """
+                SELECT
+                     E.ExerciseId
+                    ,E.Name
+                    ,E.MuscleGroup
+                    ,E.Type
+                FROM Exercises E
+                """);
+
+            return Ok(new GetExercisesResponse(exercises));
         }
 
         [HttpPost]

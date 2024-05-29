@@ -4,6 +4,48 @@
 @import 'bootstrap/scss/bootstrap';
 @import 'font-awesome/css/font-awesome.min';
 
+:root {
+  --bg: #1d212a;
+  --primary: #5d2be9;
+  --light-bg: #2a2e37;
+  --font-color: #f8faf9;
+  --bs-body-bg: var(--bg);
+}
+
+.btn.btn-outline-secondary {
+  --bs-btn-bg: var(--primary);
+  --bs-btn-color: var(--font-color);
+}
+
+.btn.btn-secondary {
+  --bs-btn-bg: none;
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+.form-control::placeholder {
+  color: var(--font-color);
+  opacity: .6;
+}
+
+.modal-header {
+  justify-content: center;
+
+  .modal-title {
+    font-size: 16px;
+  }
+
+  .btn-close {
+    display: none;
+  }
+}
+
+.modal-fullscreen .modal-body {
+  overflow: hidden;
+}
+
 .dropdown {
   button.btn-outline-primary:hover,
   button.btn-outline-primary.show {
@@ -108,3 +150,4 @@
   --bs-toast-padding-x: 0;
   --bs-toast-padding-y: 0;
 }
+

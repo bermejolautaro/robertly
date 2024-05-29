@@ -1,6 +1,7 @@
 @if (exerciseLogService.loaded()) {
-  <app-filters></app-filters>
-  <div class="container">
+  <!-- <app-filters></app-filters> -->
+
+  <!-- <div class="container">
     <div class="row">
       <div class="col-12">
         <div class="form-check form-switch d-flex align-items-center gap-1">
@@ -9,18 +10,16 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> -->
 }
 
 @if (exerciseLogService.loaded()) {
   <div class="container">
-    @if (exerciseLogService.personalRecord(); as personalRecord) {
-      <app-personal-record class="my-2" [personalRecord]="personalRecord"></app-personal-record>
-    }
-    @if (isGrouped) {
-      <app-grouped-exercise-rows></app-grouped-exercise-rows>
-    } @else {
-      <app-exercise-rows [exerciseRows]="exerciseLogService.exerciseRows()"></app-exercise-rows>
+    <!-- @if (exerciseLogService.personalRecord(); as personalRecord) { -->
+    <!-- <app-personal-record class="my-2" [personalRecord]="personalRecord"></app-personal-record> -->
+    <!-- } -->
+    @for (log of exerciseLogService.logs(); track $index) {
+      <app-exercise-log [exerciseLog]="log"></app-exercise-log>
     }
   </div>
 } @else {

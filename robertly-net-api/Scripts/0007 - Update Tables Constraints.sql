@@ -1,0 +1,7 @@
+ALTER TABLE ExerciseLogs 
+    ALTER COLUMN ExerciseLogFirebaseId DROP NOT NULL,
+    ALTER COLUMN ExerciseFirebaseId DROP NOT NULL;
+
+ALTER TABLE Series ALTER COLUMN ExerciseLogFirebaseId DROP NOT NULL;
+
+ALTER TABLE Exercises ALTER COLUMN ExerciseFirebaseId DROP NOT NULL;

@@ -3,9 +3,9 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
 
-import { ExerciseRow } from '@models/exercise-row.model';
 import { ExerciseRowTitleComponent } from '@components/exercise-row-title.component';
 import { ExerciseRowBodyComponent } from '@components/exercise-row-body.component';
+import { ExerciseLogDto } from '@models/exercise-log.model';
 
 @Component({
   selector: 'app-exercise-rows',
@@ -13,17 +13,17 @@ import { ExerciseRowBodyComponent } from '@components/exercise-row-body.componen
     <div class="row my-2">
       <div class="col">
         <div ngbAccordion>
-          @for (exerciseRow of exerciseRows; track $index) {
-            <div ngbAccordionItem [ngClass]="exerciseRow.highlighted ? 'accordion-highlight ' + exerciseRow.highlighted : null">
+          @for (exerciseLog of exerciseLogs; track $index) {
+            <div ngbAccordionItem [ngClass]="exerciseLog.highlighted ? 'accordion-highlight ' + exerciseLog.highlighted : null">
               <h2 ngbAccordionHeader>
                 <button ngbAccordionButton>
-                  <app-exercise-row-title [exerciseRow]="exerciseRow"></app-exercise-row-title>
+                  <app-exercise-row-title [exerciseLog]="exerciseLog"></app-exercise-row-title>
                 </button>
               </h2>
               <div ngbAccordionCollapse>
                 <div ngbAccordionBody>
                   <ng-template>
-                    <app-exercise-row-body [exerciseRow]="exerciseRow"></app-exercise-row-body>
+                    <app-exercise-row-body [exerciseLog]="exerciseLog"></app-exercise-row-body>
                   </ng-template>
                 </div>
               </div>
@@ -39,5 +39,5 @@ import { ExerciseRowBodyComponent } from '@components/exercise-row-body.componen
   imports: [NgClass, NgTemplateOutlet, NgbAccordionModule, ExerciseRowTitleComponent, ExerciseRowBodyComponent],
 })
 export class ExerciseRowsComponent {
-  @Input() public exerciseRows: ExerciseRow[] = [];
+  @Input() public exerciseLogs: ExerciseLogDto[] = [];
 }

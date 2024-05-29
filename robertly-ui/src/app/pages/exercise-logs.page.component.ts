@@ -1,6 +1,7 @@
 import { DOCUMENT, NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ExerciseLogComponent } from '@components/exercise-log.component';
 
 import { ExerciseRowsComponent } from '@components/exercise-rows.component';
 import { FiltersComponent } from '@components/filters.component';
@@ -20,6 +21,7 @@ import { ExerciseLogService } from '@services/exercise-log.service';
     PersonalRecordComponent,
     GroupedExerciseRowsComponent,
     ExerciseRowsComponent,
+    ExerciseLogComponent,
     FiltersComponent
   ],
 })

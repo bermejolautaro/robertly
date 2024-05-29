@@ -1,6 +1,7 @@
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, TemplateRef, inject } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TypeaheadComponent } from '@components/typeahead.component';
 import { Exercise } from '@models/exercise.model';
 import { NgbModal, NgbModalModule, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseLogService } from '@services/exercise-log.service';
@@ -12,7 +13,7 @@ import { CreateExerciseRequest, ExerciseApiService, UpdateExerciseRequest } from
   styles: ``,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TitleCasePipe, NgbModalModule, NgClass, FormsModule, ReactiveFormsModule],
+  imports: [TitleCasePipe, NgbModalModule, NgClass, FormsModule, ReactiveFormsModule, TypeaheadComponent],
 })
 export class ExercisesPageComponent implements OnInit {
   private readonly modalService = inject(NgbModal);
@@ -26,6 +27,12 @@ export class ExercisesPageComponent implements OnInit {
   });
 
   public isUpdate: boolean = false;
+
+  public constructor() {
+    this.exerciseForm.controls.name.valueChanges.subscribe(x => {
+      this.exerciseForm.controls.name.patchValue(x?.toLowerCase() ?? '', { emitEvent: false });
+    });
+  }
 
   public ngOnInit(): void {
     this.fetchAndUpdateExercises();
@@ -48,7 +55,7 @@ export class ExercisesPageComponent implements OnInit {
 
         if (!exercise) {
           const request: CreateExerciseRequest = {
-            name: this.exerciseForm.value.name!,
+            name: this.exerciseForm.value.name!.toLowerCase(),
             muscleGroup: this.exerciseForm.value.muscleGroup!,
             type: this.exerciseForm.value.type!,
           };
@@ -58,8 +65,8 @@ export class ExercisesPageComponent implements OnInit {
           });
         } else {
           const request: UpdateExerciseRequest = {
-            id: exercise.id,
-            name: this.exerciseForm.value.name!,
+            id: exercise.exerciseId!,
+            name: this.exerciseForm.value.name!.toLowerCase(),
             muscleGroup: this.exerciseForm.value.muscleGroup!,
             type: this.exerciseForm.value.type!,
           };
@@ -78,7 +85,7 @@ export class ExercisesPageComponent implements OnInit {
   }
 
   public deleteExercise(exercise: Exercise): void {
-    this.exerciseApiService.deleteExercise(exercise.id).subscribe({
+    this.exerciseApiService.deleteExercise(exercise.exerciseId!).subscribe({
       next: () => this.fetchAndUpdateExercises(),
     });
   }

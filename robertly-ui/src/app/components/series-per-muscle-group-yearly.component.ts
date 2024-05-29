@@ -61,7 +61,7 @@ type State = {
                   @if (selectedYear(); as selectedYear) {
                     @for (seriesPerMuscleGroupPerUser of seriesPerMuscleGroupPerUserPerYear()[selectedYear] | keyvalue; track $index) {
                       <td class="text-center">
-                        {{ seriesPerMuscleGroupPerUser.value[muscleGroup] || 0 }}
+                        {{ seriesPerMuscleGroupPerUser.value[muscleGroup!] || 0 }}
                       </td>
                     }
                   }

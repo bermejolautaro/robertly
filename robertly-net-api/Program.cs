@@ -3,10 +3,12 @@ using Firebase.Auth.Providers;
 using Firebase.Database;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
+using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using robertly.Repositories;
 using System;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,7 +45,7 @@ builder.Services.AddSingleton(serviceProvider =>
         });
 });
 
-builder.Services.AddScoped(serviceProvider =>
+builder.Services.AddSingleton(serviceProvider =>
 {
     var googleCredentialOptions = serviceProvider.GetService<IOptions<GoogleCredentialOptions>>()?.Value;
 
@@ -85,6 +87,8 @@ builder.Services.AddScoped(serviceProvider =>
 
     return new FirebaseAuthClient(authConfig);
 });
+
+builder.Services.AddScoped<ExerciseLogsRepository>();
 
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddLogging(logBuilder => logBuilder.AddApplicationInsights());

@@ -1,27 +1,28 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { ExerciseLog, Serie } from '@models/exercise-log.model';
+import { ExerciseLog, ExerciseLogDto, Serie } from '@models/exercise-log.model';
 import { Observable, map } from 'rxjs';
 
 import { API_URL } from 'src/main';
 
 type GetExerciseLogsV2Response = {
-  data: ExerciseLog[];
+  data: ExerciseLogDto[];
 };
 
-type CreateExerciseLogRequest = {
-  user: string;
-  userId: string | null;
-  exerciseId: string;
-  date: string;
-  series: Serie[];
+export type CreateExerciseLogRequest = {
+  exerciseLog: ExerciseLog;
+  // user: string;
+  // userId: number | null;
+  // exerciseId: number;
+  // date: string;
+  // series: Serie[];
 };
 
 type UpdateExerciseLogRequest = {
   id: string;
   user: string;
-  userId: string | null;
-  exerciseId: string;
+  userId: number | null;
+  exerciseId: number;
   date: string;
   series: Serie[];
 };
@@ -33,8 +34,8 @@ export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
   private readonly netApiUrl = inject(API_URL);
 
-  public getExerciseLogsv2(): Observable<ExerciseLog[]> {
-    return this.http.get<GetExerciseLogsV2Response>(`${this.netApiUrl}/logs`).pipe(map(x => x.data));
+  public getExerciseLogsv2(): Observable<ExerciseLogDto[]> {
+    return this.http.get<GetExerciseLogsV2Response>(`${this.netApiUrl}/logs?page=0&count=5`).pipe(map(x => x.data));
   }
 
   public createExerciseLog(request: CreateExerciseLogRequest): Observable<void> {

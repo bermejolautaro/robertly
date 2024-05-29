@@ -17,6 +17,12 @@ button:has(.fa.fa-plus) {
   }
 }
 
+.main {
+  background-color: var(--bs-body-bg);
+  height: 100vh;
+  padding-top: 2rem;
+}
+
 .toast-container {
   position: fixed;
   top: 15px;

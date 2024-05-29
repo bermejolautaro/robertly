@@ -5,7 +5,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { TitleCasePipe } from '@angular/common';
+import { JsonPipe, TitleCasePipe } from '@angular/common';
 import { environment } from './environments/environment';
 import { jwtInterceptor } from './app/interceptors/jwt.interceptor';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
@@ -58,6 +58,7 @@ export const API_URL = new InjectionToken<string>('API_URL');
 bootstrapApplication(AppComponent, {
   providers: [
     TitleCasePipe,
+    JsonPipe,
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([jwtInterceptor])),
     provideRouter(routes),

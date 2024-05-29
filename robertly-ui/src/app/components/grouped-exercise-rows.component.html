@@ -1,6 +1,5 @@
-<div class="row my-2">
+<!-- <div class="row my-2">
   <div class="col">
-    <!-- #region DATE -->
     <div ngbAccordion>
       @for (exerciseLogsPerExerciseNamePerUsernamePerDate of exerciseLogService.groupedLogs(); track $index) {
         <div ngbAccordionItem>
@@ -42,7 +41,6 @@
                     </table>
                   </div>
                 } @else {
-                  <!-- #region USER -->
                   <div ngbAccordion>
                     @for (exerciseLogsPerExerciseNamePerUsername of exerciseLogsPerExerciseNamePerUsernamePerDate[1]; track $index) {
                       <div ngbAccordionItem>
@@ -58,7 +56,6 @@
                         <div ngbAccordionCollapse>
                           <div ngbAccordionBody class="p-0">
                             <ng-template>
-                              <!-- #region EXERCISE -->
                               <div class="table-responsive">
                                 <table class="table table-bordered m-0 table-slim">
                                   <tbody>
@@ -81,14 +78,12 @@
                                   </tbody>
                                 </table>
                               </div>
-                              <!-- #endregion -->
                             </ng-template>
                           </div>
                         </div>
                       </div>
                     }
                   </div>
-                  <!-- #endregion -->
                 }
               </ng-template>
             </div>
@@ -96,6 +91,5 @@
         </div>
       }
     </div>
-    <!-- #endregion -->
   </div>
-</div>
+</div> -->

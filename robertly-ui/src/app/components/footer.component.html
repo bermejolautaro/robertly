@@ -1,6 +1,20 @@
-<nav class="navbar navbar-dark bg-primary bg-gradient fixed-bottom fw-bold">
+<nav class="navbar fixed-bottom fw-bold">
   <div class="container-fluid">
     <ul class="navbar-nav flex-row gap-3 justify-content-center w-100">
+      <li class="nav-item w-100">
+        <a
+          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+        >
+          <div class="item">
+            <div>
+              <i class="fa fa-home"></i>
+            </div>
+            <div>Home</div>
+          </div>
+        </a>
+      </li>
       <li class="nav-item w-100">
         <a
           class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
@@ -8,8 +22,20 @@
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
         >
-          Logs <i class="fa fa-history"></i>
+          <div class="item">
+            <div>
+              <i class="fa fa-history"></i>
+            </div>
+            <div>Logs</div>
+          </div>
         </a>
+      </li>
+      <li class="nav-item w-100">
+        <div class="d-flex justify-content-center align-items-center add-button-container">
+          <button class="btn btn-lg btn-primary d-flex justify-content-center align-items-center" (click)="exerciseLogService.createLogClicked$.next()">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
       </li>
       <li class="nav-item w-100">
         <a
@@ -17,7 +43,25 @@
           [routerLink]="Paths.STATS"
           routerLinkActive="active"
         >
-          Stats <i class="fa fa-bar-chart"></i>
+          <div>
+            <div>
+              <i class="fa fa-bar-chart"></i>
+            </div>
+            <div>Stats</div>
+          </div>
+        </a>
+      </li>
+      <li class="nav-item w-100">
+        <a
+          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
+          routerLinkActive="active"
+        >
+          <div>
+            <div>
+              <i class="fa fa-cog"></i>
+            </div>
+            <div>Settings</div>
+          </div>
         </a>
       </li>
     </ul>
