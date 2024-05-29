@@ -37,6 +37,7 @@ jobs:
           GoogleCredential.DatabaseUrl: ${{ secrets.GOOGLE_CREDENTIAL_DATABASE_URL }}
           GoogleCredential.ApiKey: ${{ secrets.GOOGLE_CREDENTIAL_API_KEY }}
           GoogleCredential.AuthDomain: ${{ secrets.GOOGLE_CREDENTIAL_AUTH_DOMAIN }}
+          PostgresConnectionString: ${{ secrets.POSTGRESQL_CONNECTION_STRING }}
 
       - name: Build with dotnet
         run: dotnet build ./robertly-net-api/robertly-net-api.sln --configuration Release
