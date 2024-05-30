@@ -1,8 +1,8 @@
 import { Component, Injector, OnInit, TemplateRef, inject, isDevMode } from '@angular/core';
-import { RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
+import { Router, RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { debounceTime, forkJoin, of, switchMap, tap } from 'rxjs';
+import { debounceTime, forkJoin, switchMap, tap } from 'rxjs';
 import { Paths } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
@@ -12,7 +12,7 @@ import { DOCUMENT, JsonPipe, NgClass, TitleCasePipe } from '@angular/common';
 
 import { ExerciseLogDto } from '@models/exercise-log.model';
 import { NgbAlertModule, NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
-import { CreateExerciseRequest, ExerciseApiService } from '@services/exercises-api.service';
+import { ExerciseApiService } from '@services/exercises-api.service';
 import { Exercise } from '@models/exercise.model';
 import { FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { DayjsService } from '@services/dayjs.service';
@@ -117,11 +117,12 @@ export class AppComponent implements OnInit {
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
-  private readonly modalService = inject(NgbModal);
   private readonly document = inject(DOCUMENT);
   private readonly dayjsService = inject(DayjsService);
   private readonly dayjs = this.dayjsService.instance;
   private readonly injector = inject(Injector);
+  private readonly router = inject(Router);
+  private readonly modalService = inject(NgbModal);
   private readonly offcanvasService = inject(NgbOffcanvas);
 
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
@@ -251,7 +252,7 @@ export class AppComponent implements OnInit {
   }
 
   public open(mode: 'update' | 'create', exerciseLog?: ExerciseLogDto): void {
-    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, { injector: this.injector, fullscreen: true });
+    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, { injector: this.injector, fullscreen: true, animation: false });
     const instance = modalRef.componentInstance as CreateOrUpdateLogModalComponent;
     instance.createOrUpdateLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
     instance.mode = mode;
@@ -354,30 +355,20 @@ export class AppComponent implements OnInit {
   }
 
   public fetchData(fetchExercises: boolean = false, fetchExercisesLogs: boolean = true): void {
-    const cachedExercises: Exercise[] = JSON.parse(localStorage.getItem(EXERCISES_CACHE_KEY) ?? '[]');
-    const cachedExerciseLogs: ExerciseLogDto[] = JSON.parse(localStorage.getItem(EXERCISE_LOGS_CACHE_KEY) ?? '[]');
-
     let exercises$ = this.exerciseApiService.getExercises();
-    let exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsv2();
-
-    // if (!fetchExercises && cachedExercises.length) {
-    //   exercises$ = of(cachedExercises);
-    // }
-
-    // if (!fetchExercisesLogs && cachedExerciseLogs.length) {
-    //   exerciseLogs$ = of(cachedExerciseLogs);
-    // }
 
     this.exerciseLogService.withLoading(
-      forkJoin([exerciseLogs$, exercises$]).pipe(
-        tap(([exerciseLogs, exercises]) => {
-          localStorage.setItem(EXERCISE_LOGS_CACHE_KEY, JSON.stringify(exerciseLogs));
-          localStorage.setItem(EXERCISES_CACHE_KEY, JSON.stringify(exercises));
-          this.exerciseLogService.updateLogs$.next(exerciseLogs);
+      forkJoin([exercises$]).pipe(
+        tap(([exercises]) => {
           this.exerciseLogService.updateExercises$.next(exercises);
         })
       )
     );
+  }
+
+  public signOut(): void {
+    this.authApiService.signOut();
+    this.router.navigate([Paths.SIGN_IN]);
   }
 
   public openSidebar(content: TemplateRef<unknown>): void {

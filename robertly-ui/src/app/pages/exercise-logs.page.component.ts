@@ -7,7 +7,9 @@ import { ExerciseRowsComponent } from '@components/exercise-rows.component';
 import { FiltersComponent } from '@components/filters.component';
 import { GroupedExerciseRowsComponent } from '@components/grouped-exercise-rows.component';
 import { PersonalRecordComponent } from '@components/personal-record.component';
+import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { ExerciseLogService } from '@services/exercise-log.service';
+import { forkJoin, tap } from 'rxjs';
 
 @Component({
   selector: 'app-exercise-logs-page',
@@ -22,16 +24,29 @@ import { ExerciseLogService } from '@services/exercise-log.service';
     GroupedExerciseRowsComponent,
     ExerciseRowsComponent,
     ExerciseLogComponent,
-    FiltersComponent
+    FiltersComponent,
   ],
 })
 export class ExerciseLogsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
+  private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   public readonly exerciseLogService = inject(ExerciseLogService);
 
   public isGrouped: boolean = false;
 
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
+
+    let exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsv2();
+
+    if (!this.exerciseLogService.logs().length) {
+      this.exerciseLogService.withLoading(
+        forkJoin([exerciseLogs$]).pipe(
+          tap(([exerciseLogs]) => {
+            this.exerciseLogService.updateLogs$.next(exerciseLogs);
+          })
+        )
+      );
+    }
   }
 }

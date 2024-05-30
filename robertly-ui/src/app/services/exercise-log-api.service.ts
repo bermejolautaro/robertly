@@ -11,11 +11,6 @@ type GetExerciseLogsV2Response = {
 
 export type CreateExerciseLogRequest = {
   exerciseLog: ExerciseLog;
-  // user: string;
-  // userId: number | null;
-  // exerciseId: number;
-  // date: string;
-  // series: Serie[];
 };
 
 type UpdateExerciseLogRequest = {

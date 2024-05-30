@@ -46,11 +46,12 @@ namespace robertly.Controllers
         {
             try
             {
-                var token = await FirebaseAuth.GetAuth(_app).VerifyIdTokenAsync(Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "") ?? "");
+                var token = await FirebaseAuth.GetAuth(_app)
+                    .VerifyIdTokenAsync(Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "") ?? "");
             }
             catch (ArgumentException ex)
             {
-
+                return Unauthorized(ex.Message);
             }
             catch (FirebaseAuthException ex)
             {
@@ -58,10 +59,10 @@ namespace robertly.Controllers
             }
             catch (Exception ex)
             {
-
+                return Unauthorized(ex.Message);
             }
 
-            var userId = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+            var userFirebaseUuid = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
             var exerciseLogs = await _exerciseLogsRepository.GetExerciseLogsAsync(pagination.Page ?? 0, pagination.Count ?? 1000);
 
@@ -89,7 +90,7 @@ namespace robertly.Controllers
                                         log.Series!.Aggregate(0, (acc, curr) => acc + curr.Reps * (int)curr.WeightInKg),
                                         getTotal(log) is not null ? getTotal(log) / log.Series!.Count() : null);
                 })
-                .Where(x => string.IsNullOrEmpty(userId) || x.User.UserFirebaseUuid == userId);
+                .Where(x => string.IsNullOrEmpty(userFirebaseUuid) || x.User.UserFirebaseUuid == userFirebaseUuid);
 
             return Ok(new GetLogsResponseV3(logsDtos));
         }

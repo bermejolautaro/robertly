@@ -62,7 +62,7 @@ export class AuthApiService {
     try {
       await signOut(this.auth);
       this.toastService.ok('Successfully signed out');
-      // localStorage.removeItem(IDTOKEN_KEY);
+      localStorage.removeItem(IDTOKEN_KEY);
     } catch (err: unknown) {
       this.toastService.error(JSON.stringify(err));
     }

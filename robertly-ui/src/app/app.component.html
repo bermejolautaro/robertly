@@ -14,11 +14,13 @@
       <a [routerLink]="Paths.SIGN_IN" (click)="offcanvas.dismiss()">Sign In</a>
       <a [routerLink]="Paths.SIGN_UP" (click)="offcanvas.dismiss()">Sign Up</a>
     }
+
     @if (!!authService.user()) {
-      <a (click)="authApiService.signOut(); offcanvas.dismiss()" class="link-primary" style="cursor: pointer">Sign Out</a>
+      <button (click)="signOut(); offcanvas.dismiss()" class="btn btn-link" style="cursor: pointer">Sign Out</button>
     }
-    <a [routerLink]="Paths.EXERCISES" (click)="offcanvas.dismiss()">Exercises</a>
+
     @if (!!authService.user()) {
+      <a [routerLink]="Paths.EXERCISES" (click)="offcanvas.dismiss()">Exercises</a>
       <a [routerLink]="Paths.FOODS" (click)="offcanvas.dismiss()">Food Tracker</a>
       <a [routerLink]="Paths.DEVELOPER" (click)="offcanvas.dismiss()">Developer</a>
     }
@@ -34,13 +36,15 @@
 </div>
 
 @if (hasAppLoaded) {
-  <app-header (logsRefreshClicked)="fetchData(true, true)" (menuSidebarClicked)="openSidebar(content)"></app-header>
+  <app-header (logsRefreshClicked)="fetchData(true, true)" (menuSidebarClicked)="openSidebar(content)"> </app-header>
 
   <div class="main">
     <router-outlet></router-outlet>
   </div>
 
-  <app-footer></app-footer>
+  @if (authService.user()) {
+    <app-footer></app-footer>
+  }
 } @else {
   <div class="preloader">
     <div class="preloader-content">

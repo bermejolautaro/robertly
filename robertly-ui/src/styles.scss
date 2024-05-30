@@ -10,11 +10,27 @@
   --light-bg: #2a2e37;
   --font-color: #f8faf9;
   --bs-body-bg: var(--bg);
+  --bs-body-color: var(--font-color);
 }
 
 .btn.btn-outline-secondary {
   --bs-btn-bg: var(--primary);
   --bs-btn-color: var(--font-color);
+}
+
+.offcanvas a, .offcanvas .btn.btn-link {
+  color: white;
+  opacity: .8;
+  padding: 0.1rem 0;
+  font-size: 24px;
+  margin-left: auto;
+  background: none;
+  border: none;
+  text-decoration: none;
+}
+
+a {
+  text-decoration: none;
 }
 
 .btn.btn-secondary {
