@@ -7,7 +7,7 @@ import { Paths } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
 
-import { CreateExerciseLogRequest, ExerciseLogApiService } from '@services/exercise-log-api.service';
+import { CreateExerciseLogRequest, ExerciseLogApiService, UpdateExerciseLogRequest } from '@services/exercise-log-api.service';
 import { DOCUMENT, JsonPipe, NgClass, TitleCasePipe } from '@angular/common';
 
 import { ExerciseLogDto } from '@models/exercise-log.model';
@@ -31,18 +31,19 @@ const EXERCISES_CACHE_KEY = 'robertly-exercises';
 const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
 
 const MINUTES_5 = 5 * 60;
+export type CreateOrUpdateSerieFormGroup = FormGroup<{
+  serieId: FormControl<number | null>;
+  exerciseLogId: FormControl<number | null>;
+  reps: FormControl<number | null>;
+  weightInKg: FormControl<number | null>;
+}>;
 
 export type CreateOrUpdateLogFormGroup = FormGroup<{
   user: FormControl<string | null>;
   userId: FormControl<string | null>;
   date: FormControl<string | null>;
   exercise: FormControl<string | Exercise | null>;
-  series: FormArray<
-    FormGroup<{
-      reps: FormControl<number | null>;
-      weightInKg: FormControl<number | null>;
-    }>
-  >;
+  series: FormArray<CreateOrUpdateSerieFormGroup>;
 }>;
 
 const createOrUpdateLogFormValidator: ValidatorFn = control => {
@@ -132,11 +133,11 @@ export class AppComponent implements OnInit {
       exercise: new FormControl<string | Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
       ]),
     },
     [createOrUpdateLogFormValidator]
@@ -149,11 +150,11 @@ export class AppComponent implements OnInit {
       exercise: new FormControl<string | Exercise | null>(null),
       date: new FormControl(''),
       series: new FormArray([
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
-        new FormGroup({ reps: new FormControl(), weightInKg: new FormControl() }),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
+        createSerieFormGroup(),
       ]),
     },
     [createOrUpdateLogFormValidator]
@@ -182,7 +183,7 @@ export class AppComponent implements OnInit {
       }
     }
 
-    this.fetchData(shouldFetchFromBackend, shouldFetchFromBackend);
+    this.fetchData();
 
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
@@ -219,7 +220,12 @@ export class AppComponent implements OnInit {
         exercise: exerciseLog.exercise,
         date: this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'),
         user: exerciseLog.user.name,
-        series: exerciseLog.series.map(x => ({ reps: x.reps, weightInKg: x.weightInKg })),
+        series: exerciseLog.series.map(x => ({
+          exerciseLogId: x.exerciseLogId,
+          serieId: x.serieId,
+          reps: x.reps,
+          weightInKg: x.weightInKg,
+        })),
       });
       this.open('update', exerciseLog);
     });
@@ -252,7 +258,11 @@ export class AppComponent implements OnInit {
   }
 
   public open(mode: 'update' | 'create', exerciseLog?: ExerciseLogDto): void {
-    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, { injector: this.injector, fullscreen: true, animation: false });
+    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, {
+      injector: this.injector,
+      fullscreen: true,
+      animation: false,
+    });
     const instance = modalRef.componentInstance as CreateOrUpdateLogModalComponent;
     instance.createOrUpdateLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
     instance.mode = mode;
@@ -268,70 +278,34 @@ export class AppComponent implements OnInit {
     modalRef.result.then(
       () => {
         if (mode === 'create') {
-          if (this.createLogFormGroup.invalid) {
-            return;
-          }
-
-          if (typeof this.createLogFormGroup.value.exercise === 'string') {
-            return;
-          }
-
-          const user = this.authService.user();
-
-          const request: CreateExerciseLogRequest = {
-            exerciseLog: {
-              exerciseLogUsername: user?.name ?? this.createLogFormGroup.value.user!.toLocaleLowerCase(),
-              exerciseLogUserId: user?.userId,
-              exerciseLogExerciseId: this.createLogFormGroup.value.exercise!.exerciseId,
-              exerciseLogDate: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
-              series: (this.createLogFormGroup.value.series ?? [])
-                .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
-
-            },
-            // exerciseId: this.createLogFormGroup.value.exercise!.id,
-            // user: user?.user.name ?? this.createLogFormGroup.value.user!.toLowerCase(),
-            // userId: user?.user.id ?? null,
-            // series: (this.createLogFormGroup.value.series ?? [])
-            //   .filter(x => !!x.reps && !!x.weightInKg)
-            //   .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
-          };
-
-          this.exerciseLogApiService.createExerciseLog(request).subscribe({
-            next: () => {
-              this.createLogFormGroup.reset();
-              localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-              this.fetchData();
-              this.toastService.ok('Log created successfully!');
-            },
-            error: () => {
-              this.fetchData();
-              this.toastService.error();
-            },
-          });
+          this.createExerciseLog();
         } else {
           if (this.updateLogFormGroup.invalid) {
             return;
           }
 
-          const user: ExerciseLogDto | null =
-            this.exerciseLogService
-              .logs()
-              .find(x => x.user.name.toLowerCase() === this.updateLogFormGroup.value.user?.toLowerCase() && !!x.user.userId) ?? null;
-
           if (typeof this.updateLogFormGroup.value.exercise === 'string') {
             return;
           }
 
-          const request = {
-            id: exerciseLog!.id,
-            date: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
-            exerciseId: this.updateLogFormGroup.value.exercise!.exerciseId!,
-            user: user?.user.name ?? this.updateLogFormGroup.value.user!.toLowerCase(),
-            userId: user?.user.userId ?? null,
-            series: (this.updateLogFormGroup.value.series ?? [])
-              .filter(x => !!x.reps && !!x.weightInKg)
-              .map(x => ({ reps: +x.reps!, weightInKg: +x.weightInKg!.toFixed(1) })),
+          const user = this.authService.user();
+
+          const request: UpdateExerciseLogRequest = {
+            id: exerciseLog?.id!,
+            exerciseLog: {
+              exerciseLogUsername: user?.name ?? this.updateLogFormGroup.value.user!.toLocaleLowerCase(),
+              exerciseLogUserId: user?.userId,
+              exerciseLogExerciseId: this.updateLogFormGroup.value.exercise!.exerciseId,
+              exerciseLogDate: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
+              series: (this.updateLogFormGroup.value.series ?? [])
+                .filter(x => !!x.reps && !!x.weightInKg)
+                .map(x => ({
+                  exerciseLogId: x.exerciseLogId!,
+                  serieId: x.serieId!,
+                  reps: +x.reps!,
+                  weightInKg: +x.weightInKg!.toFixed(1),
+                })),
+            },
           };
 
           this.exerciseLogApiService.updateExerciseLog(request).subscribe({
@@ -354,7 +328,49 @@ export class AppComponent implements OnInit {
     );
   }
 
-  public fetchData(fetchExercises: boolean = false, fetchExercisesLogs: boolean = true): void {
+  private createExerciseLog(): void {
+    if (this.createLogFormGroup.invalid) {
+      return;
+    }
+
+    if (typeof this.createLogFormGroup.value.exercise === 'string') {
+      return;
+    }
+
+    const user = this.authService.user();
+
+    const request: CreateExerciseLogRequest = {
+      exerciseLog: {
+        exerciseLogUsername: user?.name ?? this.createLogFormGroup.value.user!.toLocaleLowerCase(),
+        exerciseLogUserId: user?.userId,
+        exerciseLogExerciseId: this.createLogFormGroup.value.exercise!.exerciseId,
+        exerciseLogDate: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
+        series: (this.createLogFormGroup.value.series ?? [])
+          .filter(x => !!x.reps && !!x.weightInKg)
+          .map(x => ({
+            exerciseLogId: x.exerciseLogId!,
+            serieId: x.serieId!,
+            reps: +x.reps!,
+            weightInKg: +x.weightInKg!.toFixed(1),
+          })),
+      },
+    };
+
+    this.exerciseLogApiService.createExerciseLog(request).subscribe({
+      next: () => {
+        this.createLogFormGroup.reset();
+        localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
+        this.fetchData();
+        this.toastService.ok('Log created successfully!');
+      },
+      error: () => {
+        this.fetchData();
+        this.toastService.error();
+      },
+    });
+  }
+
+  public fetchData(): void {
     let exercises$ = this.exerciseApiService.getExercises();
 
     this.exerciseLogService.withLoading(
@@ -374,4 +390,13 @@ export class AppComponent implements OnInit {
   public openSidebar(content: TemplateRef<unknown>): void {
     this.offcanvasService.open(content, { position: 'end' });
   }
+}
+
+function createSerieFormGroup(): CreateOrUpdateSerieFormGroup {
+  return new FormGroup({
+    serieId: new FormControl(),
+    exerciseLogId: new FormControl(),
+    reps: new FormControl(),
+    weightInKg: new FormControl(),
+  });
 }

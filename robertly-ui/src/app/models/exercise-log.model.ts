@@ -2,12 +2,14 @@ import { Exercise } from "./exercise.model";
 import { User } from "./user.model";
 
 export interface Serie {
+  serieId?: number;
+  exerciseLogId: number;
   reps: number;
   weightInKg: number;
 }
 
 export interface ExerciseLogDto {
-  id: string;
+  id: number;
   user: User;
   exercise: Exercise;
   date: string;

@@ -1,5 +1,5 @@
 CREATE TABLE ExerciseLogs (
-    ExerciseLogId SERIAL PRIMARY KEY,
+    ExerciseLogId INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     ExerciseLogFirebaseId VARCHAR NOT NULL,
     Username VARCHAR NULL,
     UserId INT NULL,

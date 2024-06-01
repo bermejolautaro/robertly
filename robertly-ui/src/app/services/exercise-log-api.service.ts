@@ -13,13 +13,9 @@ export type CreateExerciseLogRequest = {
   exerciseLog: ExerciseLog;
 };
 
-type UpdateExerciseLogRequest = {
-  id: string;
-  user: string;
-  userId: number | null;
-  exerciseId: number;
-  date: string;
-  series: Serie[];
+export type UpdateExerciseLogRequest = {
+  id: number;
+  exerciseLog: ExerciseLog;
 };
 
 @Injectable({
@@ -41,7 +37,7 @@ export class ExerciseLogApiService {
     return this.http.put<void>(`${this.netApiUrl}/logs/${request.id}`, request);
   }
 
-  public deleteExerciseLog(id: string): Observable<void> {
+  public deleteExerciseLog(id: number): Observable<void> {
     return this.http.delete<void>(`${this.netApiUrl}/logs/${id}`);
   }
 }

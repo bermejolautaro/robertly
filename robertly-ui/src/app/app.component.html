@@ -36,7 +36,7 @@
 </div>
 
 @if (hasAppLoaded) {
-  <app-header (logsRefreshClicked)="fetchData(true, true)" (menuSidebarClicked)="openSidebar(content)"> </app-header>
+  <app-header (logsRefreshClicked)="fetchData()" (menuSidebarClicked)="openSidebar(content)"> </app-header>
 
   <div class="main">
     <router-outlet></router-outlet>

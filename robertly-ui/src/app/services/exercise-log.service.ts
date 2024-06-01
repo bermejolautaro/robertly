@@ -7,7 +7,6 @@ import { Observable, Subject, first, switchMap, tap } from 'rxjs';
 import { groupByMonth } from '@helpers/exercise-log.helper';
 import { Exercise } from '@models/exercise.model';
 import { DayjsService } from '@services/dayjs.service';
-import { ExerciseRow } from '@models/exercise-row.model';
 
 type State = {
   logs: ExerciseLogDto[];
@@ -49,7 +48,7 @@ export class ExerciseLogService {
 
   public readonly createLogClicked$: Subject<void> = new Subject();
   public readonly logClicked$: Subject<ExerciseLogDto> = new Subject();
-  public readonly deleteLog$: Subject<ExerciseRow> = new Subject();
+  public readonly deleteLog$: Subject<ExerciseLogDto> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
   public readonly selectedExercise$: Subject<Exercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();

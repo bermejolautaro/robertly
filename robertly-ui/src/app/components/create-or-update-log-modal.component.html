@@ -67,17 +67,11 @@
 </div>
 <div class="modal-footer" [ngClass]="{ 'justify-content-between': mode === 'update' }">
   @if (mode === 'update') {
-    <!-- <button type="button" class="btn btn-danger" (click)="exerciseLogService.deleteLog$.next(originalValue); modal.dismiss()">
+    <button type="button" class="btn btn-danger me-auto" (click)="exerciseLogService.deleteLog$.next(originalValue); modal.dismiss()">
       Delete
-    </button> -->
+    </button>
   }
-  <button
-    type="button"
-    class="btn btn-secondary"
-    (click)="modal.dismiss()"
-  >
-    Cancel
-  </button>
+  <button type="button" class="btn btn-secondary" (click)="modal.dismiss()">Cancel</button>
   <button
     type="button"
     class="btn"

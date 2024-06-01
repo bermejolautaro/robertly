@@ -64,7 +64,10 @@ namespace robertly.Controllers
 
             var userFirebaseUuid = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
-            var exerciseLogs = await _exerciseLogsRepository.GetExerciseLogsAsync(pagination.Page ?? 0, pagination.Count ?? 1000);
+            var exerciseLogs = await _exerciseLogsRepository.GetExerciseLogsAsync(
+                pagination.Page ?? 0,
+                pagination.Count ?? 1000,
+                userFirebaseUuid: userFirebaseUuid);
 
             static int? getTotal(ExerciseLog log)
             {
@@ -89,8 +92,7 @@ namespace robertly.Controllers
                                         getTotal(log),
                                         log.Series!.Aggregate(0, (acc, curr) => acc + curr.Reps * (int)curr.WeightInKg),
                                         getTotal(log) is not null ? getTotal(log) / log.Series!.Count() : null);
-                })
-                .Where(x => string.IsNullOrEmpty(userFirebaseUuid) || x.User.UserFirebaseUuid == userFirebaseUuid);
+                });
 
             return Ok(new GetLogsResponseV3(logsDtos));
         }
@@ -103,22 +105,25 @@ namespace robertly.Controllers
             return Ok();
         }
 
-        //[HttpPut("{id}")]
-        //public async Task<ActionResult> Put([FromRoute] string id, [FromBody] PostPutLogRequest request)
-        //{
-        //    var logDbToUpdate = new LogDbV2(request.UserId, request.UserId is null ? request.User : null, request.ExerciseId, request.Date, request.Series);
+        [HttpPut("{id}")]
+        public async Task<ActionResult> Put([FromRoute] int id, [FromBody] ExerciseLogRequest request)
+        {
+            var logDb = await _exerciseLogsRepository.GetExerciseLogByIdAsync(id);
 
-        //    var logDb = await _logsDb.Child(id).OnceSingleAsync<LogDb>();
+            if (logDb is null)
+            {
+                return BadRequest($"Log with id '{id}' does not exist.");
+            }
 
-        //    if (logDb is null)
-        //    {
-        //        return BadRequest($"Log with id '{id}' does not exist.");
-        //    }
+            logDb = logDb with
+            {
+                Series = request.ExerciseLog!.Series?.Select(x => x with { ExerciseLogId = id })
+            };
 
-        //    await _logsDb.Child(id).PutAsync(System.Text.Json.JsonSerializer.Serialize(logDbToUpdate, _jsonSerializerOptions));
+            await _exerciseLogsRepository.UpdateExerciseLogAsync(logDb);
 
-        //    return Ok(logDbToUpdate.ToLogV2(id));
-        //}
+            return Ok();
+        }
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] string id)

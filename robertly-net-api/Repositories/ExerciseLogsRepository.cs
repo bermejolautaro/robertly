@@ -1,11 +1,9 @@
 ﻿using Dapper;
-using Google.Api;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using robertly.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,11 +21,25 @@ namespace robertly.Repositories
             _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
         }
 
-        public async Task<IEnumerable<ExerciseLog>> GetExerciseLogsAsync(int page, int size) 
+        public async Task<ExerciseLog?> GetExerciseLogByIdAsync(
+            int exerciseLogId)
+        {
+            var exerciseLog = (await GetExerciseLogsAsync(0, 1000, exerciseLogId: exerciseLogId))
+                .FirstOrDefault();
+
+            return exerciseLog;
+        }
+
+        public async Task<IEnumerable<ExerciseLog>> GetExerciseLogsAsync(
+            int page,
+            int size,
+            int? exerciseLogId = null,
+            string? userFirebaseUuid = null) 
         {
             using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
-            var exerciseLogs = await connection.QueryAsync<ExerciseLog, Exercise, User2, ExerciseLog>($@"
+            string query = 
+               $"""
                 SELECT
                      EL.ExerciseLogId
                     ,EL.Username AS ExerciseLogUsername
@@ -45,11 +57,33 @@ namespace robertly.Repositories
                 FROM {_schema}.ExerciseLogs EL
                 INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
                 LEFT JOIN  {_schema}.Users U ON EL.UserId = U.UserId
+                WHERE 1 = 1
+                %FILTERS% 
                 ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
                 OFFSET {page * size} LIMIT {size};
-            ",
-            (log, exercise, user) => log with { Exercise = exercise, User = user },
-            splitOn: "ExerciseId,UserId");
+                """;
+
+            if (exerciseLogId is not null)
+            {
+                query = query.Replace("%FILTERS%", "AND EL.ExerciseLogId = @ExerciseLogId\n%FILTERS%");
+            }
+
+            if (userFirebaseUuid is not null)
+            {
+                query = query.Replace("%FILTERS%", "AND U.UserFirebaseUuid = @UserFirebaseUuid\n%FILTERS%");
+            }
+
+            query = query.Replace("%FILTERS%", "");
+
+            var exerciseLogs = await connection.QueryAsync<ExerciseLog, Exercise, User2, ExerciseLog>(
+                query,
+                (log, exercise, user) => (log with { Exercise = exercise, User = user }),
+                param: new
+                {
+                    UserFirebaseUuid = userFirebaseUuid,
+                    ExerciseLogId = exerciseLogId
+                },
+                splitOn: "ExerciseId,UserId");
 
             var series = await connection.QueryAsync<Models.Serie>($@"
                 SELECT
@@ -92,6 +126,54 @@ namespace robertly.Repositories
             await connection.ExecuteAsync(seriesQuery, new { ExerciseLogId = exerciseLogId });
 
             return exerciseLogId;
+        }
+
+        public async Task UpdateExerciseLogAsync(ExerciseLog exerciseLog)
+        {
+            using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+
+            var query =
+                $"""
+                UPDATE {_schema}.ExerciseLogs SET
+                     Username = @Username
+                    ,UserId = @UserId
+                    ,ExerciseId = @ExerciseId
+                    ,Date = @Date
+                WHERE ExerciseLogId = @ExerciseLogId
+                """;
+
+            await connection.ExecuteAsync(
+                query,
+                param: new
+                {
+                    ExerciseLogId = exerciseLog.ExerciseLogId,
+                    Username = exerciseLog.ExerciseLogUsername,
+                    UserId = exerciseLog.ExerciseLogUserId,
+                    ExerciseId = exerciseLog.ExerciseLogExerciseId,
+                    Date = exerciseLog.ExerciseLogDate
+                });
+
+            var seriesValues = string.Join(",\n", exerciseLog.Series?
+                .Select(x => $"({x.SerieId?.ToString() ?? "DEFAULT"}, {x.ExerciseLogId}, NULL, {x.Reps}, {x.WeightInKg})") ?? []);
+                
+            if (seriesValues is not null && !seriesValues.Any())
+            {
+                return;
+            }
+
+            var seriesQuery =
+                $"""
+                INSERT INTO {_schema}.Series (SerieId, ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg)
+                VALUES
+                    {seriesValues}
+                ON CONFLICT (SerieId) DO UPDATE
+                    SET ExerciseLogId = EXCLUDED.ExerciseLogId,
+                        ExerciseLogFirebaseId = EXCLUDED.ExerciseLogFirebaseId,
+                        Reps = EXCLUDED.Reps,
+                        WeightInKg = EXCLUDED.WeightInKg;
+                """;
+
+            await connection.ExecuteAsync(seriesQuery);
         }
     }
 }

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input, Signal, effect, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
-import { eventListeners } from '@popperjs/core';
 import { Observable, Subject, distinctUntilChanged, map, merge, of } from 'rxjs';
 
 @Component({
@@ -10,6 +9,7 @@ import { Observable, Subject, distinctUntilChanged, map, merge, of } from 'rxjs'
     <input
       type="text"
       class="form-control"
+      tabindex="-1"
       [placeholder]="placeholder"
       [formControl]="control"
       (selectItem)="onSelectItem($event)"

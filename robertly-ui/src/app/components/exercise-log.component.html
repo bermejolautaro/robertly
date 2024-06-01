@@ -1,4 +1,4 @@
-<div class="log">
+<div class="log" (click)="exerciseLogService.logClicked$.next(exerciseLog)">
   <div class="title">{{ exerciseLog.exercise.name | titlecase }}</div>
   <div class="hint">{{ exerciseLog.date | parseToDate }} - {{ exerciseLog.user.name }}</div>
 </div>
