@@ -6,7 +6,7 @@
       }
     </div>
     <!-- #region USERNAME DROPDOWN -->
-    @if (exerciseLogService.usernames().length > 1) {
+    <!-- @if (exerciseLogService.usernames().length > 1) {
       <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
         <button
           type="button"
@@ -14,7 +14,7 @@
           style="outline: none; border: none; color: white; font-weight: 500"
           ngbDropdownToggle
         >
-          <!-- {{ exerciseLogService.selectedUsernameLabel() | titlecase }} -->
+          {{ exerciseLogService.selectedUsernameLabel() | titlecase }}
         </button>
         <div ngbDropdownMenu>
           <button ngbDropdownItem (click)="exerciseLogService.selectedUsername$.next(null)">All Users</button>
@@ -24,7 +24,7 @@
               [ngClass]="{ active: username === exerciseLogService.selectedUsername() }"
               (click)="exerciseLogService.selectedUsername$.next(username)"
             >
-              <!-- {{ username | titlecase }} -->
+              {{ username | titlecase }}
             </button>
           }
         </div>
@@ -36,10 +36,10 @@
           class="btn d-flex justify-content-between align-items-center me-3"
           style="outline: none; border: none; color: white; font-weight: 500"
         >
-          <!-- {{ exerciseLogService.usernames()[0] | titlecase }} -->
+          {{ exerciseLogService.usernames()[0] | titlecase }}
         </button>
       </div>
-    }
+    } -->
     <!-- #endregion -->
 
     <!-- #region MENU -->

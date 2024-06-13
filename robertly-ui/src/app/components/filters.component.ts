@@ -38,9 +38,9 @@ export class FiltersComponent {
     return exercises;
   });
 
-  public readonly weightsFilteredByExercise = computed(() => {
-    return this.exerciseLogService.weights();
-  });
+  // public readonly weightsFilteredByExercise = computed(() => {
+  //   return this.exerciseLogService.weights();
+  // });
 
   public constructor() {
     this.exerciseControl.valueChanges.subscribe(x => {

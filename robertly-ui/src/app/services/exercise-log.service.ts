@@ -1,4 +1,4 @@
-import { Injectable, computed, signal, inject, Signal, effect } from '@angular/core';
+import { Injectable, computed, signal, inject, effect } from '@angular/core';
 import { ExerciseLogDto } from '@models/exercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -50,6 +50,7 @@ export class ExerciseLogService {
   public readonly logClicked$: Subject<ExerciseLogDto> = new Subject();
   public readonly deleteLog$: Subject<ExerciseLogDto> = new Subject();
   public readonly updateExercises$: Subject<Exercise[]> = new Subject();
+
   public readonly selectedExercise$: Subject<Exercise | null> = new Subject();
   public readonly selectedUsername$: Subject<string | null> = new Subject();
   public readonly selectedType$: Subject<string | null> = new Subject();
@@ -81,14 +82,6 @@ export class ExerciseLogService {
     R.pipe(
       this.exercises(),
       R.map(x => x.type),
-      R.uniq()
-    )
-  );
-
-  public readonly usernames = computed(() =>
-    R.pipe(
-      this.filteredLogs(),
-      R.map(x => x.user.name),
       R.uniq()
     )
   );

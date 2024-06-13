@@ -50,10 +50,10 @@ const createOrUpdateLogFormValidator: ValidatorFn = control => {
   const typedControl = control as CreateOrUpdateLogFormGroup;
   const errorsMap: Map<string, Record<string, string>> = new Map();
 
-  const userRequiredErrors = Validators.required(typedControl.controls.user);
-  if (userRequiredErrors) {
-    errorsMap.set('user', { ...errorsMap.get('user'), ...{ required: 'Username is required' } });
-  }
+  // const userRequiredErrors = Validators.required(typedControl.controls.user);
+  // if (userRequiredErrors) {
+  //   errorsMap.set('user', { ...errorsMap.get('user'), ...{ required: 'Username is required' } });
+  // }
 
   if (typedControl.value.user === 'peron') {
     errorsMap.set('user', { ...errorsMap.get('user'), ...{ invalidPeron: 'Peron is not allowed' } });

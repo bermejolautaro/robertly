@@ -1,8 +1,6 @@
-﻿using Google.Cloud.Firestore;
-using robertly.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using robertly.Models;
 
 namespace robertly;
 
@@ -10,26 +8,71 @@ namespace robertly;
 
 #region Entities
 public record Serie(int Reps, decimal WeightInKg);
-public record ExcelLog(string Type, string Name, string Date, int? Serie, decimal? WeightKg, int? Reps, string User);
-public record Log(string Id, string User, string? ExerciseId, DateTime Date, IEnumerable<Serie> Series);
-public record LogV2(string Id, string? User, string? UserId, string? ExerciseId, DateTime Date, IEnumerable<Serie> Series);
+
+public record ExcelLog(
+    string Type,
+    string Name,
+    string Date,
+    int? Serie,
+    decimal? WeightKg,
+    int? Reps,
+    string User
+);
+
+public record Log(
+    string Id,
+    string User,
+    string? ExerciseId,
+    DateTime Date,
+    IEnumerable<Serie> Series
+);
+
+public record LogV2(
+    string Id,
+    string? User,
+    string? UserId,
+    string? ExerciseId,
+    DateTime Date,
+    IEnumerable<Serie> Series
+);
+
 public record LogV3(int Id, User User, Exercise Exercise, DateTime Date, IEnumerable<Serie> Series);
 
-
 public record LogDb(string User, string? ExerciseId, DateTime Date, IEnumerable<Serie>? Series);
-public record LogDbV2(string? UserId, string? User, string? ExerciseId, DateTime Date, IEnumerable<Serie>? Series);
 
-public record LogDto(string Id, string User, Exercise? Exercise, DateTime Date, IEnumerable<Serie>? Series);
-public record LogDtoV2(string Id, string? User, string? UserId, Exercise? Exercise, DateTime Date, IEnumerable<Serie>? Series);
+public record LogDbV2(
+    string? UserId,
+    string? User,
+    string? ExerciseId,
+    DateTime Date,
+    IEnumerable<Serie>? Series
+);
+
+public record LogDto(
+    string Id,
+    string User,
+    Exercise? Exercise,
+    DateTime Date,
+    IEnumerable<Serie>? Series
+);
+
+public record LogDtoV2(
+    string Id,
+    string? User,
+    string? UserId,
+    Exercise? Exercise,
+    DateTime Date,
+    IEnumerable<Serie>? Series
+);
 
 #endregion
 
 #region Responses
 public record GetLogsResponse(IEnumerable<LogDto> Data);
+
 public record GetLogsResponseV2(IEnumerable<LogDtoV2> Data);
+
 public record GetLogsResponseV3(IEnumerable<ExerciseLogDto> Data);
-
-
 
 #endregion
 
@@ -58,7 +101,6 @@ public record Exercise()
 
 public record ExerciseDb(string Exercise, string MuscleGroup, string Type);
 
-
 #region Responses
 public record GetExercisesResponse(IEnumerable<Exercise> Data);
 #endregion
@@ -68,7 +110,7 @@ public record PostPutExerciseRequest()
 {
     public required string Name { get; set; }
     public required string MuscleGroup { get; set; }
-    public required string Type{ get; set; }
+    public required string Type { get; set; }
 };
 #endregion
 
@@ -86,7 +128,6 @@ public record SignUpRequest()
     public required string DisplayName { get; set; }
 }
 
-
 public record SignUpGoogleRequest()
 {
     public required string AccessToken { get; set; }
@@ -99,7 +140,13 @@ public record SignUpGoogleRequest()
 #region Entities
 public record UserDb(string Uid, string Email, string DisplayName);
 
-public record User(int Id, string? UserFirebaseUuid, string Email, string Name, Dictionary<string, string> RelatedUsers);
+public record User(
+    int Id,
+    string? UserFirebaseUuid,
+    string Email,
+    string Name,
+    Dictionary<string, string> RelatedUsers
+);
 
 public record User2()
 {

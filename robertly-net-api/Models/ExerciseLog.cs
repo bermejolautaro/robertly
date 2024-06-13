@@ -26,12 +26,14 @@ namespace robertly.Models
 
         // Joining with Exercises
         public Exercise? Exercise { get; init; }
+
         //public string? ExerciseName { get; init; }
         //public string? MuscleGroup { get; init; }
         //public string? Type { get; init; }
 
         // Joining with Users
         public User2? User { get; init; }
+
         //public string? UserFirebaseUuid { get; init; }
         //public string? Email { get; init; }
         //public string? Username { get; init; }
@@ -41,5 +43,15 @@ namespace robertly.Models
     }
 
     // TODO: Highlighted should be refactor to be more abstract
-    public record ExerciseLogDto(int Id, User2 User, Exercise Exercise, DateTime Date, IEnumerable<Serie> Series, string? Highlighted, int? TotalReps, int Tonnage, int? Average);
+    public record ExerciseLogDto(
+        int Id,
+        User2 User,
+        Exercise Exercise,
+        DateTime Date,
+        IEnumerable<Serie> Series,
+        string? Highlighted,
+        int? TotalReps,
+        int Tonnage,
+        int? Average
+    );
 }
