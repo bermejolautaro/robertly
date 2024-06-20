@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from "@angular/core";
-import { AuthApiService, IDTOKEN_KEY } from "@services/auth-api.service";
+import { AuthApiService } from "@services/auth-api.service";
 
 @Component({
   selector: 'app-developer-page',
@@ -10,10 +10,11 @@ import { AuthApiService, IDTOKEN_KEY } from "@services/auth-api.service";
   imports: [],
 })
 export class DeveloperPageComponent implements OnInit {
+  private readonly authApiService = inject(AuthApiService);
   public token: string = '';
   public isGrouped: boolean = false;
 
   public ngOnInit(): void {
-    this.token = localStorage.getItem(IDTOKEN_KEY) ?? '';
+    this.token = this.authApiService.idToken() ?? '';
   }
 }

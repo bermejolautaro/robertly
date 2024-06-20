@@ -35,7 +35,7 @@ public class AppLogsRepository
                 Message = error,
                 TimeStamp = DateTime.Now.ToUniversalTime(),
                 Exception = e.Message,
-                StackTrace = e.StackTrace
+                e.StackTrace
             }
         );
     }

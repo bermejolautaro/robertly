@@ -1,18 +1,30 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { User } from '@models/user.model';
 import { UsersService } from './users.service';
 import { firstValueFrom } from 'rxjs';
+import { AuthApiService } from './auth-api.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly auth = inject(Auth);
   private readonly usersService = inject(UsersService);
+  private readonly authApiService = inject(AuthApiService);
+  private readonly userUuid = signal<string | null>(null);
   public readonly user = signal<User | null>(null);
 
   public constructor() {
-    this.auth.onAuthStateChanged(async user => {
-      if (!user) {
+    this.auth.onAuthStateChanged(user => {
+      this.userUuid.set(user?.uid ?? null)
+    })
+
+    // TODO: Check if there is someway to not use allowSignalWrites here.
+    effect(async () => {
+      this.userUuid();
+      const token = this.authApiService.idToken();
+      const user = this.auth.currentUser;
+
+      if (!user || !token) {
         this.user.set(null);
         return;
       }
@@ -25,6 +37,7 @@ export class AuthService {
         name: userFromDb.name,
         userFirebaseUuid: userFromDb.userFirebaseUuid
       })
-    })
+    }, { allowSignalWrites: true });
   }
 }
+

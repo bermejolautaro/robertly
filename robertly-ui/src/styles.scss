@@ -18,7 +18,8 @@
   --bs-btn-color: var(--font-color);
 }
 
-.offcanvas a, .offcanvas .btn.btn-link {
+.offcanvas a,
+.offcanvas .btn.btn-link {
   color: white;
   opacity: .8;
   padding: 0.1rem 0;
@@ -35,6 +36,12 @@ a {
 
 .btn.btn-secondary {
   --bs-btn-bg: none;
+}
+
+.btn.btn-primary {
+  --bs-btn-color: var(--font-color);
+  --bs-btn-bg: var(--primary);
+  --bs-btn-border-color: var(--primary);
 }
 
 input[type="date"] {
@@ -63,6 +70,7 @@ input[type="date"] {
 }
 
 .dropdown {
+
   button.btn-outline-primary:hover,
   button.btn-outline-primary.show {
     background-color: white;
@@ -166,4 +174,3 @@ input[type="date"] {
   --bs-toast-padding-x: 0;
   --bs-toast-padding-y: 0;
 }
-

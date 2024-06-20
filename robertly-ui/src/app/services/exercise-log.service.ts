@@ -24,7 +24,7 @@ type State = {
 export const EXERCISE_DEFAULT_LABEL = 'Exercise';
 export const WEIGHT_DEFAULT_LABEL = 'Weight';
 
-@Injectable()
+@Injectable({ providedIn: 'root' })
 export class ExerciseLogService {
   private readonly dayjsService = inject(DayjsService);
 
@@ -41,8 +41,8 @@ export class ExerciseLogService {
     error: null,
   });
 
-  private readonly startLoading$: Subject<void> = new Subject();
-  private readonly stopLoading$: Subject<void> = new Subject();
+  public readonly startLoading$: Subject<void> = new Subject();
+  public readonly stopLoading$: Subject<void> = new Subject();
 
   public readonly updateLogs$: Subject<ExerciseLogDto[]> = new Subject();
 
