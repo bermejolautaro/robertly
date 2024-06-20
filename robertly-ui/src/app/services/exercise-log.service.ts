@@ -43,9 +43,9 @@ export class ExerciseLogService {
 
   public readonly startLoading$: Subject<void> = new Subject();
   public readonly stopLoading$: Subject<void> = new Subject();
+  public readonly refreshLogs$: Subject<void> = new Subject();
 
   public readonly updateLogs$: Subject<ExerciseLogDto[]> = new Subject();
-
   public readonly createLogClicked$: Subject<void> = new Subject();
   public readonly logClicked$: Subject<ExerciseLogDto> = new Subject();
   public readonly deleteLog$: Subject<ExerciseLogDto> = new Subject();

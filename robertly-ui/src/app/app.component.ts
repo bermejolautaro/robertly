@@ -371,6 +371,7 @@ export class AppComponent implements OnInit {
   }
 
   public fetchData(): void {
+    this.exerciseLogService.refreshLogs$.next();
     let exercises$ = this.exerciseApiService.getExercises();
 
     this.exerciseLogService.withLoading(
