@@ -60,7 +60,7 @@ namespace robertly.Repositories
                 INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
                 LEFT JOIN  {_schema}.Users U ON EL.UserId = U.UserId
                 WHERE 1 = 1
-                %FILTERS% 
+                %FILTERS%
                 ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
                 OFFSET {page * size} LIMIT {size};
                 """;
@@ -188,12 +188,17 @@ namespace robertly.Repositories
                 ) ?? []
             );
 
+            var seriesIds = string.Join(",", exerciseLog.Series?.Where(x => x.SerieId is not null).Select(x => x.SerieId) ?? []);
+
             if (seriesValues is not null && !seriesValues.Any())
             {
                 return;
             }
 
             var seriesQuery = $"""
+                DELETE FROM {_schema}.Series
+                WHERE ExerciseLogId = {exerciseLog.ExerciseLogId} AND SerieId NOT IN ({seriesIds});
+
                 INSERT INTO {_schema}.Series (SerieId, ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg)
                 VALUES
                     {seriesValues}
