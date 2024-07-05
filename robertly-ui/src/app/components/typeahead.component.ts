@@ -9,7 +9,6 @@ import { Observable, Subject, distinctUntilChanged, map, merge, of } from 'rxjs'
     <input
       type="text"
       class="form-control"
-      tabindex="-1"
       [placeholder]="placeholder"
       [formControl]="control"
       (selectItem)="onSelectItem($event)"

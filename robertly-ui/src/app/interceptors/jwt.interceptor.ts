@@ -1,11 +1,20 @@
-import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest, HttpStatusCode } from '@angular/common/http';
+import {
+  HttpErrorResponse,
+  HttpEvent,
+  HttpHandlerFn,
+  HttpRequest,
+  HttpStatusCode,
+} from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthApiService } from '@services/auth-api.service';
 import { Observable, catchError, from, of, switchMap } from 'rxjs';
 import { Paths } from 'src/main';
 
-export function jwtInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
+export function jwtInterceptor(
+  req: HttpRequest<unknown>,
+  next: HttpHandlerFn
+): Observable<HttpEvent<unknown>> {
   const router = inject(Router);
   const authApiService = inject(AuthApiService);
   const idToken = authApiService.idToken();
@@ -20,8 +29,12 @@ export function jwtInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): 
     catchError(e => {
       if (e instanceof HttpErrorResponse) {
         if (e.status === HttpStatusCode.Unauthorized) {
-          return from(authApiService.signOut())
-            .pipe(switchMap(() => router.navigate(([Paths.SIGN_IN]))))
+          return from(authApiService.tryRefreshToken()).pipe(
+            switchMap(x => {
+              const path = x ? Paths.SIGN_IN : Paths.LOGS;
+              return router.navigate([path]);
+            })
+          );
         }
       }
       return of(e);

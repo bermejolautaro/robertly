@@ -80,15 +80,17 @@ export class AuthApiService {
     }
   }
 
-  public async tryRefreshToken(): Promise<void> {
+  public async tryRefreshToken(): Promise<boolean> {
     const newToken = await this.auth.currentUser?.getIdToken(true);
 
     if (newToken) {
       localStorage.setItem(IDTOKEN_KEY, newToken);
       this.idToken.set(newToken);
+      return true;
     } else {
       localStorage.removeItem(IDTOKEN_KEY);
       this.idToken.set(null);
+      return false;
     }
   }
 }

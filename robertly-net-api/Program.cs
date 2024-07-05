@@ -88,7 +88,8 @@ builder.Services.AddScoped(serviceProvider =>
   return new FirebaseAuthClient(authConfig);
 });
 
-builder.Services.AddScoped<ExerciseLogsRepository>();
+builder.Services.AddScoped<ExerciseLogRepository>();
+builder.Services.AddScoped<ExerciseRepository>();
 builder.Services.AddSingleton<AppLogsRepository>();
 
 builder.Services.AddApplicationInsightsTelemetry();

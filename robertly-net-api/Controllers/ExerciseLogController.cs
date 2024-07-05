@@ -1,45 +1,27 @@
 using System;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using Firebase.Database;
-using Firebase.Database.Query;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
 using robertly.Models;
 using robertly.Repositories;
 
 namespace robertly.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
-    public class LogsController : ControllerBase
+    [Route("api/logs")]
+    public class ExerciseLogController : ControllerBase
     {
-        private readonly JsonSerializerOptions _jsonSerializerOptions =
-            new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        private readonly ExerciseLogsRepository _exerciseLogsRepository;
+        private readonly ExerciseLogRepository _exerciseLogRepository;
         private readonly FirebaseApp _app;
-        private readonly FirebaseClient _client;
-        private readonly IConfiguration _config;
-        private readonly ChildQuery _logsDb;
-        private readonly ChildQuery _exercisesDb;
-        private readonly ChildQuery _usersDb;
 
-        public LogsController(
-            ExerciseLogsRepository exerciseLogsRepository,
-            FirebaseApp app,
-            FirebaseClient client,
-            IConfiguration config)
+        public ExerciseLogController(
+            ExerciseLogRepository exerciseLogsRepository,
+            FirebaseApp app)
         {
-            _exerciseLogsRepository = exerciseLogsRepository;
+            _exerciseLogRepository = exerciseLogsRepository;
             _app = app;
-            _client = client;
-            _config = config;
-            _logsDb = _client.ChildLogs(_config);
-            _exercisesDb = _client.ChildExercises(_config);
-            _usersDb = _client.ChildUsers(_config);
         }
 
         [HttpGet]
@@ -52,8 +34,7 @@ namespace robertly.Controllers
                 var token = await FirebaseAuth
                     .GetAuth(_app)
                     .VerifyIdTokenAsync(
-                        Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "") ?? ""
-                    );
+                        Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "") ?? "");
             }
             catch (ArgumentException ex)
             {
@@ -71,7 +52,7 @@ namespace robertly.Controllers
             var userFirebaseUuid =
                 Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
-            var exerciseLogs = await _exerciseLogsRepository.GetExerciseLogsAsync(
+            var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
                 pagination.Page ?? 0,
                 pagination.Count ?? 1000,
                 userFirebaseUuid: userFirebaseUuid
@@ -118,7 +99,7 @@ namespace robertly.Controllers
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] ExerciseLogRequest request)
         {
-            await _exerciseLogsRepository.CreateExerciseLogAsync(request.ExerciseLog!);
+            await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog!);
 
             return Ok();
         }
@@ -129,7 +110,7 @@ namespace robertly.Controllers
             [FromBody] ExerciseLogRequest request
         )
         {
-            var logDb = await _exerciseLogsRepository.GetExerciseLogByIdAsync(id);
+            var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id);
 
             if (logDb is null)
             {
@@ -141,7 +122,7 @@ namespace robertly.Controllers
                 Series = request.ExerciseLog!.Series?.Select(x => x with { ExerciseLogId = id })
             };
 
-            await _exerciseLogsRepository.UpdateExerciseLogAsync(logDb);
+            await _exerciseLogRepository.UpdateExerciseLogAsync(logDb);
 
             return Ok();
         }
@@ -149,14 +130,14 @@ namespace robertly.Controllers
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete([FromRoute] int id)
         {
-            var logDb = await _exerciseLogsRepository.GetExerciseLogByIdAsync(id);
+            var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id);
 
             if (logDb is null)
             {
                 return BadRequest($"Log with id '{id}' does not exist.");
             }
 
-            await _exerciseLogsRepository.DeleteExerciseLogAsync(id);
+            await _exerciseLogRepository.DeleteExerciseLogAsync(id);
 
             return Ok();
         }
