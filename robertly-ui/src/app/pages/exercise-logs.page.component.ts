@@ -44,7 +44,9 @@ export class ExerciseLogsPageComponent implements OnInit {
     this.exerciseLogService.refreshLogs$
       .pipe(takeUntilDestroyed())
       .subscribe(x => {
-        let exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsv2();
+        const exerciseLogs$ =
+          this.exerciseLogApiService.getExerciseLogsLatestWorkout();
+
         this.exerciseLogService.withLoading(
           forkJoin([exerciseLogs$]).pipe(
             tap(([exerciseLogs]) => {
@@ -57,7 +59,8 @@ export class ExerciseLogsPageComponent implements OnInit {
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
 
-    let exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsv2();
+    const exerciseLogs$ =
+      this.exerciseLogApiService.getExerciseLogsLatestWorkout();
 
     if (!this.exerciseLogService.logs().length) {
       this.exerciseLogService.withLoading(

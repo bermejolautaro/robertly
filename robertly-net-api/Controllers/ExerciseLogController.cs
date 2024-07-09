@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FirebaseAdmin;
@@ -24,8 +25,23 @@ namespace robertly.Controllers
             _app = app;
         }
 
+        [HttpGet("latest-workout")]
+        public async Task<ActionResult<ExerciseLogsDto>> GetCurrentAndPreviousWorkoutByUser()
+        {
+            var userFirebaseUuid = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+            var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserFirebaseUuid(userFirebaseUuid);
+            var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
+                0,
+                1000,
+                userFirebaseUuid: userFirebaseUuid,
+                dates: [date.Value, DateTime.Now]);
+            var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
+
+            return Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
+        }
+
         [HttpGet]
-        public async Task<ActionResult<GetLogsResponseV3>> Get(
+        public async Task<ActionResult<ExerciseLogsDto>> Get(
             [FromQuery] PaginationRequest pagination
         )
         {
@@ -49,8 +65,7 @@ namespace robertly.Controllers
                 return Unauthorized(ex.Message);
             }
 
-            var userFirebaseUuid =
-                Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+            var userFirebaseUuid = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
             var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
                 pagination.Page ?? 0,
@@ -58,48 +73,16 @@ namespace robertly.Controllers
                 userFirebaseUuid: userFirebaseUuid
             );
 
-            static int? getTotal(ExerciseLog log)
-            {
-                return log.Series!.All(x =>
-                    x.WeightInKg == log.Series!.FirstOrDefault()?.WeightInKg
-                )
-                    ? log.Series!.Sum(x => x.Reps)
-                    : null;
-            }
+            var exerciseLogsDtos = MapToExerciseLogDto(exerciseLogs);
 
-            var logsDtos = exerciseLogs.Select(log =>
-            {
-                if (log.ExerciseLogId is null)
-                {
-                    throw new ArgumentException("Impossible state");
-                }
-
-                return new ExerciseLogDto(
-                    log.ExerciseLogId!.Value,
-                    log.User!,
-                    log.Exercise!,
-                    log.ExerciseLogDate,
-                    log.Series!,
-                    log.Series!.All(x => x.WeightInKg == log.Series!.FirstOrDefault()?.WeightInKg)
-                        ? log.Series!.All(x => x.Reps >= 12)
-                            ? "green"
-                            : log.Series!.All(x => x.Reps >= 8)
-                                ? "yellow"
-                                : null
-                        : null,
-                    getTotal(log),
-                    log.Series!.Aggregate(0, (acc, curr) => acc + curr.Reps * (int)curr.WeightInKg),
-                    getTotal(log) is not null ? getTotal(log) / log.Series!.Count() : null
-                );
-            });
-
-            return Ok(new GetLogsResponseV3(logsDtos));
+            return Ok(new ExerciseLogsDto() { Data = exerciseLogsDtos });
         }
 
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] ExerciseLogRequest request)
         {
-            await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog!);
+            var userFirebaseUuid = Helpers.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+            await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog!, userFirebaseUuid);
 
             return Ok();
         }
@@ -140,6 +123,44 @@ namespace robertly.Controllers
             await _exerciseLogRepository.DeleteExerciseLogAsync(id);
 
             return Ok();
+        }
+
+        private static IEnumerable<ExerciseLogDto> MapToExerciseLogDto(IEnumerable<ExerciseLog> exerciseLogs)
+        {
+            static int? getTotal(ExerciseLog log)
+            {
+                return log.Series!.All(x =>
+                    x.WeightInKg == log.Series!.FirstOrDefault()?.WeightInKg
+                )
+                    ? log.Series!.Sum(x => x.Reps)
+                    : null;
+            }
+
+            return exerciseLogs.Select(log =>
+            {
+                if (log.ExerciseLogId is null)
+                {
+                    throw new ArgumentException("Impossible state");
+                }
+
+                return new ExerciseLogDto(
+                    log.ExerciseLogId!.Value,
+                    log.User!,
+                    log.Exercise!,
+                    log.ExerciseLogDate,
+                    log.Series!,
+                    log.Series!.All(x => x.WeightInKg == log.Series!.FirstOrDefault()?.WeightInKg)
+                        ? log.Series!.All(x => x.Reps >= 12)
+                            ? "green"
+                            : log.Series!.All(x => x.Reps >= 8)
+                                ? "yellow"
+                                : null
+                        : null,
+                    getTotal(log),
+                    log.Series!.Aggregate(0, (acc, curr) => acc + curr.Reps * (int)curr.WeightInKg),
+                    getTotal(log) is not null ? getTotal(log) / log.Series!.Count() : null
+                );
+            });
         }
     }
 }

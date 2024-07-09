@@ -18,9 +18,18 @@ public class ExerciseLogRepository
   public ExerciseLogRepository(IConfiguration config)
   {
     _config = config;
-    _schema =
-        config["DatabaseEnvironment"]
-        ?? throw new ArgumentException("DatabaseEnvironment is null");
+    _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
+  }
+
+  public async Task<DateTime?> GetMostRecentButNotTodayDateByUserFirebaseUuid(string userFirebaseUuid)
+  {
+    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+
+    var date = await connection.QueryFirstOrDefaultAsync<DateTime?>(
+      $"SELECT MAX(Date) FROM ExerciseLogs where UserFirebaseUuid = @UserFirebaseUuid AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
+      new { UserFirebaseUuid = userFirebaseUuid });
+
+    return date;
   }
 
   public async Task<ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId)
@@ -36,7 +45,8 @@ public class ExerciseLogRepository
       int page,
       int size,
       int? exerciseLogId = null,
-      string? userFirebaseUuid = null
+      string? userFirebaseUuid = null,
+      IEnumerable<DateTime>? dates = null
   )
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
@@ -51,6 +61,12 @@ public class ExerciseLogRepository
     if (userFirebaseUuid is not null)
     {
       filters.AppendLine("AND U.UserFirebaseUuid = @UserFirebaseUuid");
+    }
+
+    if (dates is not null)
+    {
+      var datesFilters = string.Join("OR ", dates.Select(x => $"EL.Date = '{x:yyyy-MM-dd}'"));
+      filters.AppendLine($"AND {datesFilters}");
     }
 
     string query = $"""
@@ -85,7 +101,11 @@ public class ExerciseLogRepository
     >(
         query,
         (log, exercise, user) => (log with { Exercise = exercise, User = user }),
-        param: new { UserFirebaseUuid = userFirebaseUuid, ExerciseLogId = exerciseLogId },
+        param: new
+        {
+          UserFirebaseUuid = userFirebaseUuid,
+          ExerciseLogId = exerciseLogId,
+        },
         splitOn: "ExerciseId,UserId"
     );
 
@@ -112,33 +132,28 @@ public class ExerciseLogRepository
     return exerciseLogs;
   }
 
-  public async Task<int> CreateExerciseLogAsync(ExerciseLog exerciseLog)
+  public async Task<int> CreateExerciseLogAsync(ExerciseLog exerciseLog, string userFirebaseUuid)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
-    var exerciseLogQuery = $"""
-            INSERT INTO {_schema}.ExerciseLogs (Username, UserId, ExerciseId, Date)
-            VALUES (@Username, @UserId, @ExerciseId, @Date)
-            RETURNING ExerciseLogs.ExerciseLogId
-            """;
+    var exerciseLogQuery =
+      $"""
+        INSERT INTO {_schema}.ExerciseLogs (Username, UserFirebaseUuid, UserId, ExerciseId, Date)
+        VALUES (@Username, @UserFirebaseUuid, @UserId, @ExerciseId, @Date)
+        RETURNING ExerciseLogs.ExerciseLogId
+      """;
 
-    var seriesQuery = new StringBuilder(
-        $"INSERT INTO  {_schema}.Series (ExerciseLogId, Reps, WeightInKg) VALUES\n"
-    )
-        .AppendJoin(
-            ",\n",
-            (exerciseLog.Series ?? []).Select(x =>
-                $"(@ExerciseLogId, {x.Reps}, {x.WeightInKg})"
-            )
-        )
-        .Append(";\n")
-        .ToString();
+    var seriesQuery = new StringBuilder($"INSERT INTO  {_schema}.Series (ExerciseLogId, Reps, WeightInKg) VALUES\n")
+      .AppendJoin(",\n", (exerciseLog.Series ?? []).Select(x => $"(@ExerciseLogId, {x.Reps}, {x.WeightInKg})"))
+      .Append(";\n")
+      .ToString();
 
     var exerciseLogId = await connection.QuerySingleAsync<int>(
         exerciseLogQuery,
         new
         {
           Username = exerciseLog.ExerciseLogUsername,
+          UserFirebaseUuid = userFirebaseUuid,
           UserId = exerciseLog.ExerciseLogUserId,
           ExerciseId = exerciseLog.ExerciseLogExerciseId,
           Date = exerciseLog.ExerciseLogDate,

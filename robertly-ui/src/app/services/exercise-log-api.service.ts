@@ -5,7 +5,7 @@ import { Observable, map } from 'rxjs';
 
 import { API_URL } from 'src/main';
 
-type GetExerciseLogsV2Response = {
+type ExercisesLogsDto = {
   data: ExerciseLogDto[];
 };
 
@@ -25,15 +25,27 @@ export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
   private readonly netApiUrl = inject(API_URL);
 
-  public getExerciseLogsv2(): Observable<ExerciseLogDto[]> {
-    return this.http.get<GetExerciseLogsV2Response>(`${this.netApiUrl}/logs?page=0&count=5`).pipe(map(x => x.data));
+  public getExerciseLogs(): Observable<ExerciseLogDto[]> {
+    return this.http
+      .get<ExercisesLogsDto>(`${this.netApiUrl}/logs?page=0&count=5`)
+      .pipe(map(x => x.data));
   }
 
-  public createExerciseLog(request: CreateExerciseLogRequest): Observable<void> {
+  public getExerciseLogsLatestWorkout(): Observable<ExerciseLogDto[]> {
+    return this.http
+      .get<ExercisesLogsDto>(`${this.netApiUrl}/logs/latest-workout`)
+      .pipe(map(x => x.data));
+  }
+
+  public createExerciseLog(
+    request: CreateExerciseLogRequest
+  ): Observable<void> {
     return this.http.post<void>(`${this.netApiUrl}/logs`, request);
   }
 
-  public updateExerciseLog(request: UpdateExerciseLogRequest): Observable<void> {
+  public updateExerciseLog(
+    request: UpdateExerciseLogRequest
+  ): Observable<void> {
     return this.http.put<void>(`${this.netApiUrl}/logs/${request.id}`, request);
   }
 

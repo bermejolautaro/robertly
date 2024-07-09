@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 namespace robertly.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
-public class UsersController
+[Route("api/users")]
+public class UserController
 {
     private readonly IConfiguration _config;
     private readonly string _schema;
 
-    public UsersController(IConfiguration config) 
+    public UserController(IConfiguration config)
     {
         _config = config;
         _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
@@ -27,7 +27,7 @@ public class UsersController
         using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
         var query =
             $"""
-            SELECT 
+            SELECT
                  UserId
                 ,UserFirebaseUuid
                 ,Email

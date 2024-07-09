@@ -55,4 +55,7 @@ public record ExerciseLogDto(
     int? Average
 );
 
-public record GetLogsResponseV3(IEnumerable<ExerciseLogDto> Data);
+public record ExerciseLogsDto()
+{
+    public required IEnumerable<ExerciseLogDto> Data { get; init; }
+};

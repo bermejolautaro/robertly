@@ -13,7 +13,6 @@ public static class Helpers
 {
   public static readonly string DB_ENVIROMENT_KEY = "DatabaseEnvironment";
 
-  #region Auth
   public static JwtSecurityToken? ParseToken(StringValues bearerToken)
   {
     var idToken = bearerToken.FirstOrDefault()?.Replace("Bearer ", "") ?? "";
@@ -41,9 +40,7 @@ public static class Helpers
   {
     return token.Claims.First(x => x.Type == "user_id")?.Value ?? null;
   }
-  #endregion
 
-  #region FirebaseClient
   public static ChildQuery ChildLogs(this FirebaseClient client, IConfiguration config)
   {
     return client.Child($"{config[DB_ENVIROMENT_KEY]}/logs");
@@ -58,5 +55,4 @@ public static class Helpers
   {
     return client.Child($"{config[DB_ENVIROMENT_KEY]}/users");
   }
-  #endregion
 }
