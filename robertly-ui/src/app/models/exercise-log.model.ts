@@ -18,6 +18,7 @@ export interface ExerciseLogDto {
   totalReps: number | null;
   tonnage: number;
   average: number | null;
+  recentLogs: ExerciseLogDto[] | null;
 }
 
 

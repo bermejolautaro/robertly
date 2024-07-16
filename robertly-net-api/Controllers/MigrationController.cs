@@ -50,59 +50,60 @@ namespace robertly.Controllers
         //     return sb.ToString();
         // }
 
-        [HttpGet("InsertScriptUsers")]
-        public async Task<string> CreateInsertScriptUsers()
-        {
-            var usersDb = (await _usersDb.OnceAsync<UserDb>()).Select(x => x.Object.ToUser(x.Key));
+        // [HttpGet("InsertScriptUsers")]
+        // public async Task<string> CreateInsertScriptUsers()
+        // {
+        //     var usersDb = (await _usersDb.OnceAsync<UserDb>()).Select(x => x.Object.ToUser(x.Key));
 
-            var sb = new StringBuilder();
+        //     var sb = new StringBuilder();
 
-            foreach (var user in usersDb)
-            {
-                sb.Append($"INSERT INTO Users (UserFirebaseUuid, Email, Name) VALUES ");
-                sb.Append($"('{user.UserFirebaseUuid}', '{user.Email}', '{user.Name}');");
-                sb.AppendLine();
-            }
+        //     foreach (var user in usersDb)
+        //     {
+        //         sb.Append($"INSERT INTO Users (UserFirebaseUuid, Email, Name) VALUES ");
+        //         sb.Append($"('{user.UserFirebaseUuid}', '{user.Email}', '{user.Name}');");
+        //         sb.AppendLine();
+        //     }
 
-            return sb.ToString();
-        }
+        //     return sb.ToString();
+        // }
 
         [HttpGet("InsertScriptLogs")]
         public async Task<string> CreateInsertScriptLogs()
         {
-            var logsDb = (await _logsDb.OnceAsync<LogDbV2>()).Select(x => x.Object.ToLogV2(x.Key));
+            // var logsDb = (await _logsDb.OnceAsync<LogDbV2>()).Select(x => x.Object.ToLogV2(x.Key));
 
-            var sb = new StringBuilder();
-            var sb2 = new StringBuilder();
+            // var sb = new StringBuilder();
+            // var sb2 = new StringBuilder();
 
-            static string map(string? input)
-            {
-                return input is null ? "NULL" : $"'{input}'";
-            }
+            // static string map(string? input)
+            // {
+            //     return input is null ? "NULL" : $"'{input}'";
+            // }
 
-            foreach (var log in logsDb)
-            {
-                sb.Append(
-                    $"INSERT INTO ExerciseLogs (ExerciseLogFirebaseId, Username, UserId, UserFirebaseUuid, ExerciseId, ExerciseFirebaseId, Date) VALUES "
-                );
-                sb.Append(
-                    $"('{log.Id}', {map(log.User)}, 0, {map(log.UserId)}, 0, '{log.ExerciseId}', '{log.Date.ToString("yyyy-MM-dd")}');"
-                );
-                sb.AppendLine();
+            // foreach (var log in logsDb)
+            // {
+            //     sb.Append(
+            //         $"INSERT INTO ExerciseLogs (ExerciseLogFirebaseId, Username, UserId, UserFirebaseUuid, ExerciseId, ExerciseFirebaseId, Date) VALUES "
+            //     );
+            //     sb.Append(
+            //         $"('{log.Id}', {map(log.User)}, 0, {map(log.UserId)}, 0, '{log.ExerciseId}', '{log.Date.ToString("yyyy-MM-dd")}');"
+            //     );
+            //     sb.AppendLine();
 
-                foreach (var serie in log.Series)
-                {
-                    sb2.Append(
-                        $"INSERT INTO Series (ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg) VALUES "
-                    );
-                    sb2.Append(
-                        $"(0, '{log.Id}', {serie.Reps}, {serie.WeightInKg.ToString(CultureInfo.InvariantCulture)});"
-                    );
-                    sb2.AppendLine();
-                }
-            }
+            //     foreach (var serie in log.Series)
+            //     {
+            //         sb2.Append(
+            //             $"INSERT INTO Series (ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg) VALUES "
+            //         );
+            //         sb2.Append(
+            //             $"(0, '{log.Id}', {serie.Reps}, {serie.WeightInKg.ToString(CultureInfo.InvariantCulture)});"
+            //         );
+            //         sb2.AppendLine();
+            //     }
+            // }
 
-            return sb.AppendLine(sb2.ToString()).ToString();
+            // return sb.AppendLine(sb2.ToString()).ToString();
+            return "";
         }
 
         // [HttpGet]
@@ -171,43 +172,44 @@ namespace robertly.Controllers
         [HttpGet("{userName}/{userId}")]
         public async Task<string> MigrateUser(string userName, string userId)
         {
-            var logs = (await _logsDb.OnceAsync<LogDb>()).ToDictionary(
-                x => x.Key,
-                x => x.Object.ToLog(x.Key)
-            );
-            var logsV2 = logs.ToDictionary(
-                x => x.Key,
-                x =>
-                {
-                    if (x.Value.User == userName)
-                    {
-                        return new LogDbV2(
-                            userId,
-                            null,
-                            x.Value.ExerciseId,
-                            x.Value.Date,
-                            x.Value.Series
-                        );
-                    }
-                    else
-                    {
-                        return new LogDbV2(
-                            null,
-                            x.Value.User,
-                            x.Value.ExerciseId,
-                            x.Value.Date,
-                            x.Value.Series
-                        );
-                    }
-                }
-            );
+            // var logs = (await _logsDb.OnceAsync<LogDb>()).ToDictionary(
+            //     x => x.Key,
+            //     x => x.Object.ToLog(x.Key)
+            // );
+            // var logsV2 = logs.ToDictionary(
+            //     x => x.Key,
+            //     x =>
+            //     {
+            //         if (x.Value.User == userName)
+            //         {
+            //             return new LogDbV2(
+            //                 userId,
+            //                 null,
+            //                 x.Value.ExerciseId,
+            //                 x.Value.Date,
+            //                 x.Value.Series
+            //             );
+            //         }
+            //         else
+            //         {
+            //             return new LogDbV2(
+            //                 null,
+            //                 x.Value.User,
+            //                 x.Value.ExerciseId,
+            //                 x.Value.Date,
+            //                 x.Value.Series
+            //             );
+            //         }
+            //     }
+            // );
 
-            var result = JsonSerializer.Serialize(
-                logsV2,
-                new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
-            );
+            // var result = JsonSerializer.Serialize(
+            //     logsV2,
+            //     new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
+            // );
 
-            return result;
+            // return result;
+            return "";
         }
     }
 }

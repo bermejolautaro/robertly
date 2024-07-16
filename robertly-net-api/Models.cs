@@ -55,28 +55,13 @@ public record SignUpGoogleRequest()
 
 #endregion
 
-#region Users
-#region Entities
-public record UserDb(string Uid, string Email, string DisplayName);
-
-public record User(
-    int Id,
-    string? UserFirebaseUuid,
-    string Email,
-    string Name,
-    Dictionary<string, string> RelatedUsers
-);
-
-public record User2()
+public record User()
 {
     public required int UserId { get; init; }
     public required string UserFirebaseUuid { get; init; }
     public required string Email { get; init; }
     public required string Name { get; init; }
 }
-
-#endregion
-#endregion
 
 #region Technical
 public record PaginationRequest(int? Page, int? Count);

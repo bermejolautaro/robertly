@@ -1,0 +1,126 @@
+@if (!isLoading()) {
+  <div class="footer-padding">
+    <div class="modal-header">
+      <h4
+        class="modal-title"
+        id="modal-basic-title"
+      >
+        {{ mode === 'edit' ? 'Edit' : 'Create' }} Log
+      </h4>
+    </div>
+
+    <div class="modal-body">
+      <form>
+        <input
+          type="text"
+          autofocus="autofocus"
+          style="display: none"
+        />
+
+        <!-- #region INPUT DATE -->
+        <div class="mb-3">
+          <input
+            type="date"
+            placeholder="DD-MM-YYYY"
+            class="form-control"
+            placeholder="Reps"
+            [formControl]="createOrUpdateLogFormGroup.controls.date"
+          />
+        </div>
+        <!-- #endregion -->
+
+        <!-- #region TYPEAHEAD EXERCISE -->
+        <div class="mb-3">
+          <div class="input-group">
+            <app-typeahead
+              placeholder="Exercise"
+              [items]="exerciseLogService.exercises"
+              [control]="createOrUpdateLogFormGroup.controls.exercise"
+              [itemSelector]="exerciseSelector"
+            ></app-typeahead>
+          </div>
+
+          @if (!createOrUpdateLogFormGroup.controls.exercise.pristine) {
+            @for (error of createOrUpdateLogFormGroup.errors?.['exercise'] | keyvalue; track $index) {
+              <div class="d-block invalid-feedback">{{ error.value }}</div>
+            }
+          }
+        </div>
+        <!-- #endregion -->
+
+        @for (serieControl of createOrUpdateLogFormGroup.controls.series.controls; track $index) {
+          <div class="input-group mb-3 align-items-center">
+            <span class="input-group-text">Serie {{ $index + 1 }}</span>
+            <input
+              type="number"
+              class="form-control"
+              placeholder="Reps"
+              [formControl]="serieControl.controls.reps"
+            />
+            <input
+              type="number"
+              class="form-control"
+              placeholder="Kg"
+              [formControl]="serieControl.controls.weightInKg"
+            />
+          </div>
+        }
+
+        @if (!createOrUpdateLogFormGroup.controls.series.pristine) {
+          @for (error of createOrUpdateLogFormGroup.errors?.['series'] | keyvalue; track $index) {
+            <div class="d-block invalid-feedback">{{ error.value }}</div>
+          }
+        }
+      </form>
+    </div>
+    <div
+      class="modal-footer"
+      [ngClass]="{ 'justify-content-between': mode === 'edit' }"
+    >
+      @if (mode === 'edit') {
+        <button
+          type="button"
+          class="btn btn-danger me-auto"
+          (click)="exerciseLogService.deleteLog$.next(originalValue()!)"
+        >
+          Delete
+        </button>
+      }
+      <button
+        type="button"
+        class="btn btn-secondary"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="btn"
+        [ngClass]="{
+          'btn-primary': createOrUpdateLogFormGroup.valid,
+          'btn-secondary': createOrUpdateLogFormGroup.invalid
+        }"
+        [disabled]="createOrUpdateLogFormGroup.invalid"
+        (click)="saveExerciseLog()"
+      >
+        Save
+      </button>
+
+      <div class="pt-5 w-100">
+        <div class="pb-2">Previous entries</div>
+        @for (log of originalValue()?.recentLogs ?? []; track $index) {
+          <app-exercise-log
+            class="w-100"
+            [exerciseLog]="log"
+          ></app-exercise-log>
+        }
+      </div>
+    </div>
+  </div>
+
+} @else {
+  <div class="position-absolute top-50 start-50 translate-middle">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}

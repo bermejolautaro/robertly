@@ -23,33 +23,37 @@ export type UpdateExerciseLogRequest = {
 })
 export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
-  private readonly netApiUrl = inject(API_URL);
+  private readonly apiUrl = inject(API_URL);
+
+  public getExerciseLogById(exerciseLogId: number): Observable<ExerciseLogDto> {
+    return this.http.get<ExerciseLogDto>(`${this.apiUrl}/logs/${exerciseLogId}`);
+  }
 
   public getExerciseLogs(): Observable<ExerciseLogDto[]> {
     return this.http
-      .get<ExercisesLogsDto>(`${this.netApiUrl}/logs?page=0&count=5`)
+      .get<ExercisesLogsDto>(`${this.apiUrl}/logs?page=0&count=5`)
       .pipe(map(x => x.data));
   }
 
   public getExerciseLogsLatestWorkout(): Observable<ExerciseLogDto[]> {
     return this.http
-      .get<ExercisesLogsDto>(`${this.netApiUrl}/logs/latest-workout`)
+      .get<ExercisesLogsDto>(`${this.apiUrl}/logs/latest-workout`)
       .pipe(map(x => x.data));
   }
 
   public createExerciseLog(
     request: CreateExerciseLogRequest
-  ): Observable<void> {
-    return this.http.post<void>(`${this.netApiUrl}/logs`, request);
+  ): Observable<number> {
+    return this.http.post<number>(`${this.apiUrl}/logs`, request);
   }
 
   public updateExerciseLog(
     request: UpdateExerciseLogRequest
   ): Observable<void> {
-    return this.http.put<void>(`${this.netApiUrl}/logs/${request.id}`, request);
+    return this.http.put<void>(`${this.apiUrl}/logs/${request.id}`, request);
   }
 
   public deleteExerciseLog(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.netApiUrl}/logs/${id}`);
+    return this.http.delete<void>(`${this.apiUrl}/logs/${id}`);
   }
 }

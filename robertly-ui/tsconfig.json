@@ -7,6 +7,7 @@
       "@helpers/*": ["src/app/helpers/*"],
       "@services/*": ["src/app/services/*"],
       "@models/*": ["src/app/models/*"],
+      "@validators/*": ["src/app/validators/*"],
       "@components/*": ["src/app/components/*"],
       "@pipes/*": ["src/app/pipes/*"]
     },

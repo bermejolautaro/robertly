@@ -55,6 +55,8 @@ public class AuthController : Controller
 
     private async Task GetOrCreateUser(UserCredential cred)
     {
+        await Task.FromResult("");
+        return;
         //var existingUserDb = (await _usersDb.OrderBy("uid").EqualTo(cred.User.Uid).OnceAsync<UserDb>()).FirstOrDefault();
 
         //if (existingUserDb is null)

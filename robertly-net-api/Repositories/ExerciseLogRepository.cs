@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using robertly.Helpers;
 using robertly.Models;
 
 namespace robertly.Repositories;
@@ -32,11 +33,21 @@ public class ExerciseLogRepository
     return date;
   }
 
-  public async Task<ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId)
+  public async Task<ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId, bool includeExtraData = false)
   {
-    var exerciseLog = (
-        await GetExerciseLogsAsync(0, 1000, exerciseLogId: exerciseLogId)
-    ).FirstOrDefault();
+    var qb = new GetExerciseLogsQueryBuilder().AndExerciseLogId(exerciseLogId);
+    var exerciseLog = (await GetExerciseLogsAsync(0, 1000, qb)).FirstOrDefault();
+
+    if (includeExtraData)
+    {
+      var qbExtraData = new GetExerciseLogsQueryBuilder()
+        .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
+        .AndUserFirebaseUuid(exerciseLog.User!.UserFirebaseUuid)
+        .AndDate(exerciseLog.ExerciseLogDate, "<");
+
+      var recentLogs = await GetExerciseLogsAsync(0, 5, qbExtraData);
+      exerciseLog = exerciseLog with { RecentLogs = recentLogs };
+    }
 
     return exerciseLog;
   }
@@ -44,81 +55,60 @@ public class ExerciseLogRepository
   public async Task<IEnumerable<ExerciseLog>> GetExerciseLogsAsync(
       int page,
       int size,
-      int? exerciseLogId = null,
-      string? userFirebaseUuid = null,
-      IEnumerable<DateTime>? dates = null
-  )
+      GetExerciseLogsQueryBuilder queryBuilder)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
-    var filters = new StringBuilder();
+    var (filters, queryParams) = queryBuilder.BuildFilters();
 
-    if (exerciseLogId is not null)
-    {
-      filters.AppendLine("AND EL.ExerciseLogId = @ExerciseLogId");
-    }
-
-    if (userFirebaseUuid is not null)
-    {
-      filters.AppendLine("AND U.UserFirebaseUuid = @UserFirebaseUuid");
-    }
-
-    if (dates is not null)
-    {
-      var datesFilters = string.Join("OR ", dates.Select(x => $"EL.Date = '{x:yyyy-MM-dd}'"));
-      filters.AppendLine($"AND {datesFilters}");
-    }
-
-    string query = $"""
-            SELECT
-                 EL.ExerciseLogId
-                ,EL.Username AS ExerciseLogUsername
-                ,EL.UserId AS ExerciseLogUserId
-                ,EL.ExerciseId AS ExerciseLogExerciseId
-                ,EL.Date AS ExerciseLogDate
-                ,E.ExerciseId
-                ,E.Name
-                ,E.MuscleGroup
-                ,E.Type
-                ,U.UserId
-                ,U.UserFirebaseUuid
-                ,U.Email
-                ,U.Name
-            FROM {_schema}.ExerciseLogs EL
-            INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
-            LEFT JOIN  {_schema}.Users U ON EL.UserId = U.UserId
-            WHERE 1 = 1
-            {filters}
-            ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
-            OFFSET {page * size} LIMIT {size};
-            """;
+    string query =
+      $"""
+      SELECT
+         EL.ExerciseLogId
+        ,EL.Username AS ExerciseLogUsername
+        ,EL.UserId AS ExerciseLogUserId
+        ,EL.ExerciseId AS ExerciseLogExerciseId
+        ,EL.Date AS ExerciseLogDate
+        ,E.ExerciseId
+        ,E.Name
+        ,E.MuscleGroup
+        ,E.Type
+        ,U.UserId
+        ,U.UserFirebaseUuid
+        ,U.Email
+        ,U.Name
+      FROM {_schema}.ExerciseLogs EL
+      INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+      LEFT JOIN  {_schema}.Users U ON EL.UserId = U.UserId
+      WHERE 1 = 1
+      {filters}
+      ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
+      OFFSET {page * size} LIMIT {size};
+      """;
 
     var exerciseLogs = await connection.QueryAsync<
         ExerciseLog,
         Exercise,
-        User2,
+        User,
         ExerciseLog
     >(
         query,
         (log, exercise, user) => (log with { Exercise = exercise, User = user }),
-        param: new
-        {
-          UserFirebaseUuid = userFirebaseUuid,
-          ExerciseLogId = exerciseLogId,
-        },
+        param: new DynamicParameters(queryParams),
         splitOn: "ExerciseId,UserId"
     );
 
     var series = await connection.QueryAsync<Models.Serie>(
-        $@"
-                SELECT
-                     S.SerieId
-                    ,S.ExerciseLogId
-                    ,S.Reps
-                    ,s.WeightInKg
-                FROM  {_schema}.Series S
-                WHERE ExerciseLogId = ANY(@ExerciseLogIds)
-            ",
+      $"""
+      SELECT
+         S.SerieId
+        ,S.ExerciseLogId
+        ,S.Reps
+        ,S.WeightInKg
+        ,(S.WeightInKg * (36.0 / (37.0 - s.Reps))) AS Brzycki
+      FROM  {_schema}.Series S
+      WHERE ExerciseLogId = ANY(@ExerciseLogIds)
+      """,
         new { ExerciseLogIds = exerciseLogs.Select(x => x.ExerciseLogId).ToList() }
     );
 
@@ -143,8 +133,10 @@ public class ExerciseLogRepository
         RETURNING ExerciseLogs.ExerciseLogId
       """;
 
+    var seriesValues = (exerciseLog.Series ?? []).Select(x => $"(@ExerciseLogId, {x.Reps}, {x.WeightInKg})");
+
     var seriesQuery = new StringBuilder($"INSERT INTO  {_schema}.Series (ExerciseLogId, Reps, WeightInKg) VALUES\n")
-      .AppendJoin(",\n", (exerciseLog.Series ?? []).Select(x => $"(@ExerciseLogId, {x.Reps}, {x.WeightInKg})"))
+      .AppendJoin(",\n", seriesValues)
       .Append(";\n")
       .ToString();
 
@@ -160,7 +152,9 @@ public class ExerciseLogRepository
         }
     );
 
-    await connection.ExecuteAsync(seriesQuery, new { ExerciseLogId = exerciseLogId });
+    if (seriesValues.Any()) {
+      await connection.ExecuteAsync(seriesQuery, new { ExerciseLogId = exerciseLogId });
+    }
 
     return exerciseLogId;
   }

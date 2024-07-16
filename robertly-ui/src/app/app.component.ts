@@ -7,14 +7,23 @@ import { Paths } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
 
-import { CreateExerciseLogRequest, ExerciseLogApiService, UpdateExerciseLogRequest } from '@services/exercise-log-api.service';
+import {
+  CreateExerciseLogRequest,
+  ExerciseLogApiService,
+  UpdateExerciseLogRequest,
+} from '@services/exercise-log-api.service';
 import { DOCUMENT, JsonPipe, NgClass, TitleCasePipe } from '@angular/common';
 
 import { ExerciseLogDto } from '@models/exercise-log.model';
-import { NgbAlertModule, NgbDropdownModule, NgbModal, NgbOffcanvas, NgbOffcanvasModule, NgbToastModule } from '@ng-bootstrap/ng-bootstrap';
+import {
+  NgbAlertModule,
+  NgbDropdownModule,
+  NgbModal,
+  NgbOffcanvas,
+  NgbOffcanvasModule,
+  NgbToastModule,
+} from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
-import { Exercise } from '@models/exercise.model';
-import { FormArray, FormControl, FormGroup, ValidatorFn, Validators } from '@angular/forms';
 import { DayjsService } from '@services/dayjs.service';
 import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -24,76 +33,19 @@ import { AuthApiService } from '@services/auth-api.service';
 import { HeaderComponent } from '@components/header.component';
 import { FooterComponent } from '@components/footer.component';
 import { AuthService } from '@services/auth.service';
+import { createLogFormGroup, CreateOrUpdateLogFormGroup } from '@models/create-or-update-log';
+import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
 const EXERCISES_CACHE_KEY = 'robertly-exercises';
-const CREATE_LOG_VALUE_CACHE_KEY = 'robertly-create-log-value';
-
 const MINUTES_5 = 5 * 60;
-export type CreateOrUpdateSerieFormGroup = FormGroup<{
-  serieId: FormControl<number | null>;
-  exerciseLogId: FormControl<number | null>;
-  reps: FormControl<number | null>;
-  weightInKg: FormControl<number | null>;
-}>;
-
-export type CreateOrUpdateLogFormGroup = FormGroup<{
-  user: FormControl<string | null>;
-  userId: FormControl<string | null>;
-  date: FormControl<string | null>;
-  exercise: FormControl<string | Exercise | null>;
-  series: FormArray<CreateOrUpdateSerieFormGroup>;
-}>;
-
-const createOrUpdateLogFormValidator: ValidatorFn = control => {
-  const typedControl = control as CreateOrUpdateLogFormGroup;
-  const errorsMap: Map<string, Record<string, string>> = new Map();
-
-  // const userRequiredErrors = Validators.required(typedControl.controls.user);
-  // if (userRequiredErrors) {
-  //   errorsMap.set('user', { ...errorsMap.get('user'), ...{ required: 'Username is required' } });
-  // }
-
-  if (typedControl.value.user === 'peron') {
-    errorsMap.set('user', { ...errorsMap.get('user'), ...{ invalidPeron: 'Peron is not allowed' } });
-  }
-
-  const exerciseRequiredErrors = Validators.required(typedControl.controls.exercise);
-  if (exerciseRequiredErrors) {
-    errorsMap.set('exercise', { ...errorsMap.get('exercise'), ...{ exerciseRequired: 'Exercise is required' } });
-  }
-
-  if (typeof typedControl.value.exercise === 'string') {
-    if (typedControl.value.exercise?.toLowerCase() === 'peron') {
-      errorsMap.set('exercise', { ...errorsMap.get('exercise'), ...{ invalidPeron: 'Peron is not allowed' } });
-    }
-  } else {
-  }
-
-  if (typedControl.controls.series.value.map(x => (x.reps ?? 0) > 0 && (x.weightInKg ?? 0) > 0).every(x => !x)) {
-    errorsMap.set('series', { ...errorsMap.get('series'), ...{ allSeriesAreEmpty: 'Needs at least one serie' } });
-  }
-
-  if (typedControl.controls.series.value.some(x => !Number.isInteger(x.reps ?? 0))) {
-    errorsMap.set('series', { ...errorsMap.get('series'), ...{ repsMustBeInteger: 'Reps needs to be whole numbers' } });
-  }
-
-  const result: Record<string, Record<string, string>> = {};
-
-  for (const [key, value] of errorsMap.entries()) {
-    result[key] = value;
-  }
-
-  return result;
-};
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   standalone: true,
-  providers: [ExerciseLogService],
   imports: [
     NgClass,
     TitleCasePipe,
@@ -126,39 +78,9 @@ export class AppComponent implements OnInit {
   private readonly modalService = inject(NgbModal);
   private readonly offcanvasService = inject(NgbOffcanvas);
 
-  public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
-    {
-      user: new FormControl(''),
-      userId: new FormControl(''),
-      exercise: new FormControl<string | Exercise | null>(null),
-      date: new FormControl(''),
-      series: new FormArray([
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-      ]),
-    },
-    [createOrUpdateLogFormValidator]
-  );
+  public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = createLogFormGroup();
 
-  public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = new FormGroup(
-    {
-      user: new FormControl(''),
-      userId: new FormControl(''),
-      exercise: new FormControl<string | Exercise | null>(null),
-      date: new FormControl(''),
-      series: new FormArray([
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-        createSerieFormGroup(),
-      ]),
-    },
-    [createOrUpdateLogFormValidator]
-  );
+  public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = createLogFormGroup();
 
   public readonly Paths = Paths;
   public hasAppLoaded: boolean = isDevMode();
@@ -227,7 +149,8 @@ export class AppComponent implements OnInit {
           weightInKg: x.weightInKg,
         })),
       });
-      this.open('update', exerciseLog);
+      this.router.navigate([Paths.LOGS, Paths.LOGS_EDIT, exerciseLog.id]);
+      // this.open('update', exerciseLog);
     });
 
     this.exerciseLogService.createLogClicked$.pipe(takeUntilDestroyed()).subscribe(() => {
@@ -280,45 +203,7 @@ export class AppComponent implements OnInit {
         if (mode === 'create') {
           this.createExerciseLog();
         } else {
-          if (this.updateLogFormGroup.invalid) {
-            return;
-          }
-
-          if (typeof this.updateLogFormGroup.value.exercise === 'string') {
-            return;
-          }
-
-          const user = this.authService.user();
-
-          const request: UpdateExerciseLogRequest = {
-            id: exerciseLog?.id!,
-            exerciseLog: {
-              exerciseLogUsername: user?.name ?? this.updateLogFormGroup.value.user!.toLocaleLowerCase(),
-              exerciseLogUserId: user?.userId,
-              exerciseLogExerciseId: this.updateLogFormGroup.value.exercise!.exerciseId,
-              exerciseLogDate: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
-              series: (this.updateLogFormGroup.value.series ?? [])
-                .filter(x => !!x.reps && !!x.weightInKg)
-                .map(x => ({
-                  exerciseLogId: x.exerciseLogId!,
-                  serieId: x.serieId!,
-                  reps: +x.reps!,
-                  weightInKg: +x.weightInKg!.toFixed(1),
-                })),
-            },
-          };
-
-          this.exerciseLogApiService.updateExerciseLog(request).subscribe({
-            next: () => {
-              this.updateLogFormGroup.reset();
-              this.fetchData();
-              this.toastService.ok('Log updated successfully!');
-            },
-            error: () => {
-              this.fetchData();
-              this.toastService.error();
-            },
-          });
+          this.updateExerciseLog(exerciseLog);
         }
       },
       () => {
@@ -370,6 +255,48 @@ export class AppComponent implements OnInit {
     });
   }
 
+  private updateExerciseLog(exerciseLog?: ExerciseLogDto): void {
+    if (this.updateLogFormGroup.invalid) {
+      return;
+    }
+
+    if (typeof this.updateLogFormGroup.value.exercise === 'string') {
+      return;
+    }
+
+    const user = this.authService.user();
+
+    const request: UpdateExerciseLogRequest = {
+      id: exerciseLog?.id!,
+      exerciseLog: {
+        exerciseLogUsername: user?.name ?? this.updateLogFormGroup.value.user!.toLocaleLowerCase(),
+        exerciseLogUserId: user?.userId,
+        exerciseLogExerciseId: this.updateLogFormGroup.value.exercise!.exerciseId,
+        exerciseLogDate: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
+        series: (this.updateLogFormGroup.value.series ?? [])
+          .filter(x => !!x.reps && !!x.weightInKg)
+          .map(x => ({
+            exerciseLogId: x.exerciseLogId!,
+            serieId: x.serieId!,
+            reps: +x.reps!,
+            weightInKg: +x.weightInKg!.toFixed(1),
+          })),
+      },
+    };
+
+    this.exerciseLogApiService.updateExerciseLog(request).subscribe({
+      next: () => {
+        this.updateLogFormGroup.reset();
+        this.fetchData();
+        this.toastService.ok('Log updated successfully!');
+      },
+      error: () => {
+        this.fetchData();
+        this.toastService.error();
+      },
+    });
+  }
+
   public fetchData(): void {
     this.exerciseLogService.refreshLogs$.next();
     let exercises$ = this.exerciseApiService.getExercises();
@@ -391,13 +318,4 @@ export class AppComponent implements OnInit {
   public openSidebar(content: TemplateRef<unknown>): void {
     this.offcanvasService.open(content, { position: 'end' });
   }
-}
-
-function createSerieFormGroup(): CreateOrUpdateSerieFormGroup {
-  return new FormGroup({
-    serieId: new FormControl(),
-    exerciseLogId: new FormControl(),
-    reps: new FormControl(),
-    weightInKg: new FormControl(),
-  });
 }

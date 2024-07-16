@@ -21,7 +21,7 @@ public class UserController
     }
 
     [HttpGet("firebase-uuid/{firebaseUuid}")]
-    public async Task<User2?> GetUserByFirebaseUuidAsync(string firebaseUuid)
+    public async Task<User?> GetUserByFirebaseUuidAsync(string firebaseUuid)
     {
 
         using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
@@ -36,7 +36,7 @@ public class UserController
             WHERE UserFirebaseUuid = @FirebaseUuid
             """;
 
-        var user = await connection.QuerySingleOrDefaultAsync<User2>(query, new
+        var user = await connection.QuerySingleOrDefaultAsync<User>(query, new
         {
             FirebaseUuid = firebaseUuid
         });

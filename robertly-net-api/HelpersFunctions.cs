@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace robertly;
 
-public static class Helpers
+public static class HelpersFunctions
 {
   public static readonly string DB_ENVIROMENT_KEY = "DatabaseEnvironment";
 

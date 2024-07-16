@@ -12,7 +12,10 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 
 export const Paths = {
-  LOGS: '',
+  LOGS: 'logs',
+  LOGS_EDIT: 'edit',
+  LOGS_CREATE: 'create',
+  LOGS_ID_PARAM: 'id',
   STATS: 'stats',
   EXERCISES: 'exercises',
   SIGN_IN: 'signin',
@@ -38,6 +41,16 @@ const routes = [
     path: Paths.LOGS,
     pathMatch: 'full',
     loadComponent: () => import('@pages/exercise-logs.page.component').then(x => x.ExerciseLogsPageComponent),
+  } as const,
+  {
+    path: `${Paths.LOGS}/${Paths.LOGS_EDIT}/:${Paths.LOGS_ID_PARAM}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
+  } as const,
+  {
+    path: `${Paths.LOGS}/${Paths.LOGS_CREATE}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
   } as const,
   {
     path: Paths.DEVELOPER,

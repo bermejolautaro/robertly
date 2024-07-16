@@ -28,7 +28,7 @@ nav.navbar.fixed-bottom {
     z-index: 10;
 
     &::before {
-      content: "";
+      // content: "";
       position: absolute;
       background: #2a2f3c;
       width: 25px;
@@ -41,7 +41,7 @@ nav.navbar.fixed-bottom {
     }
 
     &::after {
-      content: '';
+      // content: '';
       position: absolute;
       background: #2a2f3c;
       width: 25px;
@@ -55,7 +55,7 @@ nav.navbar.fixed-bottom {
   }
 
   &::before {
-    content: '';
+    // content: '';
     position: absolute;
     height: 75px;
     width: 70px;
