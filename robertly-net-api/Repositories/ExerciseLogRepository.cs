@@ -27,7 +27,7 @@ public class ExerciseLogRepository
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
     var date = await connection.QueryFirstOrDefaultAsync<DateTime?>(
-      $"SELECT MAX(Date) FROM ExerciseLogs where UserFirebaseUuid = @UserFirebaseUuid AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
+      $"SELECT MAX(Date) FROM {_schema}.ExerciseLogs where UserFirebaseUuid = @UserFirebaseUuid AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
       new { UserFirebaseUuid = userFirebaseUuid });
 
     return date;
