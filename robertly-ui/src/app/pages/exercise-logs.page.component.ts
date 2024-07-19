@@ -1,11 +1,5 @@
 import { DOCUMENT, NgClass } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnInit,
-  inject,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ExerciseLogComponent } from '@components/exercise-log.component';
 
@@ -40,27 +34,12 @@ export class ExerciseLogsPageComponent implements OnInit {
 
   public isGrouped: boolean = false;
 
-  public constructor() {
-    this.exerciseLogService.refreshLogs$
-      .pipe(takeUntilDestroyed())
-      .subscribe(x => {
-        const exerciseLogs$ =
-          this.exerciseLogApiService.getExerciseLogsLatestWorkout();
+  public constructor() {}
 
-        this.exerciseLogService.withLoading(
-          forkJoin([exerciseLogs$]).pipe(
-            tap(([exerciseLogs]) => {
-              this.exerciseLogService.updateLogs$.next(exerciseLogs);
-            })
-          )
-        );
-      });
-  }
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
 
-    const exerciseLogs$ =
-      this.exerciseLogApiService.getExerciseLogsLatestWorkout();
+    const exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsLatestWorkout();
 
     if (!this.exerciseLogService.logs().length) {
       this.exerciseLogService.withLoading(

@@ -2,16 +2,13 @@ import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
 import {
   Component,
   ChangeDetectionStrategy,
-  OnInit,
   inject,
-  Input,
-  Signal,
   signal,
   WritableSignal,
 } from '@angular/core';
 import { ExerciseLogDto } from '@models/exercise-log.model';
 import { Exercise } from '@models/exercise.model';
-import { NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseLogService } from '@services/exercise-log.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TypeaheadComponent } from '@components/typeahead.component';
@@ -25,10 +22,12 @@ import {
 } from '@services/exercise-log-api.service';
 import { ToastService } from '@services/toast.service';
 import { AuthService } from '@services/auth.service';
-import { DayjsService as DayJsService } from '@services/dayjs.service';
+import { DayjsService } from '@services/dayjs.service';
 import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
 import { ExerciseLogComponent } from '@components/exercise-log.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ConfirmModalComponent } from '@components/confirm-modal.component';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'edit-exercise-log-page',
@@ -46,7 +45,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
     NgClass,
   ],
 })
-export class EditExerciseLogPageComponent implements OnInit {
+export class EditExerciseLogPageComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
 
   private readonly router = inject(Router);
@@ -54,8 +53,10 @@ export class EditExerciseLogPageComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly titleCasePipe = inject(TitleCasePipe);
-  private readonly dayJsService = inject(DayJsService);
+  private readonly dayjsService = inject(DayjsService);
+  private readonly dayjs = this.dayjsService.instance;
   private readonly route = inject(ActivatedRoute);
+  private readonly modalService = inject(NgbModal);
 
   public mode: 'edit' | 'create' = null!;
   public createOrUpdateLogFormGroup: CreateOrUpdateLogFormGroup = null!;
@@ -73,36 +74,21 @@ export class EditExerciseLogPageComponent implements OnInit {
 
       if (isCreate) {
         this.mode = 'create';
+        const todayDate = this.dayjs().format('YYYY-MM-DD');
+        this.createOrUpdateLogFormGroup.controls.date.patchValue(todayDate);
       } else {
         this.initEditMode();
       }
     });
   }
 
-  private initEditMode(): void {
-    this.isLoading.set(true);
-    const exerciseLogId = Number(this.route.snapshot.paramMap.get(Paths.LOGS_ID_PARAM));
-    this.mode = 'edit';
-    this.exerciseLogApiService.getExerciseLogById(exerciseLogId).subscribe(x => {
-      this.originalValue.set(x);
-      this.createOrUpdateLogFormGroup.reset();
-      this.createOrUpdateLogFormGroup.patchValue({
-        exercise: x.exercise,
-        date: this.dayJsService.parseDate(x.date).format('YYYY-MM-DD'),
-        user: x.user.name,
-        series: x.series.map(x => ({
-          exerciseLogId: x.exerciseLogId,
-          serieId: x.serieId,
-          reps: x.reps,
-          weightInKg: x.weightInKg,
-        })),
+  public openDeleteModal(): void {
+    this.modalService
+      .open(ConfirmModalComponent, { centered: true })
+      .closed.pipe(take(1))
+      .subscribe(() => {
+        this.exerciseLogService.deleteLog$.next(this.originalValue()!);
       });
-      this.isLoading.set(false);
-    });
-  }
-
-  public ngOnInit(): void {
-
   }
 
   public saveExerciseLog(): void {
@@ -112,6 +98,13 @@ export class EditExerciseLogPageComponent implements OnInit {
     } else {
       this.updateExerciseLog(this.originalValue()!);
     }
+  }
+
+  public cancel(): void {
+    this.exerciseLogService.refreshLogs$.pipe(take(1)).subscribe(() => {
+      this.router.navigate([Paths.LOGS]);
+    });
+    this.exerciseLogService.refreshLogs$.next();
   }
 
   private createExerciseLog(): void {
@@ -130,7 +123,7 @@ export class EditExerciseLogPageComponent implements OnInit {
         exerciseLogUsername: user?.name ?? this.createOrUpdateLogFormGroup.value.user!.toLocaleLowerCase(),
         exerciseLogUserId: user?.userId,
         exerciseLogExerciseId: this.createOrUpdateLogFormGroup.value.exercise!.exerciseId,
-        exerciseLogDate: this.dayJsService.parseDate(this.createOrUpdateLogFormGroup.value.date!).format('YYYY-MM-DD'),
+        exerciseLogDate: this.dayjsService.parseDate(this.createOrUpdateLogFormGroup.value.date!).format('YYYY-MM-DD'),
         series: (this.createOrUpdateLogFormGroup.value.series ?? [])
           .filter(x => !!x.reps && !!x.weightInKg)
           .map(x => ({
@@ -172,7 +165,7 @@ export class EditExerciseLogPageComponent implements OnInit {
         exerciseLogUsername: user?.name ?? this.createOrUpdateLogFormGroup.value.user!.toLocaleLowerCase(),
         exerciseLogUserId: user?.userId,
         exerciseLogExerciseId: this.createOrUpdateLogFormGroup.value.exercise!.exerciseId,
-        exerciseLogDate: this.dayJsService.parseDate(this.createOrUpdateLogFormGroup.value.date!).format('YYYY-MM-DD'),
+        exerciseLogDate: this.dayjsService.parseDate(this.createOrUpdateLogFormGroup.value.date!).format('YYYY-MM-DD'),
         series: (this.createOrUpdateLogFormGroup.value.series ?? [])
           .filter(x => !!x.reps && !!x.weightInKg)
           .map(x => ({
@@ -193,6 +186,28 @@ export class EditExerciseLogPageComponent implements OnInit {
       error: () => {
         this.toastService.error();
       },
+    });
+  }
+
+  private initEditMode(): void {
+    this.isLoading.set(true);
+    const exerciseLogId = Number(this.route.snapshot.paramMap.get(Paths.LOGS_ID_PARAM));
+    this.mode = 'edit';
+    this.exerciseLogApiService.getExerciseLogById(exerciseLogId).subscribe(x => {
+      this.originalValue.set(x);
+      this.createOrUpdateLogFormGroup.reset();
+      this.createOrUpdateLogFormGroup.patchValue({
+        exercise: x.exercise,
+        date: this.dayjsService.parseDate(x.date).format('YYYY-MM-DD'),
+        user: x.user.name,
+        series: x.series.map(x => ({
+          exerciseLogId: x.exerciseLogId,
+          serieId: x.serieId,
+          reps: x.reps,
+          weightInKg: x.weightInKg,
+        })),
+      });
+      this.isLoading.set(false);
     });
   }
 }

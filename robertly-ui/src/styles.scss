@@ -19,7 +19,7 @@
 }
 
 .footer-padding {
-  padding-bottom: 5rem;
+  padding-bottom: 7rem;
 }
 
 .offcanvas a,
@@ -46,6 +46,10 @@ a {
   --bs-btn-color: var(--font-color);
   --bs-btn-bg: var(--primary);
   --bs-btn-border-color: var(--primary);
+  --bs-btn-active-border-color: var(--primary);
+  --bs-btn-hover-border-color: var(--primary);
+  --bs-btn-active-bg: var(--primary);
+  --bs-btn-hover-bg: var(--primary);
 }
 
 input[type="date"] {

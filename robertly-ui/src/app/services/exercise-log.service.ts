@@ -3,10 +3,11 @@ import { ExerciseLogDto } from '@models/exercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
-import { Observable, Subject, first, switchMap, tap } from 'rxjs';
+import { Observable, Subject, first, forkJoin, switchMap, tap } from 'rxjs';
 import { groupByMonth } from '@helpers/exercise-log.helper';
 import { Exercise } from '@models/exercise.model';
 import { DayjsService } from '@services/dayjs.service';
+import { ExerciseLogApiService } from './exercise-log-api.service';
 
 type State = {
   logs: ExerciseLogDto[];
@@ -26,6 +27,7 @@ export const WEIGHT_DEFAULT_LABEL = 'Weight';
 
 @Injectable({ providedIn: 'root' })
 export class ExerciseLogService {
+  private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly dayjsService = inject(DayjsService);
 
   private readonly state = signal<State>({
@@ -87,7 +89,7 @@ export class ExerciseLogService {
   );
 
   public readonly exercises = computed(() => {
-    return this.state().exercises
+    return this.state().exercises;
   });
 
   public readonly selectedType = computed(() => this.state().selectedType);
@@ -99,7 +101,9 @@ export class ExerciseLogService {
   public readonly weights = computed(() => {
     return R.pipe(
       this.filteredLogs(),
-      this.state().selectedExercise ? R.filter(x => x.exercise.name === this.state().selectedExercise?.name) : R.identity,
+      this.state().selectedExercise
+        ? R.filter(x => x.exercise.name === this.state().selectedExercise?.name)
+        : R.identity,
       R.flatMap(x => x.series.map(x => x.weightInKg)),
       R.uniq(),
       R.filter(x => !!x),
@@ -140,6 +144,18 @@ export class ExerciseLogService {
 
   public constructor() {
     effect(() => console.log(this.state()));
+
+    this.refreshLogs$.pipe(takeUntilDestroyed()).subscribe(x => {
+      const exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsLatestWorkout();
+
+      this.withLoading(
+        forkJoin([exerciseLogs$]).pipe(
+          tap(([exerciseLogs]) => {
+            this.updateLogs$.next(exerciseLogs);
+          })
+        )
+      );
+    });
 
     this.updateLogs$.pipe(takeUntilDestroyed()).subscribe({
       next: logs =>
@@ -203,7 +219,11 @@ export class ExerciseLogService {
       next: exercises => this.state.update(state => ({ ...state, exercises })),
     });
 
-    this.startLoading$.pipe(takeUntilDestroyed()).subscribe({ next: () => this.state.update(state => ({ ...state, loaded: false })) });
-    this.stopLoading$.pipe(takeUntilDestroyed()).subscribe({ next: () => this.state.update(state => ({ ...state, loaded: true })) });
+    this.startLoading$
+      .pipe(takeUntilDestroyed())
+      .subscribe({ next: () => this.state.update(state => ({ ...state, loaded: false })) });
+    this.stopLoading$
+      .pipe(takeUntilDestroyed())
+      .subscribe({ next: () => this.state.update(state => ({ ...state, loaded: true })) });
   }
 }

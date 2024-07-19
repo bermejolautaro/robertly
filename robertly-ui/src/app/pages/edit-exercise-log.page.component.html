@@ -81,7 +81,7 @@
         <button
           type="button"
           class="btn btn-danger me-auto"
-          (click)="exerciseLogService.deleteLog$.next(originalValue()!)"
+          (click)="openDeleteModal()"
         >
           Delete
         </button>
@@ -89,6 +89,7 @@
       <button
         type="button"
         class="btn btn-secondary"
+        (click)="cancel()"
       >
         Cancel
       </button>
@@ -105,21 +106,25 @@
         Save
       </button>
 
-      <div class="pt-5 w-100">
-        <div class="pb-2">Previous entries</div>
-        @for (log of originalValue()?.recentLogs ?? []; track $index) {
-          <app-exercise-log
-            class="w-100"
-            [exerciseLog]="log"
-          ></app-exercise-log>
-        }
-      </div>
+      @if (mode === 'edit') {
+        <div class="pt-5 w-100">
+          <div class="pb-2">Previous entries</div>
+          @for (log of originalValue()?.recentLogs ?? []; track $index) {
+            <app-exercise-log
+              class="w-100"
+              [exerciseLog]="log"
+            ></app-exercise-log>
+          }
+        </div>
+      }
     </div>
   </div>
-
 } @else {
   <div class="position-absolute top-50 start-50 translate-middle">
-    <div class="spinner-border text-primary" role="status">
+    <div
+      class="spinner-border text-primary"
+      role="status"
+    >
       <span class="visually-hidden">Loading...</span>
     </div>
   </div>

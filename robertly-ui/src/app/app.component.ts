@@ -150,11 +150,10 @@ export class AppComponent implements OnInit {
         })),
       });
       this.router.navigate([Paths.LOGS, Paths.LOGS_EDIT, exerciseLog.id]);
-      // this.open('update', exerciseLog);
     });
 
     this.exerciseLogService.createLogClicked$.pipe(takeUntilDestroyed()).subscribe(() => {
-      this.open('create');
+      this.navigateToCreateLog();
     });
 
     this.exerciseLogService.deleteLog$
@@ -164,6 +163,7 @@ export class AppComponent implements OnInit {
             tap(() => {
               this.fetchData();
               this.toastService.ok('Log deleted successfully!');
+              this.router.navigate([Paths.LOGS]);
             })
           )
         ),
@@ -180,121 +180,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  public open(mode: 'update' | 'create', exerciseLog?: ExerciseLogDto): void {
-    const modalRef = this.modalService.open(CreateOrUpdateLogModalComponent, {
-      injector: this.injector,
-      fullscreen: true,
-      animation: false,
-    });
-    const instance = modalRef.componentInstance as CreateOrUpdateLogModalComponent;
-    instance.createOrUpdateLogFormGroup = mode === 'update' ? this.updateLogFormGroup : this.createLogFormGroup;
-    instance.mode = mode;
-
-    if (mode === 'create' && !this.createLogFormGroup.value.date) {
-      this.createLogFormGroup.controls.date.patchValue(this.dayjs().format('YYYY-MM-DD'));
-    }
-
-    if (exerciseLog) {
-      instance.originalValue = exerciseLog;
-    }
-
-    modalRef.result.then(
-      () => {
-        if (mode === 'create') {
-          this.createExerciseLog();
-        } else {
-          this.updateExerciseLog(exerciseLog);
-        }
-      },
-      () => {
-        this.createLogFormGroup.markAsPristine();
-        this.updateLogFormGroup.markAsPristine();
-      }
-    );
-  }
-
-  private createExerciseLog(): void {
-    if (this.createLogFormGroup.invalid) {
-      return;
-    }
-
-    if (typeof this.createLogFormGroup.value.exercise === 'string') {
-      return;
-    }
-
-    const user = this.authService.user();
-
-    const request: CreateExerciseLogRequest = {
-      exerciseLog: {
-        exerciseLogUsername: user?.name ?? this.createLogFormGroup.value.user!.toLocaleLowerCase(),
-        exerciseLogUserId: user?.userId,
-        exerciseLogExerciseId: this.createLogFormGroup.value.exercise!.exerciseId,
-        exerciseLogDate: this.dayjsService.parseDate(this.createLogFormGroup.value.date!).format('YYYY-MM-DD'),
-        series: (this.createLogFormGroup.value.series ?? [])
-          .filter(x => !!x.reps && !!x.weightInKg)
-          .map(x => ({
-            exerciseLogId: x.exerciseLogId!,
-            serieId: x.serieId!,
-            reps: +x.reps!,
-            weightInKg: +x.weightInKg!.toFixed(1),
-          })),
-      },
-    };
-
-    this.exerciseLogApiService.createExerciseLog(request).subscribe({
-      next: () => {
-        this.createLogFormGroup.reset();
-        localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-        this.fetchData();
-        this.toastService.ok('Log created successfully!');
-      },
-      error: () => {
-        this.fetchData();
-        this.toastService.error();
-      },
-    });
-  }
-
-  private updateExerciseLog(exerciseLog?: ExerciseLogDto): void {
-    if (this.updateLogFormGroup.invalid) {
-      return;
-    }
-
-    if (typeof this.updateLogFormGroup.value.exercise === 'string') {
-      return;
-    }
-
-    const user = this.authService.user();
-
-    const request: UpdateExerciseLogRequest = {
-      id: exerciseLog?.id!,
-      exerciseLog: {
-        exerciseLogUsername: user?.name ?? this.updateLogFormGroup.value.user!.toLocaleLowerCase(),
-        exerciseLogUserId: user?.userId,
-        exerciseLogExerciseId: this.updateLogFormGroup.value.exercise!.exerciseId,
-        exerciseLogDate: this.dayjsService.parseDate(this.updateLogFormGroup.value.date!).format('YYYY-MM-DD'),
-        series: (this.updateLogFormGroup.value.series ?? [])
-          .filter(x => !!x.reps && !!x.weightInKg)
-          .map(x => ({
-            exerciseLogId: x.exerciseLogId!,
-            serieId: x.serieId!,
-            reps: +x.reps!,
-            weightInKg: +x.weightInKg!.toFixed(1),
-          })),
-      },
-    };
-
-    this.exerciseLogApiService.updateExerciseLog(request).subscribe({
-      next: () => {
-        this.updateLogFormGroup.reset();
-        this.fetchData();
-        this.toastService.ok('Log updated successfully!');
-      },
-      error: () => {
-        this.fetchData();
-        this.toastService.error();
-      },
-    });
+  public navigateToCreateLog(): void {
+    this.router.navigate([Paths.LOGS, Paths.LOGS_CREATE]);
   }
 
   public fetchData(): void {
