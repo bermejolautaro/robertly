@@ -83,8 +83,6 @@ public class ExerciseRepository
         }
     );
 
-    await connection.ExecuteAsync(query, new { ExerciseLogId = exerciseId });
-
     return exerciseId;
   }
 
@@ -95,7 +93,7 @@ public class ExerciseRepository
     var query =
       $"""
       UPDATE {_schema}.Exercises SET
-            Name = @Name
+           Name = @Name
           ,MuscleGroup = @MuscleGroup
           ,Type = @Type
       WHERE ExerciseId = @ExerciseId

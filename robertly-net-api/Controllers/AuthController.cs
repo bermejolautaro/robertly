@@ -1,10 +1,7 @@
 ﻿using Firebase.Auth;
 using Firebase.Auth.Providers;
-using Firebase.Database;
-using Firebase.Database.Query;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System.Text.Json;
+using robertly.Repositories;
 using System.Threading.Tasks;
 
 namespace robertly.Controllers;
@@ -14,14 +11,12 @@ namespace robertly.Controllers;
 public class AuthController : Controller
 {
     private readonly FirebaseAuthClient _authClient;
-    private readonly ChildQuery _usersDb;
+    private readonly UserRepository _userRepository;
 
-    private readonly JsonSerializerOptions _jsonSerializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-
-    public AuthController(FirebaseAuthClient authClient, FirebaseClient client, IConfiguration config)
+    public AuthController(FirebaseAuthClient authClient, UserRepository userRepository)
     {
         _authClient = authClient;
-        _usersDb = client.ChildUsers(config);
+        _userRepository = userRepository;
     }
 
     [HttpPost("signin")]
@@ -46,7 +41,7 @@ public class AuthController : Controller
     public async Task<string> SignInWithGoogle(SignUpGoogleRequest request)
     {
         var authCred = GoogleProvider.GetCredential(request.AccessToken);
-        var  cred = await _authClient.SignInWithCredentialAsync(authCred);
+        var cred = await _authClient.SignInWithCredentialAsync(authCred);
 
         await GetOrCreateUser(cred);
 
@@ -55,14 +50,17 @@ public class AuthController : Controller
 
     private async Task GetOrCreateUser(UserCredential cred)
     {
-        await Task.FromResult("");
-        return;
-        //var existingUserDb = (await _usersDb.OrderBy("uid").EqualTo(cred.User.Uid).OnceAsync<UserDb>()).FirstOrDefault();
+        var user = await _userRepository.GetUserByFirebaseUuidAsync(cred.User.Info.Uid);
 
-        //if (existingUserDb is null)
-        //{
-        //    var result = await _usersDb.PostAsync(JsonSerializer.Serialize(new UserDb(cred.User.Uid, cred.User.Info.Email, cred.User.Info.DisplayName), _jsonSerializerOptions));
-        //}
-
+        if (user is null)
+        {
+            await _userRepository.CreateUserAsync(new User()
+            {
+                Email = cred.User.Info.Email,
+                Name = cred.User.Info.DisplayName,
+                UserFirebaseUuid = cred.User.Info.Uid,
+                UserId = -1,
+            });
+        }
     }
 }

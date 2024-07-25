@@ -90,6 +90,7 @@ builder.Services.AddScoped(serviceProvider =>
 
 builder.Services.AddScoped<ExerciseLogRepository>();
 builder.Services.AddScoped<ExerciseRepository>();
+builder.Services.AddScoped<UserRepository>();
 builder.Services.AddSingleton<AppLogsRepository>();
 
 builder.Services.AddApplicationInsightsTelemetry();

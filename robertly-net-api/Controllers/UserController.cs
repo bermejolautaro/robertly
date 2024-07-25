@@ -1,8 +1,5 @@
-﻿using Dapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
-using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using robertly.Repositories;
 using System.Threading.Tasks;
 
 namespace robertly.Controllers;
@@ -11,36 +8,16 @@ namespace robertly.Controllers;
 [Route("api/users")]
 public class UserController
 {
-    private readonly IConfiguration _config;
-    private readonly string _schema;
+    private readonly UserRepository _userRepository;
 
-    public UserController(IConfiguration config)
+    public UserController(UserRepository userRepository)
     {
-        _config = config;
-        _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
+        _userRepository = userRepository;
     }
 
     [HttpGet("firebase-uuid/{firebaseUuid}")]
     public async Task<User?> GetUserByFirebaseUuidAsync(string firebaseUuid)
     {
-
-        using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
-        var query =
-            $"""
-            SELECT
-                 UserId
-                ,UserFirebaseUuid
-                ,Email
-                ,Name
-            FROM {_schema}.Users
-            WHERE UserFirebaseUuid = @FirebaseUuid
-            """;
-
-        var user = await connection.QuerySingleOrDefaultAsync<User>(query, new
-        {
-            FirebaseUuid = firebaseUuid
-        });
-
-        return user;
+        return await _userRepository.GetUserByFirebaseUuidAsync(firebaseUuid);
     }
 }

@@ -37,8 +37,8 @@ namespace robertly.Controllers
       var queryBuilder = new GetExerciseLogsQueryBuilder()
         .AndUserFirebaseUuid(userFirebaseUuid)
         .AndBeginParen()
-        .WhereDate(date.Value)
-        .OrDate(DateTime.Now.Date)
+        .WhereDate(DateTime.Now.Date)
+        .OrDate(date?.Date ?? DateTime.Now.Date)
         .CloseParen();
 
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(

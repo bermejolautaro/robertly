@@ -152,7 +152,8 @@ public class ExerciseLogRepository
         }
     );
 
-    if (seriesValues.Any()) {
+    if (seriesValues.Any())
+    {
       await connection.ExecuteAsync(seriesQuery, new { ExerciseLogId = exerciseLogId });
     }
 
@@ -188,21 +189,28 @@ public class ExerciseLogRepository
         ",\n",
         exerciseLog.Series?.Select(x =>
             $"({x.SerieId?.ToString() ?? "DEFAULT"}, {x.ExerciseLogId}, NULL, {x.Reps}, {x.WeightInKg})"
-        ) ?? []
-    );
+        ) ?? []);
 
     var seriesIds = string.Join(",", exerciseLog.Series?.Where(x => x.SerieId is not null).Select(x => x.SerieId) ?? []);
 
-    if (seriesValues is not null && !seriesValues.Any())
+    if (string.IsNullOrEmpty(seriesValues))
     {
       return;
     }
 
-    var seriesQuery =
+    var seriesQuery = new StringBuilder();
+
+    if (!string.IsNullOrEmpty(seriesIds))
+    {
+      seriesQuery.AppendLine(
       $"""
       DELETE FROM {_schema}.Series
       WHERE ExerciseLogId = {exerciseLog.ExerciseLogId} AND SerieId NOT IN ({seriesIds});
+      """);
+    }
 
+    seriesQuery.AppendLine(
+      $"""
       INSERT INTO {_schema}.Series (SerieId, ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg)
       VALUES
           {seriesValues}
@@ -211,9 +219,9 @@ public class ExerciseLogRepository
               ExerciseLogFirebaseId = EXCLUDED.ExerciseLogFirebaseId,
               Reps = EXCLUDED.Reps,
               WeightInKg = EXCLUDED.WeightInKg;
-      """;
+      """);
 
-    await connection.ExecuteAsync(seriesQuery);
+    await connection.ExecuteAsync(seriesQuery.ToString());
   }
 
   public async Task DeleteExerciseLogAsync(int exerciseLogId)
