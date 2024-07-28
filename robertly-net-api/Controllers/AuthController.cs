@@ -54,12 +54,11 @@ public class AuthController : Controller
 
         if (user is null)
         {
-            await _userRepository.CreateUserAsync(new User()
+            await _userRepository.CreateUserAsync(new Models.User()
             {
                 Email = cred.User.Info.Email,
                 Name = cred.User.Info.DisplayName,
-                UserFirebaseUuid = cred.User.Info.Uid,
-                UserId = -1,
+                UserFirebaseUuid = cred.User.Info.Uid
             });
         }
     }

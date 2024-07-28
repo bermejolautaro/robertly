@@ -27,7 +27,7 @@ public class ExerciseLogRepository
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
     var date = await connection.QueryFirstOrDefaultAsync<DateTime?>(
-      $"SELECT MAX(Date) FROM {_schema}.ExerciseLogs where UserFirebaseUuid = @UserFirebaseUuid AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
+      $"SELECT MAX(Date) FROM {_schema}.ExerciseLogs WHERE UserFirebaseUuid = @UserFirebaseUuid AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
       new { UserFirebaseUuid = userFirebaseUuid });
 
     return date;
@@ -42,7 +42,7 @@ public class ExerciseLogRepository
     {
       var qbExtraData = new GetExerciseLogsQueryBuilder()
         .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
-        .AndUserFirebaseUuid(exerciseLog.User!.UserFirebaseUuid)
+        .AndUserFirebaseUuid(exerciseLog.User!.UserFirebaseUuid!)
         .AndDate(exerciseLog.ExerciseLogDate, "<");
 
       var recentLogs = await GetExerciseLogsAsync(0, 5, qbExtraData);
@@ -50,6 +50,72 @@ public class ExerciseLogRepository
     }
 
     return exerciseLog;
+  }
+
+  public async Task<IEnumerable<string>> GetExerciseTypesByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null)
+  {
+    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+
+    var query =
+      $"""
+      SELECT DISTINCT E.Type FROM ExerciseLogs EL
+      INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      WHERE EL.UserFirebaseUuid = @UserFirebaseUuid
+      {(type is not null ? "AND E.Type = @Type" : "")}
+      {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
+      ORDER BY E.Type ASC
+      """;
+
+    var types = await connection.QueryAsync<string>(
+        query,
+        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg });
+
+    return types;
+  }
+
+  public async Task<IEnumerable<decimal>> GetWeightsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null)
+  {
+    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+
+    var query =
+      $"""
+      SELECT DISTINCT S.WeightInKg FROM ExerciseLogs EL
+      INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      WHERE el.UserFirebaseUuid = @UserFirebaseUuid
+      {(type is not null ? "AND E.Type = @Type" : "")}
+      {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
+      ORDER BY S.WeightInKg ASC
+      """;
+
+    var weights = await connection.QueryAsync<decimal>(
+        query,
+        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg });
+
+    return weights;
+  }
+
+  public async Task<IEnumerable<int>> GetExercisesIdsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null)
+  {
+    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+
+    var query =
+      $"""
+      SELECT DISTINCT EL.ExerciseId FROM ExerciseLogs EL
+      INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      WHERE el.UserFirebaseUuid = @UserFirebaseUuid
+      {(type is not null ? "AND E.Type = @Type" : "")}
+      {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
+      ORDER BY EL.ExerciseId ASC
+      """;
+
+    var exercises = await connection.QueryAsync<int>(
+        query,
+        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg });
+
+    return exercises;
   }
 
   public async Task<IEnumerable<ExerciseLog>> GetExerciseLogsAsync(
@@ -61,9 +127,9 @@ public class ExerciseLogRepository
 
     var (filters, queryParams) = queryBuilder.BuildFilters();
 
-    string query =
+    var query =
       $"""
-      SELECT
+      SELECT DISTINCT
          EL.ExerciseLogId
         ,EL.Username AS ExerciseLogUsername
         ,EL.UserId AS ExerciseLogUserId
@@ -80,6 +146,7 @@ public class ExerciseLogRepository
       FROM {_schema}.ExerciseLogs EL
       INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       LEFT JOIN  {_schema}.Users U ON EL.UserId = U.UserId
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
       ORDER BY EL.Date DESC, EL.ExerciseLogId DESC

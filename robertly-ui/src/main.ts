@@ -12,6 +12,7 @@ import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 
 export const Paths = {
+  HOME: 'home',
   LOGS: 'logs',
   LOGS_EDIT: 'edit',
   LOGS_CREATE: 'create',
@@ -38,6 +39,11 @@ const routes = [
     loadComponent: () => import('@pages/signin.page.component').then(x => x.SignInComponent),
   } as const,
   {
+    path: Paths.HOME,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/home.page.component').then(x => x.HomePageComponent),
+  } as const,
+  {
     path: Paths.LOGS,
     pathMatch: 'full',
     loadComponent: () => import('@pages/exercise-logs.page.component').then(x => x.ExerciseLogsPageComponent),
@@ -61,6 +67,11 @@ const routes = [
     path: Paths.FOODS,
     pathMatch: 'full',
     loadComponent: () => import('@pages/foods.page.component').then(x => x.FoodsPageComponent),
+  } as const,
+  {
+    path: '',
+    pathMatch: 'full',
+    redirectTo: Paths.HOME,
   } as const,
 ] satisfies Routes;
 

@@ -78,7 +78,6 @@ input[type="date"] {
 }
 
 .dropdown {
-
   button.btn-outline-primary:hover,
   button.btn-outline-primary.show {
     background-color: white;
@@ -172,6 +171,7 @@ input[type="date"] {
   overflow-y: scroll;
   overflow-x: hidden;
   max-height: 400px;
+  width: 100%;
 }
 
 .alert {

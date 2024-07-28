@@ -8,14 +8,13 @@ import { FiltersComponent } from '@components/filters.component';
 import { GroupedExerciseRowsComponent } from '@components/grouped-exercise-rows.component';
 import { PersonalRecordComponent } from '@components/personal-record.component';
 import { ExerciseLogDto } from '@models/exercise-log.model';
-import { Filter } from '@models/filter';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { ExerciseLogService } from '@services/exercise-log.service';
-import { tap } from 'rxjs';
+import { forkJoin, tap } from 'rxjs';
 
 @Component({
-  selector: 'app-exercise-logs-page',
-  templateUrl: 'exercise-logs.page.component.html',
+  selector: 'app-home-page',
+  templateUrl: 'home.page.component.html',
   styles: ``,
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -29,13 +28,10 @@ import { tap } from 'rxjs';
     FiltersComponent,
   ],
 })
-export class ExerciseLogsPageComponent implements OnInit {
+export class HomePageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   public readonly exerciseLogService = inject(ExerciseLogService);
-
-  public readonly currentPage = signal(0);
-  private readonly filter = signal<Filter | null>(null);
 
   public readonly logs = signal<ExerciseLogDto[]>([]);
 
@@ -43,40 +39,12 @@ export class ExerciseLogsPageComponent implements OnInit {
 
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
-    this.fetchLogs();
-  }
 
-  public onFilterChange(filter: Filter) {
-    this.filter.set(filter);
-    this.fetchLogs();
-  }
-
-  public prevPage(): void {
-    this.currentPage.update(x => Math.max(x - 1, 0));
-    this.fetchLogs();
-  }
-
-  public nextPage(): void {
-    this.currentPage.update(x => x + 1);
-    this.fetchLogs();
-  }
-
-  private fetchLogs(): void {
-    const filter = this.filter();
-    const exerciseType = filter?.types.at(0);
-    const exerciseId = filter?.exercisesIds.at(0);
-    const weightInKg = filter?.weights.at(0);
-
-    const exerciseLogs$ = this.exerciseLogApiService.getExerciseLogs(
-      this.currentPage(),
-      exerciseType ?? null,
-      exerciseId ?? null,
-      weightInKg ?? null
-    );
+    const exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsLatestWorkout();
 
     this.exerciseLogService.withLoading(
-      exerciseLogs$.pipe(
-        tap(exerciseLogs => {
+      forkJoin([exerciseLogs$]).pipe(
+        tap(([exerciseLogs]) => {
           this.logs.set(exerciseLogs);
         })
       )

@@ -28,8 +28,27 @@ namespace robertly.Controllers
       _app = app;
     }
 
+    [HttpGet("filters")]
+    public async Task<Ok<Filter>> GetFiltersByUser(
+      [FromQuery] string? type = null,
+      [FromQuery] decimal? weightInKg = null)
+    {
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+
+      var types = await _exerciseLogRepository.GetExerciseTypesByUser(userFirebaseUuid, type, weightInKg);
+      var weights = await _exerciseLogRepository.GetWeightsByUser(userFirebaseUuid, type, weightInKg);
+      var exercisesIds = await _exerciseLogRepository.GetExercisesIdsByUser(userFirebaseUuid, type, weightInKg);
+
+      return TypedResults.Ok(new Filter
+      {
+        Types = types,
+        Weights = weights,
+        ExercisesIds = exercisesIds
+      });
+    }
+
     [HttpGet("latest-workout")]
-    public async Task<ActionResult<ExerciseLogsDto>> GetCurrentAndPreviousWorkoutByUser()
+    public async Task<Ok<ExerciseLogsDto>> GetCurrentAndPreviousWorkoutByUser()
     {
       var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
       var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserFirebaseUuid(userFirebaseUuid);
@@ -48,12 +67,15 @@ namespace robertly.Controllers
 
       var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
 
-      return Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
+      return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
     }
 
     [HttpGet]
-    public async Task<ActionResult<ExerciseLogsDto>> GetExerciseLogs(
-        [FromQuery] PaginationRequest pagination
+    public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetExerciseLogs(
+        [FromQuery] PaginationRequest pagination,
+        [FromQuery] string? exerciseType = null,
+        [FromQuery] int? exerciseId = null,
+        [FromQuery] decimal? weightInKg = null
     )
     {
       try
@@ -63,22 +85,38 @@ namespace robertly.Controllers
             .VerifyIdTokenAsync(
                 Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "") ?? "");
       }
-      catch (ArgumentException ex)
+      catch (ArgumentException)
       {
-        return Unauthorized(ex.Message);
+        return TypedResults.Unauthorized();
       }
-      catch (FirebaseAuthException ex)
+      catch (FirebaseAuthException)
       {
-        return Unauthorized(ex.Message);
+        return TypedResults.Unauthorized();
       }
-      catch (Exception ex)
+      catch (Exception)
       {
-        return Unauthorized(ex.Message);
+        return TypedResults.Unauthorized();
       }
 
       var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
-      var queryBuilder = new GetExerciseLogsQueryBuilder().AndUserFirebaseUuid(userFirebaseUuid);
+      var queryBuilder = new GetExerciseLogsQueryBuilder()
+        .AndUserFirebaseUuid(userFirebaseUuid);
+
+      if (exerciseId is not null)
+      {
+        queryBuilder = queryBuilder.AndExerciseId(exerciseId.Value);
+      }
+
+      if (exerciseType is not null)
+      {
+        queryBuilder = queryBuilder.AndExerciseType(exerciseType);
+      }
+
+      if (weightInKg is not null)
+      {
+        queryBuilder = queryBuilder.AndWeightInKg(weightInKg.Value);
+      }
 
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
           pagination.Page ?? 0,
@@ -88,7 +126,7 @@ namespace robertly.Controllers
 
       var exerciseLogsDtos = MapToExerciseLogDto(exerciseLogs);
 
-      return Ok(new ExerciseLogsDto() { Data = exerciseLogsDtos });
+      return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDtos });
     }
 
     [HttpGet("{id}")]
@@ -114,7 +152,7 @@ namespace robertly.Controllers
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Put(
+    public async Task<Results<Ok, BadRequest<string>>> Put(
         [FromRoute] int id,
         [FromBody] ExerciseLogRequest request
     )
@@ -123,7 +161,7 @@ namespace robertly.Controllers
 
       if (logDb is null)
       {
-        return BadRequest($"Log with id '{id}' does not exist.");
+        return TypedResults.BadRequest($"Log with id '{id}' does not exist.");
       }
 
       logDb = logDb with
@@ -135,22 +173,22 @@ namespace robertly.Controllers
 
       await _exerciseLogRepository.UpdateExerciseLogAsync(logDb);
 
-      return Ok();
+      return TypedResults.Ok();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete([FromRoute] int id)
+    public async Task<Results<Ok, BadRequest<string>>> Delete([FromRoute] int id)
     {
       var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id);
 
       if (logDb is null)
       {
-        return BadRequest($"Log with id '{id}' does not exist.");
+        return TypedResults.BadRequest($"Log with id '{id}' does not exist.");
       }
 
       await _exerciseLogRepository.DeleteExerciseLogAsync(id);
 
-      return Ok();
+      return TypedResults.Ok();
     }
 
     private static IEnumerable<ExerciseLogDto> MapToExerciseLogDto(IEnumerable<ExerciseLog> exerciseLogs)

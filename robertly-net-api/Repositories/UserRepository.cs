@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using robertly.Models;
 
 namespace robertly.Repositories;
 

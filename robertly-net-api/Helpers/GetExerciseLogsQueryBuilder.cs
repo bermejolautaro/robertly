@@ -76,6 +76,24 @@ public class GetExerciseLogsQueryBuilder
     return this;
   }
 
+  public GetExerciseLogsQueryBuilder AndExerciseType(string exerciseType)
+  {
+    var param = $"@ExerciseType_{UseIndex()}";
+    _sb.AppendLine($"AND E.Type = {param}");
+    _params.Add(param, exerciseType);
+
+    return this;
+  }
+
+  public GetExerciseLogsQueryBuilder AndWeightInKg(decimal weightInKg)
+  {
+    var param = $"@WeightInKg_{UseIndex()}";
+    _sb.AppendLine($"AND S.WeightInKg = {param}");
+    _params.Add(param, weightInKg);
+
+    return this;
+  }
+
   public (string Query, IReadOnlyDictionary<string, object> Params) BuildFilters()
   {
     return (_sb.ToString(), _params.AsReadOnly());

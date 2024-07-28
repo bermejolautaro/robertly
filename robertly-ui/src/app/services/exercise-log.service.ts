@@ -222,6 +222,7 @@ export class ExerciseLogService {
     this.startLoading$
       .pipe(takeUntilDestroyed())
       .subscribe({ next: () => this.state.update(state => ({ ...state, loaded: false })) });
+
     this.stopLoading$
       .pipe(takeUntilDestroyed())
       .subscribe({ next: () => this.state.update(state => ({ ...state, loaded: true })) });
