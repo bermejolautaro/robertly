@@ -19,5 +19,12 @@
     display: grid;
     font-size: 12px;
     opacity: 0.8;
+
+    .serie {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      white-space: pre-wrap;
+      text-align: right;
+    }
   }
 }

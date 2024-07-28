@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, Input, Signal, signal } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Input, OnInit, Signal, signal, ViewChild } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
@@ -32,7 +33,8 @@ import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, FormsModule, NgbTypeaheadModule],
 })
-export class TypeaheadComponent<T> {
+export class TypeaheadComponent<T> implements OnInit, AfterViewInit {
+  @ViewChild('typeaheadInput') public inputHtml: ElementRef<HTMLInputElement> | null = null;
   @Input({ required: true }) public items: Signal<T[]> = signal<T[]>([]);
   @Input({ required: true }) public control: FormControl<T | null> = new FormControl(null);
   @Input() public itemSelector: (item: T | null) => string = x => `${x ?? ''}`;
@@ -43,6 +45,10 @@ export class TypeaheadComponent<T> {
 
   public ngOnInit(): void {
     this.search = createAutocomplete(this.focus$, this.items, this.itemSelector);
+  }
+
+  public ngAfterViewInit(): void {
+    this.inputHtml!.nativeElement.value = this.itemSelector(this.control.value);
   }
 
   public onSelectItem(evnt: NgbTypeaheadSelectItemEvent<T>) {

@@ -9,7 +9,7 @@
     </div>
     <div class="series">
       @for (serie of exerciseLog.series; track $index) {
-        <div style="display: grid; grid-template-columns: 2fr 1fr; white-space: pre-wrap; text-align: right;">
+        <div class="serie">
           <div>{{ serie.reps | padStart: 2 }} reps</div>
           <div>{{ serie.weightInKg | padStart: 2 }}kg</div>
         </div>

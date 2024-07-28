@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -200,7 +201,8 @@ public class ExerciseLogRepository
         RETURNING ExerciseLogs.ExerciseLogId
       """;
 
-    var seriesValues = (exerciseLog.Series ?? []).Select(x => $"(@ExerciseLogId, {x.Reps}, {x.WeightInKg})");
+    var seriesValues = (exerciseLog.Series ?? [])
+      .Select(x => $"(@ExerciseLogId, {x.Reps}, {x.WeightInKg.ToString(CultureInfo.InvariantCulture)})");
 
     var seriesQuery = new StringBuilder($"INSERT INTO  {_schema}.Series (ExerciseLogId, Reps, WeightInKg) VALUES\n")
       .AppendJoin(",\n", seriesValues)
@@ -255,7 +257,7 @@ public class ExerciseLogRepository
     var seriesValues = string.Join(
         ",\n",
         exerciseLog.Series?.Select(x =>
-            $"({x.SerieId?.ToString() ?? "DEFAULT"}, {x.ExerciseLogId}, NULL, {x.Reps}, {x.WeightInKg})"
+            $"({x.SerieId?.ToString() ?? "DEFAULT"}, {x.ExerciseLogId}, NULL, {x.Reps}, {x.WeightInKg.ToString(CultureInfo.InvariantCulture)})"
         ) ?? []);
 
     var seriesIds = string.Join(",", exerciseLog.Series?.Where(x => x.SerieId is not null).Select(x => x.SerieId) ?? []);
