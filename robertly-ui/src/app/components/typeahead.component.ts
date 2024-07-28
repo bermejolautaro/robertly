@@ -7,6 +7,7 @@ import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
   selector: 'app-typeahead',
   template: `<div class="input-group">
     <input
+      #typeaheadInput
       type="text"
       class="form-control"
       [placeholder]="placeholder"
@@ -17,7 +18,7 @@ import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
       [inputFormatter]="itemSelector"
       (focus)="focus$.next(control.value)"
     />
-    <button class="btn btn-outline-secondary" type="button" (click)="control.patchValue(null)">
+    <button class="btn btn-outline-secondary" type="button" (click)="control.patchValue(null); typeaheadInput.value = ''">
       <i class="fa fa-times"></i>
     </button>
   </div>`,

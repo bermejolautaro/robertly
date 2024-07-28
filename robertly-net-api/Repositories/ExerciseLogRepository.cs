@@ -146,7 +146,7 @@ public class ExerciseLogRepository
       FROM {_schema}.ExerciseLogs EL
       INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       LEFT JOIN  {_schema}.Users U ON EL.UserId = U.UserId
-      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      LEFT JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
       ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
