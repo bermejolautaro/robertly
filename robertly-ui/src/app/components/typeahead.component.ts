@@ -1,7 +1,7 @@
-import { ChangeDetectionStrategy, Component, Input, Signal, effect, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input, Signal, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, Subject, distinctUntilChanged, map, merge, of } from 'rxjs';
+import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
 
 @Component({
   selector: 'app-typeahead',
@@ -10,7 +10,6 @@ import { Observable, Subject, distinctUntilChanged, map, merge, of } from 'rxjs'
       type="text"
       class="form-control"
       [placeholder]="placeholder"
-      [formControl]="control"
       (selectItem)="onSelectItem($event)"
       [ngbTypeahead]="search"
       [popupClass]="'typeahead'"

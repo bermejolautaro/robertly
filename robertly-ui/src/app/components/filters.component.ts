@@ -61,11 +61,11 @@ export class FiltersComponent implements OnInit {
     ])
       .pipe(skip(1))
       .subscribe(() => {
-        this.fetchFilters$.next();
         const exercisesIds = !!this.exerciseControl.value?.exerciseId ? [this.exerciseControl.value.exerciseId] : [];
         const types = !!this.typeControl.value ? [this.typeControl.value] : [];
         const weights = !!this.weightControl.value ? [+this.weightControl.value] : [];
 
+        this.fetchFilters$.next();
         this.filtersChanged.emit({ exercisesIds, types, weights });
       });
 

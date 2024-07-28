@@ -58,9 +58,9 @@ public class ExerciseLogRepository
 
     var query =
       $"""
-      SELECT DISTINCT E.Type FROM ExerciseLogs EL
-      INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      SELECT DISTINCT E.Type FROM {_schema}.ExerciseLogs EL
+      INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE EL.UserFirebaseUuid = @UserFirebaseUuid
       {(type is not null ? "AND E.Type = @Type" : "")}
       {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
@@ -80,9 +80,9 @@ public class ExerciseLogRepository
 
     var query =
       $"""
-      SELECT DISTINCT S.WeightInKg FROM ExerciseLogs EL
-      INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      SELECT DISTINCT S.WeightInKg FROM {_schema}.ExerciseLogs EL
+      INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE el.UserFirebaseUuid = @UserFirebaseUuid
       {(type is not null ? "AND E.Type = @Type" : "")}
       {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
@@ -102,9 +102,9 @@ public class ExerciseLogRepository
 
     var query =
       $"""
-      SELECT DISTINCT EL.ExerciseId FROM ExerciseLogs EL
-      INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      SELECT DISTINCT EL.ExerciseId FROM {_schema}.ExerciseLogs EL
+      INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE el.UserFirebaseUuid = @UserFirebaseUuid
       {(type is not null ? "AND E.Type = @Type" : "")}
       {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
