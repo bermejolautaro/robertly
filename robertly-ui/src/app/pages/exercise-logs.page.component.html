@@ -9,14 +9,14 @@
       class="btn btn-secondary"
       (click)="prevPage()"
     >
-      &lt;
+      <i class="fa fa-angle-left"></i>
     </button>
-    {{ currentPage() }}
+    {{ currentPage() + 1 }}
     <button
       class="btn btn-secondary"
       (click)="nextPage()"
     >
-      &gt;
+      <i class="fa fa-angle-right"></i>
     </button>
   </div>
 

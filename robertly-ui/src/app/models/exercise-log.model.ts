@@ -6,6 +6,7 @@ export interface Serie {
   exerciseLogId: number;
   reps: number;
   weightInKg: number;
+  brzycki: number | null;
 }
 
 export interface ExerciseLogDto {
@@ -19,6 +20,7 @@ export interface ExerciseLogDto {
   tonnage: number;
   average: number | null;
   recentLogs: ExerciseLogDto[] | null;
+  brzyckiAverage: number | null;
 }
 
 

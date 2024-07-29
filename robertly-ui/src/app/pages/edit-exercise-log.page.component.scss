@@ -1,6 +1,6 @@
 :host {
   display: block;
-  padding: 0 .5rem;
+  padding: 0 0.5rem;
   --bs-heading-color: white;
   --bs-modal-color: white;
   --bs-body-bg: var(--light-bg);
@@ -9,5 +9,15 @@
   --bs-border-width: 0;
   --bs-modal-footer-border-width: 0;
   --bs-modal-header-border-width: 0;
-  --bs-modal-header-padding: .5rem;
+  --bs-modal-header-padding: 0.5rem;
+}
+
+.list-group {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  --bs-list-group-bg: var(--light-bg);
+
+  .active {
+    --bs-list-group-active-bg: var(--primary);
+  }
 }

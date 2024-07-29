@@ -49,7 +49,7 @@
         <!-- #endregion -->
 
         @for (serieControl of createOrUpdateLogFormGroup.controls.series.controls; track $index) {
-          <div class="input-group mb-3 align-items-center">
+          <div class="input-group mb-2 align-items-center">
             <span class="input-group-text">Serie {{ $index + 1 }}</span>
             <input
               type="number"
@@ -115,6 +115,20 @@
               [exerciseLog]="log"
             ></app-exercise-log>
           }
+        </div>
+
+        <div class="pt-3 w-100">
+          <div class="pb-2">Possible 1RM (Brzycky Formula)</div>
+          @for (serie of originalValue()?.series; track $index) {
+            <ul class="list-group list-group-horizontal pb-1">
+              <li class="list-group-item active">Serie {{ $index + 1 }}</li>
+              <li class="list-group-item">{{ serie.brzycki | number:'1.2-2' }}kg</li>
+            </ul>
+          }
+          <ul class="list-group list-group-horizontal pb-1">
+            <li class="list-group-item active">Average</li>
+            <li class="list-group-item">{{ originalValue()?.brzyckiAverage | number:'1.2-2' }}kg</li>
+          </ul>
         </div>
       }
     </div>

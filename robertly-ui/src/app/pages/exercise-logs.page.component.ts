@@ -52,13 +52,21 @@ export class ExerciseLogsPageComponent implements OnInit {
   }
 
   public prevPage(): void {
+    const prevValue = this.currentPage();
     this.currentPage.update(x => Math.max(x - 1, 0));
-    this.fetchLogs();
+
+    if (prevValue !== this.currentPage()) {
+      this.fetchLogs();
+    }
   }
 
   public nextPage(): void {
+    const prevValue = this.currentPage();
     this.currentPage.update(x => x + 1);
-    this.fetchLogs();
+
+    if (prevValue !== this.currentPage()) {
+      this.fetchLogs();
+    }
   }
 
   private fetchLogs(): void {

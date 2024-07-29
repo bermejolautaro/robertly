@@ -1,11 +1,5 @@
-import { KeyValuePipe, NgClass, TitleCasePipe } from '@angular/common';
-import {
-  Component,
-  ChangeDetectionStrategy,
-  inject,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { DecimalPipe, KeyValuePipe, Location, NgClass, TitleCasePipe } from '@angular/common';
+import { Component, ChangeDetectionStrategy, inject, signal, WritableSignal } from '@angular/core';
 import { ExerciseLogDto } from '@models/exercise-log.model';
 import { Exercise } from '@models/exercise.model';
 import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
@@ -42,12 +36,14 @@ import { take } from 'rxjs';
     TypeaheadComponent,
     ExerciseLogComponent,
     KeyValuePipe,
+    DecimalPipe,
     NgClass,
   ],
 })
 export class EditExerciseLogPageComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
 
+  private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
@@ -102,7 +98,7 @@ export class EditExerciseLogPageComponent {
 
   public cancel(): void {
     this.exerciseLogService.refreshLogs$.pipe(take(1)).subscribe(() => {
-      this.router.navigate([Paths.LOGS]);
+      this.location.back();
     });
     this.exerciseLogService.refreshLogs$.next();
   }
@@ -131,6 +127,7 @@ export class EditExerciseLogPageComponent {
             serieId: x.serieId!,
             reps: +x.reps!,
             weightInKg: +x.weightInKg!.toFixed(1),
+            brzycki: null
           })),
       },
     };
@@ -173,6 +170,7 @@ export class EditExerciseLogPageComponent {
             serieId: x.serieId!,
             reps: +x.reps!,
             weightInKg: +x.weightInKg!.toFixed(1),
+            brzycki: null
           })),
       },
     };
