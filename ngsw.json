@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1722265614611,
+  "timestamp": 1722698665097,
   "index": "/index.html",
   "assetGroups": [
     {
@@ -11,23 +11,23 @@
         "ignoreVary": true
       },
       "urls": [
-        "/chunk-225B3TJ6.js",
-        "/chunk-543QXO63.js",
-        "/chunk-634RLOFK.js",
-        "/chunk-7UKOQCUN.js",
-        "/chunk-A7XAVPR5.js",
+        "/chunk-5BNTYWJT.js",
+        "/chunk-5SW6J7W3.js",
+        "/chunk-74HBMR56.js",
+        "/chunk-7XQALZZV.js",
         "/chunk-BYXBJQAS.js",
-        "/chunk-DEGQOZ44.js",
-        "/chunk-EVQRZ5A4.js",
-        "/chunk-JQE7JLRC.js",
-        "/chunk-OLGCT4UY.js",
-        "/chunk-RUL5CXK2.js",
-        "/chunk-S5623SF4.js",
-        "/chunk-USI3GJ6Y.js",
-        "/chunk-YWDMMCKD.js",
+        "/chunk-MZ6LWRRE.js",
+        "/chunk-NHGFSOZE.js",
+        "/chunk-RGDKRYS2.js",
+        "/chunk-TGOIVOIK.js",
+        "/chunk-TSENH3WM.js",
+        "/chunk-UWRIL6J4.js",
+        "/chunk-VDTIKDLH.js",
+        "/chunk-W3RQ7BCU.js",
+        "/chunk-Z3SDNAI5.js",
         "/favicon.ico",
         "/index.html",
-        "/main-PADF7NXJ.js",
+        "/main-UUWECAEZ.js",
         "/manifest.webmanifest",
         "/polyfills-CG2UM2YX.js",
         "/styles-4OMREO2I.css"
@@ -52,7 +52,22 @@
       "patterns": []
     }
   ],
-  "dataGroups": [],
+  "dataGroups": [
+    {
+      "name": "api",
+      "patterns": [
+        "\\/api\\/.*"
+      ],
+      "strategy": "freshness",
+      "maxSize": 100,
+      "maxAge": 172800000,
+      "timeoutMs": 5000,
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "version": 1
+    }
+  ],
   "hashTable": {
     "/assets/icons/android-chrome-192x192.png": "efc5832c72125018c99ee0513f0fa691a94befc6",
     "/assets/icons/android-chrome-512x512.png": "774180cce1f51fdbc68414896b85505627b1f812",
@@ -60,23 +75,23 @@
     "/assets/icons/favicon-16x16.png": "1f98d03c4e43df6ace155d6aee14b3a3aded23a8",
     "/assets/icons/favicon-32x32.png": "08bfeb096acfb43dd330af0fd5715d6095343ec2",
     "/assets/icons/google-sign-in.png": "5bc0a1a0e1819b8c3c83f9eb235f2d4c86dadd55",
-    "/chunk-225B3TJ6.js": "e49b5d29312481869c28c2f4c04218efa1247caa",
-    "/chunk-543QXO63.js": "638898e88b124b4b0846b5161806a1c7ff9904bb",
-    "/chunk-634RLOFK.js": "9b88e0c0bd534de7f364e3b481820132de8b4887",
-    "/chunk-7UKOQCUN.js": "a083eeb39a6c2370882a257aa2b5bcae5de1b942",
-    "/chunk-A7XAVPR5.js": "ec36504d30cdda9452ac592b788c8704bb49ac43",
+    "/chunk-5BNTYWJT.js": "fb957a08a921658775430ba1226135ea28199038",
+    "/chunk-5SW6J7W3.js": "afbc62bb741a7da7d95f538a100c946b28036615",
+    "/chunk-74HBMR56.js": "14bfa883934757b4ae61724ef62b41309977d8eb",
+    "/chunk-7XQALZZV.js": "201ea27f540dc824a727d135b576ad99072b4668",
     "/chunk-BYXBJQAS.js": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
-    "/chunk-DEGQOZ44.js": "c2defbe89f1050cea6001dd0197629c41879c22f",
-    "/chunk-EVQRZ5A4.js": "15d4947f0fd15afda5f39e254e8e343221570b9a",
-    "/chunk-JQE7JLRC.js": "996604a335b367638ecb1fc771ea151b0eca52a7",
-    "/chunk-OLGCT4UY.js": "d2bed6b4931d1c5b46ca5855d0a3423a86af4a86",
-    "/chunk-RUL5CXK2.js": "36c5134deff97ff60e263bb1ef9a671555769e2e",
-    "/chunk-S5623SF4.js": "d47b2e7483e40dbc53b081076f56e6558e1fb6c1",
-    "/chunk-USI3GJ6Y.js": "f55a7e6383a84045bbb5575eae5a09f2c6acb370",
-    "/chunk-YWDMMCKD.js": "e781d2dabb7d5390658751cbba7255a131e6e747",
+    "/chunk-MZ6LWRRE.js": "c58aeda11ccdee3996234baca065f096bef3b080",
+    "/chunk-NHGFSOZE.js": "31bcf820dc75408a25e1e42a276d9d439275c487",
+    "/chunk-RGDKRYS2.js": "b35ab7386dfbda80afa3d854932ed729eb687937",
+    "/chunk-TGOIVOIK.js": "1a21a72f943b6edfa8d113fa660af4708870a98e",
+    "/chunk-TSENH3WM.js": "1f9c8d3837f64a7d9dcaab6c5480ec08cfedad06",
+    "/chunk-UWRIL6J4.js": "50d39b97aaba8aa936a59e3d082c8167f55bd3d8",
+    "/chunk-VDTIKDLH.js": "190cabfe885eaaa2cc9714256e435249364fab87",
+    "/chunk-W3RQ7BCU.js": "0262457da9deaf73667e46c09ffad4c6ac594cd7",
+    "/chunk-Z3SDNAI5.js": "4d676507fbe63df83cb9732c1f193210633afdbd",
     "/favicon.ico": "0612a0d81b1313c6da6056e10fd3fd401bd771dc",
-    "/index.html": "3be800a64217cfd3c72d4e434bcb89b958216834",
-    "/main-PADF7NXJ.js": "a5226ae89af225df3a944e9e1b7ceca545efd7f8",
+    "/index.html": "f0f903a2dc7d3cd08e591348e0b4644ece38869d",
+    "/main-UUWECAEZ.js": "e09ae07251958c589c8892689c8e43b09b19774c",
     "/manifest.webmanifest": "9de2038d8797196314fd830ce9264e9de6fc7d19",
     "/polyfills-CG2UM2YX.js": "8758dc9fb93959b8a6c6ee04793c65df80b82558",
     "/styles-4OMREO2I.css": "bea27bbbc36e352ebf77a8d5b91be742beb8299d"
