@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -8,7 +8,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         class="modal-title"
         id="modal-title"
       >
-        Profile deletion
+        {{ title }}
       </h4>
       <button
         type="button"
@@ -18,13 +18,8 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
       ></button>
     </div>
     <div class="modal-body">
-      <p>
-        <strong>Are you sure you want to delete this record?</strong>
-      </p>
-      <p>
-        This record will be permanently deleted.
-        <span class="text-danger">This operation can not be undone.</span>
-      </p>
+      <p [innerHTML]="subtitle"></p>
+      <p [innerHTML]="body"></p>
     </div>
     <div class="modal-footer">
       <button
@@ -32,14 +27,14 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         class="btn btn-secondary"
         (click)="modal.dismiss()"
       >
-        Cancel
+        {{ cancelText }}
       </button>
       <button
         type="button"
-        class="btn btn-danger"
+        class="btn btn-{{okType}}"
         (click)="modal.close()"
       >
-        Ok
+        {{ okText }}
       </button>
     </div>`,
   styles: `
@@ -50,5 +45,13 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
   imports: [],
 })
 export class ConfirmModalComponent {
+  @Input() public title: string = '';
+  @Input() public subtitle: string = '';
+  @Input() public body: string = '';
+
+  @Input() public cancelText: string = 'Cancel';
+  @Input() public okType: 'primary' | 'danger' = 'primary'
+  @Input() public okText: string = 'Ok';
+
   public readonly modal = inject(NgbActiveModal);
 }

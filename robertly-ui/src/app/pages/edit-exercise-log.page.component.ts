@@ -79,12 +79,18 @@ export class EditExerciseLogPageComponent {
   }
 
   public openDeleteModal(): void {
-    this.modalService
-      .open(ConfirmModalComponent, { centered: true })
-      .closed.pipe(take(1))
-      .subscribe(() => {
-        this.exerciseLogService.deleteLog$.next(this.originalValue()!);
-      });
+    const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
+    const instance: ConfirmModalComponent = modalRef.componentInstance;
+
+    instance.title = 'Delete Record';
+    instance.subtitle = '<strong>Are you sure you want to delete this record?</strong>';
+    instance.body =
+      'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>';
+    instance.okType = 'danger';
+
+    modalRef.closed.pipe(take(1)).subscribe(() => {
+      this.exerciseLogService.deleteLog$.next(this.originalValue()!);
+    });
   }
 
   public saveExerciseLog(): void {
@@ -127,7 +133,7 @@ export class EditExerciseLogPageComponent {
             serieId: x.serieId!,
             reps: +x.reps!,
             weightInKg: +x.weightInKg!.toFixed(1),
-            brzycki: null
+            brzycki: null,
           })),
       },
     };
@@ -170,7 +176,7 @@ export class EditExerciseLogPageComponent {
             serieId: x.serieId!,
             reps: +x.reps!,
             weightInKg: +x.weightInKg!.toFixed(1),
-            brzycki: null
+            brzycki: null,
           })),
       },
     };

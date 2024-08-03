@@ -1,20 +1,15 @@
-import { Component, Injector, OnInit, TemplateRef, inject, isDevMode } from '@angular/core';
+import { Component, OnInit, TemplateRef, inject } from '@angular/core';
 import { Router, RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { debounceTime, forkJoin, switchMap, tap } from 'rxjs';
+import { debounceTime, forkJoin, switchMap, take, tap } from 'rxjs';
 import { Paths } from 'src/main';
 
 import { ExerciseLogService } from '@services/exercise-log.service';
 
-import {
-  CreateExerciseLogRequest,
-  ExerciseLogApiService,
-  UpdateExerciseLogRequest,
-} from '@services/exercise-log-api.service';
+import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DOCUMENT, JsonPipe, NgClass, TitleCasePipe } from '@angular/common';
 
-import { ExerciseLogDto } from '@models/exercise-log.model';
 import {
   NgbAlertModule,
   NgbDropdownModule,
@@ -25,7 +20,6 @@ import {
 } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { DayjsService } from '@services/dayjs.service';
-import { CreateOrUpdateLogModalComponent } from '@components/create-or-update-log-modal.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FiltersComponent } from '@components/filters.component';
 import { ToastService } from '@services/toast.service';
@@ -35,6 +29,7 @@ import { FooterComponent } from '@components/footer.component';
 import { AuthService } from '@services/auth.service';
 import { createLogFormGroup, CreateOrUpdateLogFormGroup } from '@models/create-or-update-log';
 import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
+import { ConfirmModalComponent } from '@components/confirm-modal.component';
 
 const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
 const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
@@ -73,17 +68,16 @@ export class AppComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly dayjsService = inject(DayjsService);
   private readonly dayjs = this.dayjsService.instance;
-  private readonly injector = inject(Injector);
   private readonly router = inject(Router);
-  private readonly modalService = inject(NgbModal);
   private readonly offcanvasService = inject(NgbOffcanvas);
+  private readonly modalService = inject(NgbModal);
 
   public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = createLogFormGroup();
 
   public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = createLogFormGroup();
 
   public readonly Paths = Paths;
-  public hasAppLoaded: boolean = isDevMode();
+  public hasAppLoaded: boolean = true;
   public preloaderMessage: string = 'Searching for updates...';
   public preloaderProgress: number = 10;
 
@@ -109,27 +103,43 @@ export class AppComponent implements OnInit {
 
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
-    this.serviceWorkerUpdates.versionUpdates.subscribe(evnt => {
-      if (evnt.type === 'VERSION_DETECTED') {
-        this.preloaderMessage = 'New version found. Preparing to install...';
-        this.preloaderProgress = 60;
-      } else if (evnt.type === 'NO_NEW_VERSION_DETECTED') {
-        this.preloaderMessage = 'Everything up to date';
-        this.preloaderProgress = 100;
-        setTimeout(() => {
-          this.hasAppLoaded = true;
-        }, 500);
-      } else if (evnt.type === 'VERSION_READY') {
-        this.document.location.reload();
-      } else if (evnt.type === 'VERSION_INSTALLATION_FAILED') {
-        this.preloaderMessage = 'Failed to install new version';
-        this.preloaderProgress = 100;
-        setTimeout(() => {
-          this.hasAppLoaded = true;
-        }, 500);
-      } else {
-        throw new Error('Impossible state');
-      }
+    this.serviceWorkerUpdates.versionUpdates.subscribe({
+      next: evnt => {
+        if (evnt.type === 'VERSION_DETECTED') {
+          this.toastService.ok('New version found.');
+          // this.preloaderMessage = 'New version found. Preparing to install...';
+          // this.preloaderProgress = 60;
+        } else if (evnt.type === 'NO_NEW_VERSION_DETECTED') {
+          this.toastService.ok('Everything up to date.');
+          // this.preloaderMessage = 'Everything up to date';
+          // this.preloaderProgress = 100;
+          // setTimeout(() => {
+          //   this.hasAppLoaded = true;
+          // }, 500);
+        } else if (evnt.type === 'VERSION_READY') {
+          const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
+          const instance: ConfirmModalComponent = modalRef.componentInstance;
+
+          instance.title = "Version Update";
+          instance.subtitle = '<strong>New version found</strong>';
+          instance.body = 'Do you want to install it now?';
+          instance.cancelText = 'Later';
+          instance.okText = 'Update';
+
+          modalRef.closed.pipe(take(1)).subscribe(() => {
+            this.document.location.reload();
+          });
+        } else if (evnt.type === 'VERSION_INSTALLATION_FAILED') {
+          this.toastService.error('Failed to install new version.');
+          // this.preloaderMessage = 'Failed to install new version';
+          // this.preloaderProgress = 100;
+          // setTimeout(() => {
+          //   this.hasAppLoaded = true;
+          // }, 500);
+        } else {
+          throw new Error('Impossible state');
+        }
+      },
     });
 
     this.createLogFormGroup.valueChanges
