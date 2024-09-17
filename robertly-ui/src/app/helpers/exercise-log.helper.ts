@@ -69,7 +69,7 @@ export function amountDaysTrained(logs: ExerciseLogDto[]): number {
   const result = R.pipe(
     logs,
     R.map(x => x.date),
-    R.uniq()
+    R.unique()
   );
 
   return result.length;
@@ -180,7 +180,7 @@ export function groupByWeek(exerciseRows: ExerciseLogDto[]) {
   return R.pipe(
     exerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('isoWeek').format('DD/MM/YYYY')),
-    R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
+    R.mapValues(x => R.sort(R.unique(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
 }
 
@@ -188,7 +188,7 @@ export function groupByMonth(exerciseRows: ExerciseLogDto[]) {
   return R.pipe(
     exerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('month').format('DD/MM/YYYY')),
-    R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
+    R.mapValues(x => R.sort(R.unique(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
 }
 
@@ -196,6 +196,6 @@ export function groupByYear(exerciseRows: ExerciseLogDto[]) {
   return R.pipe(
     exerciseRows,
     R.groupBy(x => parseDate(x.date).startOf('year').format('DD/MM/YYYY')),
-    R.mapValues(x => R.sort(R.uniq(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
+    R.mapValues(x => R.sort(R.unique(x.map(y => y.date)), (a, b) => parseAndCompare(a, b) * -1))
   );
 }

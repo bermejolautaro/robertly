@@ -84,7 +84,7 @@ export class ExerciseLogService {
     R.pipe(
       this.exercises(),
       R.map(x => x.type),
-      R.uniq()
+      R.unique()
     )
   );
 
@@ -101,11 +101,9 @@ export class ExerciseLogService {
   public readonly weights = computed(() => {
     return R.pipe(
       this.filteredLogs(),
-      this.state().selectedExercise
-        ? R.filter(x => x.exercise.name === this.state().selectedExercise?.name)
-        : R.identity,
+      R.filter(x => !!this.state().selectedExercise ? x.exercise.name === this.state().selectedExercise?.name : true),
       R.flatMap(x => x.series.map(x => x.weightInKg)),
-      R.uniq(),
+      R.unique(),
       R.filter(x => !!x),
       R.sort((a, b) => a! - b!)
     );
@@ -115,12 +113,12 @@ export class ExerciseLogService {
     return R.pipe(
       this.state().exercises,
       R.map(x => x.muscleGroup),
-      R.uniqBy(x => x)
+      R.uniqueBy(x => x)
     );
   });
 
   public readonly daysAmountByDayInSelectedMonth = computed(() => {
-    const result = R.toPairs(R.mapValues(groupByMonth(this.logs()), x => x));
+    const result = R.entries(R.mapValues(groupByMonth(this.logs()), x => x));
     const daysInMonth = result
       .filter(x => x[0] === this.selectedMonth())
       .flatMap(x => x[1].map(x => this.dayjsService.parseDate(x).format('dddd')));

@@ -1,5 +1,5 @@
 import { provideServiceWorker } from '@angular/service-worker';
-import { InjectionToken, isDevMode, importProvidersFrom } from '@angular/core';
+import { InjectionToken, isDevMode, provideExperimentalZonelessChangeDetection } from '@angular/core';
 import { Routes, provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
@@ -22,7 +22,7 @@ export const Paths = {
   SIGN_IN: 'signin',
   SIGN_UP: 'signup',
   DEVELOPER: 'developer',
-  FOODS: 'foods'
+  FOODS: 'foods',
 } as const;
 
 const routes = [
@@ -83,23 +83,22 @@ bootstrapApplication(AppComponent, {
   providers: [
     TitleCasePipe,
     JsonPipe,
+    provideExperimentalZonelessChangeDetection(),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([jwtInterceptor])),
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
-    importProvidersFrom(
-      provideFirebaseApp(() =>
-        initializeApp({
-          projectId: 'gymtracker-b0b72',
-          appId: '1:1063566206093:web:a3154a1ae143b91f05eec4',
-          storageBucket: 'gymtracker-b0b72.appspot.com',
-          apiKey: 'AIzaSyCA0ExS-7mRUULdk7CYFORL5zwYXd4lJ-E',
-          authDomain: 'auth.robertly.ar',
-          messagingSenderId: '1063566206093',
-        })
-      )
+    provideFirebaseApp(() =>
+      initializeApp({
+        projectId: 'gymtracker-b0b72',
+        appId: '1:1063566206093:web:a3154a1ae143b91f05eec4',
+        storageBucket: 'gymtracker-b0b72.appspot.com',
+        apiKey: 'AIzaSyCA0ExS-7mRUULdk7CYFORL5zwYXd4lJ-E',
+        authDomain: 'auth.robertly.ar',
+        messagingSenderId: '1063566206093',
+      })
     ),
-    importProvidersFrom(provideAuth(() => getAuth())),
+    provideAuth(() => getAuth()),
     { provide: API_URL, useValue: environment.apiUrl },
   ],
-}).catch(err => console.error(err));
+}).catch((err: unknown) => console.error(err));
