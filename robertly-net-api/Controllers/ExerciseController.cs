@@ -4,7 +4,6 @@ using Npgsql;
 using robertly.Models;
 using robertly.Repositories;
 using System.Threading.Tasks;
-using static robertly.Models.Exercise;
 
 namespace robertly.Controllers
 {

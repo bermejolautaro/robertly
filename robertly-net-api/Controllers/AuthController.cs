@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace robertly.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController : Controller
 {
     private readonly FirebaseAuthClient _authClient;

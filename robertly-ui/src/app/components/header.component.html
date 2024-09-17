@@ -1,7 +1,7 @@
 <nav class="navbar px-1">
   <div class="container-fluid d-flex">
-    <div style="color:white; font-weight: bold; font-size: 14px;">
-      @if(authService.user()) {
+    <div style="color: white; font-weight: bold; font-size: 14px">
+      @if (authService.user()) {
         Hello! {{ authService.user()?.name }}
       }
     </div>
@@ -43,8 +43,16 @@
     <!-- #endregion -->
 
     <!-- #region MENU -->
-    <button type="button" class="btn" style="outline: none; border: none; padding: 0">
-      <i class="fa fa-bars" style="font-size: 22px; color: white" (click)="menuSidebarClicked.emit()"></i>
+    <button
+      type="button"
+      class="btn"
+      style="outline: none; border: none; padding: 0"
+    >
+      <i
+        class="fa fa-bars"
+        style="font-size: 22px; color: white"
+        (click)="menuSidebarClicked.emit()"
+      ></i>
     </button>
     <!-- #endregion -->
   </div>
