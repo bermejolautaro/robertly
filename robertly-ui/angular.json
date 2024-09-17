@@ -32,7 +32,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "src/CNAME",
+              "src/browser/CNAME",
               "src/manifest.webmanifest"
             ],
             "styles": [
