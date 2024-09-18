@@ -7,7 +7,7 @@
     "start": "ng serve",
     "build": "ng build",
     "ngsw-config": ".\"/node_modules/.bin/ngsw-config\" \"dist/gym-angular-excel\" ngsw-config.json [/base/href] && echo \"nsgw-config done!\"",
-    "deploy": "npm run ngsw-config && ng deploy --cname=www.robertly.ar",
+    "deploy": "npm run ngsw-config && npm run ng -- deploy --cname=www.robertly.ar --name=\"Lautaro Bermejo\" --email=tarolau97@hotmail.com --repo=https://github.com/bermejolautaro/robertly.git --dir=dist/gym-angular-excel",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "postinstall": "node scripts/service-worker-workaround.js"

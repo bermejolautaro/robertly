@@ -28,4 +28,4 @@ jobs:
         cd ./robertly-ui
         npm ci
         npm run build
-        npm run ngsw-config && npm run ng -- deploy --cname=www.robertly.ar --name="Lautaro Bermejo" --email=tarolau97@hotmail.com --repo=https://github.com/bermejolautaro/robertly.git
+        npm run ngsw-config && npm run ng -- deploy --cname=www.robertly.ar --name=\"Lautaro Bermejo\" --email=tarolau97@hotmail.com --repo=https://github.com/bermejolautaro/robertly.git --dir=dist/gym-angular-excel
