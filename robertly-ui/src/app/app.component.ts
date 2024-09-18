@@ -31,11 +31,6 @@ import { createLogFormGroup, CreateOrUpdateLogFormGroup } from '@models/create-o
 import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 
-const GET_DATA_CACHE_KEY = 'robertly-get-data-cache';
-const EXERCISE_LOGS_CACHE_KEY = 'robertly-exercise-logs';
-const EXERCISES_CACHE_KEY = 'robertly-exercises';
-const MINUTES_5 = 5 * 60;
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -82,23 +77,6 @@ export class AppComponent implements OnInit {
   public preloaderProgress: number = 10;
 
   public constructor() {
-    const cacheTimestamp = localStorage.getItem(GET_DATA_CACHE_KEY);
-
-    let shouldFetchFromBackend = false;
-
-    if (!cacheTimestamp) {
-      localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
-      shouldFetchFromBackend = true;
-    } else {
-      const x = this.dayjs.unix(+cacheTimestamp);
-      const difference = this.dayjs().diff(x, 'seconds');
-
-      if (difference > MINUTES_5) {
-        shouldFetchFromBackend = true;
-        localStorage.setItem(GET_DATA_CACHE_KEY, this.dayjs().unix().toString());
-      }
-    }
-
     this.fetchData();
 
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
@@ -107,20 +85,13 @@ export class AppComponent implements OnInit {
       next: evnt => {
         if (evnt.type === 'VERSION_DETECTED') {
           this.toastService.ok('New version found.');
-          // this.preloaderMessage = 'New version found. Preparing to install...';
-          // this.preloaderProgress = 60;
         } else if (evnt.type === 'NO_NEW_VERSION_DETECTED') {
           this.toastService.ok('Everything up to date.');
-          // this.preloaderMessage = 'Everything up to date';
-          // this.preloaderProgress = 100;
-          // setTimeout(() => {
-          //   this.hasAppLoaded = true;
-          // }, 500);
         } else if (evnt.type === 'VERSION_READY') {
           const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
           const instance: ConfirmModalComponent = modalRef.componentInstance;
 
-          instance.title = "Version Update";
+          instance.title = 'Version Update';
           instance.subtitle = '<strong>New version found</strong>';
           instance.body = 'Do you want to install it now?';
           instance.cancelText = 'Later';
@@ -131,11 +102,6 @@ export class AppComponent implements OnInit {
           });
         } else if (evnt.type === 'VERSION_INSTALLATION_FAILED') {
           this.toastService.error('Failed to install new version.');
-          // this.preloaderMessage = 'Failed to install new version';
-          // this.preloaderProgress = 100;
-          // setTimeout(() => {
-          //   this.hasAppLoaded = true;
-          // }, 500);
         } else {
           throw new Error('Impossible state');
         }
@@ -159,6 +125,7 @@ export class AppComponent implements OnInit {
           weightInKg: x.weightInKg,
         })),
       });
+
       this.router.navigate([Paths.LOGS, Paths.LOGS_EDIT, exerciseLog.id]);
     });
 

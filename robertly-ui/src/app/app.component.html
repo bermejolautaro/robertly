@@ -1,4 +1,7 @@
-<ng-template #content let-offcanvas>
+<ng-template
+  #content
+  let-offcanvas
+>
   <div class="offcanvas-header">
     <button
       tabindex="-1"
@@ -11,46 +14,85 @@
   </div>
   <div class="offcanvas-body">
     @if (!authService.user()) {
-      <a [routerLink]="Paths.SIGN_IN" (click)="offcanvas.dismiss()">Sign In</a>
-      <a [routerLink]="Paths.SIGN_UP" (click)="offcanvas.dismiss()">Sign Up</a>
+      <a
+        [routerLink]="Paths.SIGN_IN"
+        (click)="offcanvas.dismiss()"
+        >Sign In</a
+      >
+      <a
+        [routerLink]="Paths.SIGN_UP"
+        (click)="offcanvas.dismiss()"
+        >Sign Up</a
+      >
     }
 
     @if (!!authService.user()) {
-      <button (click)="signOut(); offcanvas.dismiss()" class="btn btn-link" style="cursor: pointer">Sign Out</button>
+      <button
+        (click)="signOut(); offcanvas.dismiss()"
+        class="btn btn-link"
+        style="cursor: pointer"
+      >
+        Sign Out
+      </button>
     }
 
     @if (!!authService.user()) {
-      <a [routerLink]="Paths.EXERCISES" (click)="offcanvas.dismiss()">Exercises</a>
-      <a [routerLink]="Paths.FOODS" (click)="offcanvas.dismiss()">Food Tracker</a>
-      <a [routerLink]="Paths.DEVELOPER" (click)="offcanvas.dismiss()">Developer</a>
+      <a
+        [routerLink]="Paths.EXERCISES"
+        (click)="offcanvas.dismiss()"
+        >Exercises</a
+      >
+      <a
+        [routerLink]="Paths.FOODS"
+        (click)="offcanvas.dismiss()"
+        >Food Tracker</a
+      >
+      <a
+        [routerLink]="Paths.DEVELOPER"
+        (click)="offcanvas.dismiss()"
+        >Developer</a
+      >
     }
   </div>
 </ng-template>
 
 <div class="toast-container">
   @for (toast of toastService.toasts; track toast) {
-    <ngb-toast [autohide]="true" [delay]="toast.delay || 3000" (hidden)="toastService.remove(toast)">
-      <ngb-alert [type]="toast.type" (closed)="toastService.remove(toast)">{{ toast.text }}</ngb-alert>
+    <ngb-toast
+      [autohide]="true"
+      [delay]="toast.delay || 3000"
+      (hidden)="toastService.remove(toast)"
+    >
+      <ngb-alert
+        [type]="toast.type"
+        (closed)="toastService.remove(toast)"
+        >{{ toast.text }}</ngb-alert
+      >
     </ngb-toast>
   }
 </div>
 
 @if (hasAppLoaded) {
-  <app-header (logsRefreshClicked)="fetchData()" (menuSidebarClicked)="openSidebar(content)"> </app-header>
+  <app-header
+    (logsRefreshClicked)="fetchData()"
+    (menuSidebarClicked)="openSidebar(content)"
+  >
+  </app-header>
 
   <div class="main">
     <router-outlet></router-outlet>
   </div>
 
-  @if (authService.user()) {
-    <app-footer></app-footer>
-  }
+  <app-footer></app-footer>
 } @else {
   <div class="preloader">
     <div class="preloader-content">
       <div class="preloader-title">ROBERTLY</div>
       <div class="progress">
-        <div class="progress-bar" [style.width.%]="preloaderProgress"></div>
+        <div
+          class="progress-bar"
+          [style.width.%]="preloaderProgress"
+        ></div>
       </div>
       <div class="preloader-message">
         {{ preloaderMessage }}
