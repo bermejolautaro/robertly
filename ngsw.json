@@ -1,0 +1,118 @@
+{
+  "configVersion": 1,
+  "timestamp": 1726618201163,
+  "index": "/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/chunk-24QZLUFP.js",
+        "/chunk-3CY2UAQG.js",
+        "/chunk-46WESA35.js",
+        "/chunk-4OSADXYW.js",
+        "/chunk-7OII6XCX.js",
+        "/chunk-BYXBJQAS.js",
+        "/chunk-G5X3D3MJ.js",
+        "/chunk-JF6EM7C5.js",
+        "/chunk-OFWY3YEL.js",
+        "/chunk-OYK6J67D.js",
+        "/chunk-QOPXRYON.js",
+        "/chunk-RXKUDYPH.js",
+        "/chunk-T2KYI3RB.js",
+        "/chunk-TZ4UGTSR.js",
+        "/favicon.ico",
+        "/index.html",
+        "/main-MXKM4STI.js",
+        "/manifest.webmanifest",
+        "/polyfills-QBXW4TBJ.js",
+        "/styles-62GN3V7Y.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/assets/icons/android-chrome-192x192.png",
+        "/assets/icons/android-chrome-512x512.png",
+        "/assets/icons/apple-touch-icon.png",
+        "/assets/icons/favicon-16x16.png",
+        "/assets/icons/favicon-32x32.png",
+        "/assets/icons/google-sign-in.png"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [
+    {
+      "name": "api",
+      "patterns": [
+        "\\/api\\/.*"
+      ],
+      "strategy": "freshness",
+      "maxSize": 100,
+      "maxAge": 172800000,
+      "timeoutMs": 5000,
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "version": 1
+    }
+  ],
+  "hashTable": {
+    "/assets/icons/android-chrome-192x192.png": "efc5832c72125018c99ee0513f0fa691a94befc6",
+    "/assets/icons/android-chrome-512x512.png": "774180cce1f51fdbc68414896b85505627b1f812",
+    "/assets/icons/apple-touch-icon.png": "b3f527e46181c430f6fd6f7fea8ccbe3c417d604",
+    "/assets/icons/favicon-16x16.png": "1f98d03c4e43df6ace155d6aee14b3a3aded23a8",
+    "/assets/icons/favicon-32x32.png": "08bfeb096acfb43dd330af0fd5715d6095343ec2",
+    "/assets/icons/google-sign-in.png": "5bc0a1a0e1819b8c3c83f9eb235f2d4c86dadd55",
+    "/chunk-24QZLUFP.js": "3d8de7d189477480850c915e68ac9f39d76c6602",
+    "/chunk-3CY2UAQG.js": "05dc1d41590fa1534b9b569531ccfc69475b89f9",
+    "/chunk-46WESA35.js": "265cc4938ff56530160b11011e2e035997c22091",
+    "/chunk-4OSADXYW.js": "b6777e08c222add0fcfeb5a96ee04c87cc8739ac",
+    "/chunk-7OII6XCX.js": "4c5eba1fa01b7ed3a670da747bd8a00ed82d7052",
+    "/chunk-BYXBJQAS.js": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    "/chunk-G5X3D3MJ.js": "20a65abf0e172d0aa34b66a7fd890080138ccb89",
+    "/chunk-JF6EM7C5.js": "72f58725cb6c7d15b11ea777a92e5f84e1c6da20",
+    "/chunk-OFWY3YEL.js": "e1edccdcbabcaa3c6bd54a79f6e31ba780e44a39",
+    "/chunk-OYK6J67D.js": "cad51c3c516e2a34c9b4fadbec775190d55fb9de",
+    "/chunk-QOPXRYON.js": "160941910daa72b8eccb7df8702a763239c5effb",
+    "/chunk-RXKUDYPH.js": "aa68c39203d5d629d50e0e3644e9577d74355ca5",
+    "/chunk-T2KYI3RB.js": "ea502bf3c1f958dbdec8f1a1e8a6c61a50a73ddc",
+    "/chunk-TZ4UGTSR.js": "8e9b53d72ff6c082dcbbdab9163849ead6f20704",
+    "/favicon.ico": "0612a0d81b1313c6da6056e10fd3fd401bd771dc",
+    "/index.html": "989de2c79c6498b0e588284dacaccf7b543e3e36",
+    "/main-MXKM4STI.js": "3c20a2fca1d477e353b63bc1c21cf56fd2adf732",
+    "/manifest.webmanifest": "b3b7e982267fa7083892ce2a66794383909e6748",
+    "/polyfills-QBXW4TBJ.js": "af3f8f43edf7836a16374994d799d4288e0e7db5",
+    "/styles-62GN3V7Y.css": "42ee93e1eea423ace3a067fe38b1964547a36492"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
