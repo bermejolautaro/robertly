@@ -1,4 +1,4 @@
-import { Injectable, effect, inject, signal } from '@angular/core';
+import { Injectable, effect, inject, signal, untracked } from '@angular/core';
 import { Auth } from '@angular/fire/auth';
 import { User } from '@models/user.model';
 import { UsersService } from './users.service';
@@ -15,29 +15,31 @@ export class AuthService {
 
   public constructor() {
     this.auth.onAuthStateChanged(user => {
-      this.userUuid.set(user?.uid ?? null)
-    })
+      this.userUuid.set(user?.uid ?? null);
+    });
 
-    // TODO: Check if there is someway to not use allowSignalWrites here.
-    effect(async () => {
+    // TODO: Check if there is some way to not use allowSignalWrites here.
+    effect(() => {
       this.userUuid();
-      const token = this.authApiService.idToken();
-      const user = this.auth.currentUser;
 
-      if (!user || !token) {
-        this.user.set(null);
-        return;
-      }
+      untracked(async () => {
+        const token = this.authApiService.idToken();
+        const user = this.auth.currentUser;
 
-      const userFromDb = await firstValueFrom(this.usersService.getUserByFirebaseUuid(user.uid));
+        if (!user || !token) {
+          this.user.set(null);
+          return;
+        }
 
-      this.user.set({
-        email: userFromDb.email,
-        userId: userFromDb.userId,
-        name: userFromDb.name,
-        userFirebaseUuid: userFromDb.userFirebaseUuid
-      })
-    }, { allowSignalWrites: true });
+        const userFromDb = await firstValueFrom(this.usersService.getUserByFirebaseUuid(user.uid));
+
+        this.user.set({
+          email: userFromDb.email,
+          userId: userFromDb.userId,
+          name: userFromDb.name,
+          userFirebaseUuid: userFromDb.userFirebaseUuid,
+        });
+      });
+    });
   }
 }
-

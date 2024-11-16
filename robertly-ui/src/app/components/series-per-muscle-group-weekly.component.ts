@@ -106,7 +106,7 @@ export class SeriesPerMuscleGroupWeeklyComponent {
 
   public readonly seriesPerMuscleGroupPerUserPerWeek = computed(() => getSeriesAmountPerMuscleGroupPerWeek(this.state().rows));
 
-  public readonly daysByWeek = computed(() => R.mapValues(groupByWeek(this.exerciseLogService.logs()), x => x.length));
+  public readonly daysByWeek = computed(() => R.mapValues(groupByWeek([]), x => x.length));
   public readonly weeks = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerWeek()));
 
   public readonly selectedWeekLabel = computed(() => this.state().selectedWeek ?? 'Week');

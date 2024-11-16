@@ -19,7 +19,6 @@ const DEFAULT_MONTH_LABEL = 'Month';
         <div class="mb-3">
           <div ngbDropdown class="d-flex justify-content-center">
             <button type="button" class="btn btn-outline-primary w-100" ngbDropdownToggle>
-              {{ this.exerciseLogService.selectedMonth() | parseToMonth: DEFAULT_MONTH_LABEL }}
             </button>
             <div ngbDropdownMenu class="w-100">
               <!-- @for (month of exerciseLogService.months(); track $index) {
@@ -44,7 +43,6 @@ const DEFAULT_MONTH_LABEL = 'Month';
             [ngbPopover]="popoverTemplate"
             #popover="ngbPopover"
           >
-            {{ exerciseLogService.daysTrainedInSelectedMonthMessage() }}
           </div>
         </div>
       </div>
@@ -52,9 +50,7 @@ const DEFAULT_MONTH_LABEL = 'Month';
 
     <ng-template #popoverTemplate>
       <div>
-        @for (days of exerciseLogService.daysAmountByDayInSelectedMonth() | keyvalue; track $index) {
-          <div>{{ days.key | titlecase }}: {{ days.value }}</div>
-        }
+
       </div>
     </ng-template>
   `,
@@ -75,8 +71,6 @@ export class SeriesPerMuscleGroupMonthlyComponent implements OnInit {
   public readonly DEFAULT_MONTH_LABEL = DEFAULT_MONTH_LABEL;
 
   public ngOnInit(): void {
-    // if (!this.exerciseLogService.selectedMonth()) {
-    //   this.exerciseLogService.selectedMonth$.next(this.exerciseLogService.months()[0] ?? null);
-    // }
+
   }
 }

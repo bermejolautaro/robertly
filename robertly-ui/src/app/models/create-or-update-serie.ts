@@ -1,11 +1,14 @@
 import { FormGroup, FormControl } from "@angular/forms";
 
+
 export type CreateOrUpdateSerieFormGroup = FormGroup<{
   serieId: FormControl<number | null>;
   exerciseLogId: FormControl<number | null>;
   reps: FormControl<number | null>;
   weightInKg: FormControl<number | null>;
 }>;
+
+export type CreateOrUpdateSerieFormGroupValue = CreateOrUpdateSerieFormGroup['value'];
 
 export function createSerieFormGroup(): CreateOrUpdateSerieFormGroup {
   return new FormGroup({

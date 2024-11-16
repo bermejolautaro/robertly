@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 
 export interface Toast {
   delay?: number;
@@ -8,10 +8,10 @@ export interface Toast {
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-  public toasts: Toast[] = [];
+  public toasts = signal<Toast[]>([]);
 
   public show(toast: Toast): void {
-    this.toasts.push(toast);
+    this.toasts.update(toasts => [...toasts, toast]);
   }
 
   public ok(text: string) {
@@ -23,10 +23,10 @@ export class ToastService {
   }
 
   public remove(toast: Toast): void {
-    this.toasts = this.toasts.filter(t => t !== toast);
+    this.toasts.update(toasts => toasts.filter(t => t !== toast));
   }
 
   public clear(): void {
-    this.toasts = [];
+    this.toasts.set([]);
   }
 }

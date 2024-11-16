@@ -11,6 +11,12 @@ import { jwtInterceptor } from './app/interceptors/jwt.interceptor';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import isoWeek from 'dayjs/plugin/isoWeek';
+import 'dayjs/locale/es-mx';
+
 export const Paths = {
   HOME: 'home',
   LOGS: 'logs',
@@ -79,6 +85,8 @@ export type RoutePath = (typeof routes)[number]['path'];
 
 export const API_URL = new InjectionToken<string>('API_URL');
 
+export const DAY_JS = new InjectionToken<dayjs.Dayjs>('DAY_JS');
+
 bootstrapApplication(AppComponent, {
   providers: [
     TitleCasePipe,
@@ -100,5 +108,14 @@ bootstrapApplication(AppComponent, {
     ),
     provideAuth(() => getAuth()),
     { provide: API_URL, useValue: environment.apiUrl },
+    { provide: DAY_JS, useFactory: () => {
+      const dayjsInstance = dayjs;
+      dayjsInstance.extend(customParseFormat);
+      dayjsInstance.extend(weekOfYear);
+      dayjsInstance.extend(isoWeek);
+      dayjsInstance.locale('es-mx');
+
+      return dayjsInstance;
+    }}
   ],
 }).catch((err: unknown) => console.error(err));

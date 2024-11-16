@@ -4,12 +4,12 @@
   "dataGroups": [
     {
       "name": "api",
-      "urls": ["/api/**"],
+      "urls": ["/api/logs/[0-9]{1,}"],
       "cacheConfig": {
         "strategy": "freshness",
         "maxSize": 100,
         "maxAge": "2d",
-        "timeout": "0u"
+        "timeout": "60u"
       }
     }
   ],

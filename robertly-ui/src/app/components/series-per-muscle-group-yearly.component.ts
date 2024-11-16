@@ -112,7 +112,7 @@ export class SeriesPerMuscleGroupYearlyComponent {
 
   public readonly seriesPerMuscleGroupPerUserPerYear = computed(() => getSeriesAmountPerUserPerMuscleGroupPerYear(this.state().rows));
 
-  public readonly daysByYear = computed(() => R.mapValues(groupByYear(this.exerciseLogService.logs()), x => x.length));
+  public readonly daysByYear = computed(() => R.mapValues(groupByYear([]), x => x.length));
   public readonly years = computed(() => R.keys(this.seriesPerMuscleGroupPerUserPerYear()));
 
   public readonly selectedYearLabel = computed(() => this.state().selectedYear ?? 'Year');

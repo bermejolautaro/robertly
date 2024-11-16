@@ -36,8 +36,6 @@ export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit {
 
   public readonly seriesPerMuscleGroupPerUserPerMonth = computed(() => {
     // const seriesAmountPerUserPerMuscleGroupPerMonth = getSeriesAmountPerUserPerMuscleGroupPerMonth(this.exerciseLogService.logs());
-    const muscleGroups = this.exerciseLogService.muscleGroups();
-    const selectedMonth = this.exerciseLogService.selectedMonth();
 
     // if (selectedMonth) {
     //   let seriesAmountPerUserPerMuscleGroup = seriesAmountPerUserPerMuscleGroupPerMonth[selectedMonth];

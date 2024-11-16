@@ -24,14 +24,14 @@ public class UserRepository
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
     var query =
         $"""
-            SELECT
-                 UserId
-                ,UserFirebaseUuid
-                ,Email
-                ,Name
-            FROM {_schema}.Users
-            WHERE UserFirebaseUuid = @FirebaseUuid
-            """;
+        SELECT
+           UserId
+          ,UserFirebaseUuid
+          ,Email
+          ,Name
+        FROM {_schema}.Users
+        WHERE UserFirebaseUuid = @FirebaseUuid
+        """;
 
     var user = await connection.QuerySingleOrDefaultAsync<User>(query, new
     {
