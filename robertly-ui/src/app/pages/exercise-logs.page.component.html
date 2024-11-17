@@ -1,6 +1,6 @@
 <div
   class="footer-padding"
-  [hidden]="!exerciseLogService.loaded()"
+  [hidden]="logs.isLoading()"
 >
   <app-filters (filtersChanged)="onFilterChange($event)"></app-filters>
 
@@ -22,7 +22,7 @@
 
   <div class="mt-4">
     <div class="container">
-      @for (log of logs(); track $index) {
+      @for (log of logs.value(); track $index) {
         <app-exercise-log [exerciseLog]="log"></app-exercise-log>
       }
     </div>
@@ -30,7 +30,7 @@
 </div>
 
 <div
-  [hidden]="exerciseLogService.loaded()"
+  [hidden]="!logs.isLoading()"
   class="position-absolute top-50 start-50 translate-middle"
 >
   <div

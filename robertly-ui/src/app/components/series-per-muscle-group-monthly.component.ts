@@ -9,8 +9,8 @@ import { ExerciseLogService } from '@services/exercise-log.service';
 const DEFAULT_MONTH_LABEL = 'Month';
 
 @Component({
-  selector: 'app-series-per-muscle-group-monthly',
-  template: `
+    selector: 'app-series-per-muscle-group-monthly',
+    template: `
     <div class="card border-0 shadow-material-1">
       <div class="card-body">
         <div class="card-title mb-3">
@@ -54,16 +54,15 @@ const DEFAULT_MONTH_LABEL = 'Month';
       </div>
     </ng-template>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         display: block;
       }
     `,
-  ],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, NgbPopoverModule, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgbPopoverModule, NgbDropdownModule]
 })
 export class SeriesPerMuscleGroupMonthlyComponent implements OnInit {
   public readonly exerciseLogService = inject(ExerciseLogService);

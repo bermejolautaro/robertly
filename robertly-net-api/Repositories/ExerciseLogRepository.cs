@@ -53,16 +53,18 @@ public class ExerciseLogRepository
     return exerciseLog;
   }
 
-  public async Task<IEnumerable<string>> GetExerciseTypesByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null)
+  public async Task<IEnumerable<string>> GetExerciseTypesByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
     var query =
       $"""
-      SELECT DISTINCT E.Type FROM {_schema}.ExerciseLogs EL
+      SELECT DISTINCT E.Type
+      FROM {_schema}.ExerciseLogs EL
       INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE EL.UserFirebaseUuid = @UserFirebaseUuid
+      {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
       {(type is not null ? "AND E.Type = @Type" : "")}
       {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
       ORDER BY E.Type ASC
@@ -70,21 +72,23 @@ public class ExerciseLogRepository
 
     var types = await connection.QueryAsync<string>(
         query,
-        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg });
+        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
 
     return types;
   }
 
-  public async Task<IEnumerable<decimal>> GetWeightsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null)
+  public async Task<IEnumerable<decimal>> GetWeightsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
     var query =
       $"""
-      SELECT DISTINCT S.WeightInKg FROM {_schema}.ExerciseLogs EL
+      SELECT DISTINCT S.WeightInKg
+      FROM {_schema}.ExerciseLogs EL
       INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE el.UserFirebaseUuid = @UserFirebaseUuid
+      {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
       {(type is not null ? "AND E.Type = @Type" : "")}
       {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
       ORDER BY S.WeightInKg ASC
@@ -92,21 +96,23 @@ public class ExerciseLogRepository
 
     var weights = await connection.QueryAsync<decimal>(
         query,
-        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg });
+        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
 
     return weights;
   }
 
-  public async Task<IEnumerable<int>> GetExercisesIdsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null)
+  public async Task<IEnumerable<int>> GetExercisesIdsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
     var query =
       $"""
-      SELECT DISTINCT EL.ExerciseId FROM {_schema}.ExerciseLogs EL
+      SELECT DISTINCT EL.ExerciseId
+      FROM {_schema}.ExerciseLogs EL
       INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE el.UserFirebaseUuid = @UserFirebaseUuid
+      {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
       {(type is not null ? "AND E.Type = @Type" : "")}
       {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
       ORDER BY EL.ExerciseId ASC
@@ -114,7 +120,7 @@ public class ExerciseLogRepository
 
     var exercises = await connection.QueryAsync<int>(
         query,
-        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg });
+        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
 
     return exercises;
   }

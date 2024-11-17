@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef, inject } from '@angular/core';
-import { Router, RouterLinkActive, RouterLinkWithHref, RouterOutlet } from '@angular/router';
+import { Router, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
 import { debounceTime, forkJoin, switchMap, take, tap } from 'rxjs';
@@ -8,7 +8,7 @@ import { Paths } from 'src/main';
 import { ExerciseLogService } from '@services/exercise-log.service';
 
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
-import { DOCUMENT, JsonPipe, NgClass, TitleCasePipe } from '@angular/common';
+import { DOCUMENT } from '@angular/common';
 
 import {
   NgbAlertModule,
@@ -21,7 +21,6 @@ import {
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { DayjsService } from '@services/dayjs.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FiltersComponent } from '@components/filters.component';
 import { ToastService } from '@services/toast.service';
 import { AuthApiService } from '@services/auth-api.service';
 import { HeaderComponent } from '@components/header.component';
@@ -35,16 +34,10 @@ import { ConfirmModalComponent } from '@components/confirm-modal.component';
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
-  standalone: true,
   imports: [
-    NgClass,
-    TitleCasePipe,
-    JsonPipe,
-    FiltersComponent,
     HeaderComponent,
     FooterComponent,
     RouterLinkWithHref,
-    RouterLinkActive,
     RouterOutlet,
     NgbDropdownModule,
     NgbOffcanvasModule,
@@ -165,13 +158,11 @@ export class AppComponent implements OnInit {
     this.exerciseLogService.refreshLogs$.next();
     let exercises$ = this.exerciseApiService.getExercises();
 
-    this.exerciseLogService.withLoading(
-      forkJoin([exercises$]).pipe(
-        tap(([exercises]) => {
-          this.exerciseLogService.updateExercises$.next(exercises);
-        })
-      )
-    );
+    forkJoin([exercises$]).pipe(
+      tap(([exercises]) => {
+        this.exerciseLogService.updateExercises$.next(exercises);
+      })
+    ).subscribe();
   }
 
   public signOut(): void {

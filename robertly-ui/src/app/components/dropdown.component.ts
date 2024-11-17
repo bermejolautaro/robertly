@@ -5,8 +5,8 @@ import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { startWith } from 'rxjs';
 
 @Component({
-  selector: 'app-dropdown',
-  template: `<div
+    selector: 'app-dropdown',
+    template: `<div
     ngbDropdown
     class="d-flex justify-content-center"
   >
@@ -42,7 +42,7 @@ import { startWith } from 'rxjs';
       </div>
     </div>
   </div>`,
-  styles: `
+    styles: `
     :host {
       display: block;
       width: 100%;
@@ -69,9 +69,8 @@ import { startWith } from 'rxjs';
       }
     }
   `,
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, FormsModule, NgbDropdownModule, TitleCasePipe, NgClass],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [ReactiveFormsModule, FormsModule, NgbDropdownModule, TitleCasePipe, NgClass]
 })
 export class DropdownComponent<T> implements OnInit {
   @Input() public placeholder: string = 'Placeholder';

@@ -7,8 +7,8 @@ import { ParseToMonthPipe } from '@pipes/parse-to-month.pipe';
 import { ExerciseLogService } from '@services/exercise-log.service';
 
 @Component({
-  selector: 'app-series-per-muscle-group-summary-monthly',
-  template: `
+    selector: 'app-series-per-muscle-group-summary-monthly',
+    template: `
     <div class="table-responsive">
       <!-- <table class="table table-sm m-0 mb-3">
         <thead>
@@ -46,16 +46,15 @@ import { ExerciseLogService } from '@services/exercise-log.service';
       </table> -->
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         display: block;
       }
     `,
-  ],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe, KeyValuePipe, ParseToMonthPipe, NgbDropdownModule],
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgbDropdownModule]
 })
 export class SeriesPerMuscleGroupSummaryMonthlyComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);

@@ -1,11 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, WritableSignal, inject, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap, firstValueFrom } from 'rxjs';
 import { API_URL } from 'src/main';
 import { Auth, GoogleAuthProvider, signOut } from '@angular/fire/auth';
 import { ToastService } from './toast.service';
 import { signInWithPopup } from '@firebase/auth';
-import { ExerciseLogService } from './exercise-log.service';
 
 export interface SignInRequest {
   email: string;
@@ -26,9 +25,8 @@ export class AuthApiService {
   private readonly apiUrl = inject(API_URL);
   private readonly auth = inject(Auth);
   private readonly toastService = inject(ToastService);
-  private readonly exerciseLogService = inject(ExerciseLogService);
 
-  public readonly idToken: WritableSignal<string | null> = signal(null);
+  public readonly idToken = signal<string | null>(null);
 
   public constructor() {
     this.idToken.set(localStorage.getItem(IDTOKEN_KEY) ?? null);
@@ -49,20 +47,23 @@ export class AuthApiService {
     const provider = new GoogleAuthProvider();
     provider.addScope('https://www.googleapis.com/auth/userinfo.email');
     provider.setCustomParameters({
-      prompt: 'select_account'
+      prompt: 'select_account',
     });
 
     this.auth.useDeviceLanguage();
 
-    this.exerciseLogService.startLoading$.next();
     const result = await signInWithPopup(this.auth, provider);
     const credential = GoogleAuthProvider.credentialFromResult(result);
-    this.exerciseLogService.stopLoading$.next();
 
     if (credential) {
       const idToken = await firstValueFrom(
-        this.http.post(`${this.apiUrl}/auth/signup/google`, { accessToken: credential.accessToken }, { responseType: 'text' })
+        this.http.post(
+          `${this.apiUrl}/auth/signup/google`,
+          { accessToken: credential.accessToken },
+          { responseType: 'text' }
+        )
       );
+
       localStorage.setItem(IDTOKEN_KEY, idToken);
       this.idToken.set(idToken);
       this.toastService.ok('Successfully signed in with Google');

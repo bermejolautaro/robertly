@@ -1,20 +1,38 @@
-<ng-template #content let-modal>
+<ng-template
+  #content
+  let-modal
+>
   <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">Edit Exercise</h4>
-    <button type="button" class="btn-close" aria-label="Close" (click)="modal.dismiss()"></button>
+    <h4
+      class="modal-title"
+      id="modal-basic-title"
+    >
+      Edit Exercise
+    </h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="modal.dismiss()"
+    ></button>
   </div>
   <div class="modal-body">
     <form>
       <!-- #region INPUT NAME -->
       <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Name" [formControl]="exerciseForm.controls.name" />
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Name"
+          [formControl]="exerciseForm.controls.name"
+        />
       </div>
       <!-- #region INPUT MUSCLE GROUP -->
       <div class="mb-3">
         <app-typeahead
           placeholder="Muscle Group"
           [control]="exerciseForm.controls.muscleGroup"
-          [items]="exerciseLogService.muscleGroups"
+          [items]="exerciseLogService.muscleGroups()"
         ></app-typeahead>
       </div>
       <!-- #endregion -->
@@ -24,14 +42,19 @@
         <app-typeahead
           placeholder="Type"
           [control]="exerciseForm.controls.type"
-          [items]="exerciseLogService.types"
+          [items]="exerciseLogService.types()"
         ></app-typeahead>
       </div>
       <!-- #endregion -->
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-primary" (click)="modal.close()" [disabled]="exerciseForm.invalid || exerciseForm.pristine">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="modal.close()"
+      [disabled]="exerciseForm.invalid || exerciseForm.pristine"
+    >
       Save
     </button>
   </div>
@@ -39,14 +62,20 @@
 
 <div class="container footer-padding">
   <div class="d-flex justify-content-end mb-3">
-    <button type="button" class="btn btn-primary">
+    <button
+      type="button"
+      class="btn btn-primary"
+    >
       <i class="fa fa-plus me-2"></i>
       <span (click)="open(content, null)">Add Exercise</span>
     </button>
   </div>
   <ul class="list-group">
     @for (exercise of exerciseLogService.exercises(); track exercise.exerciseId) {
-      <li class="list-group-item d-flex align-items-center" (click)="open(content, exercise)">
+      <li
+        class="list-group-item d-flex align-items-center"
+        (click)="open(content, exercise)"
+      >
         <span>{{ exercise.name | titlecase }}</span>
         <button
           style="margin-left: auto; padding: 0.075rem 0.35rem"
@@ -59,7 +88,10 @@
       </li>
     } @empty {
       <div class="position-absolute top-50 start-50 translate-middle">
-        <div class="spinner-border text-primary" role="status">
+        <div
+          class="spinner-border text-primary"
+          role="status"
+        >
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>

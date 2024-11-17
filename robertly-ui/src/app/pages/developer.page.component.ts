@@ -1,11 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject } from "@angular/core";
-import { AuthApiService } from "@services/auth-api.service";
+import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { AuthApiService } from '@services/auth-api.service';
 
 @Component({
   selector: 'app-developer-page',
   templateUrl: 'developer.page.component.html',
   styles: ``,
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [],
 })

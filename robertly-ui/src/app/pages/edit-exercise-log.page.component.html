@@ -1,4 +1,4 @@
-@if (!isLoading()) {
+@if (!this.isLoading()) {
   <div class="footer-padding">
     <div class="modal-header">
       <h4
@@ -23,7 +23,7 @@
             type="date"
             placeholder="DD-MM-YYYY"
             class="form-control"
-            [formControl]="createOrUpdateLogFormGroup().controls.date"
+            [formControl]="formGroup().controls.date"
           />
         </div>
         <!-- #endregion -->
@@ -34,7 +34,7 @@
             type="text"
             class="form-control"
             placeholder="User"
-            [formControl]="createOrUpdateLogFormGroup().controls.user"
+            [formControl]="formGroup().controls.user"
           />
         </div>
         <!-- #endregion -->
@@ -44,14 +44,14 @@
           <div class="input-group">
             <app-typeahead
               placeholder="Exercise"
-              [items]="exerciseLogService.exercises"
-              [control]="createOrUpdateLogFormGroup().controls.exercise"
+              [items]="exerciseLogService.exercises()"
+              [control]="formGroup().controls.exercise"
               [itemSelector]="exerciseSelector"
             ></app-typeahead>
           </div>
 
-          @if (!createOrUpdateLogFormGroup().controls.exercise.pristine) {
-            @for (error of createOrUpdateLogFormGroup().errors?.['exercise'] | keyvalue; track $index) {
+          @if (!formGroup().controls.exercise.pristine) {
+            @for (error of formGroup().errors?.['exercise'] | keyvalue; track $index) {
               <div class="d-block invalid-feedback">{{ error.value }}</div>
             }
           }
@@ -70,7 +70,7 @@
         }
 
         <!-- #region SERIES -->
-        @for (serieControl of createOrUpdateLogFormGroup().controls.series.controls; track $index) {
+        @for (serieControl of formGroup().controls.series.controls; track $index) {
           <div class="input-group mb-2 align-items-center">
             <span class="input-group-text">Serie {{ $index + 1 }}</span>
             <input
@@ -88,8 +88,8 @@
           </div>
         }
 
-        @if (!createOrUpdateLogFormGroup().controls.series.pristine) {
-          @for (error of createOrUpdateLogFormGroup().errors?.['series'] | keyvalue; track $index) {
+        @if (!formGroup().controls.series.pristine) {
+          @for (error of formGroup().errors?.['series'] | keyvalue; track $index) {
             <div class="d-block invalid-feedback">{{ error.value }}</div>
           }
         }
@@ -121,11 +121,11 @@
         type="button"
         class="btn"
         [ngClass]="{
-          'btn-primary': createOrUpdateLogFormGroup().valid,
-          'btn-secondary': createOrUpdateLogFormGroup().invalid
+          'btn-primary': formGroup().valid,
+          'btn-secondary': formGroup().invalid
         }"
-        [disabled]="createOrUpdateLogFormGroup().invalid"
-        (click)="saveButtonClicked.set(true)"
+        [disabled]="formGroup().invalid"
+        (click)="save()"
       >
         Save
       </button>
@@ -133,7 +133,7 @@
       @if (mode() === 'edit') {
         <div class="pt-5 w-100">
           <div class="pb-2">Previous entries</div>
-          @for (log of originalValue()?.recentLogs ?? []; track $index) {
+          @for (log of originalValue.value()?.recentLogs ?? []; track $index) {
             <app-exercise-log
               class="w-100"
               [exerciseLog]="log"
@@ -143,7 +143,7 @@
 
         <div class="pt-3 w-100">
           <div class="pb-2">Possible 1RM (Brzycky Formula)</div>
-          @for (serie of originalValue()?.series; track $index) {
+          @for (serie of originalValue.value()?.series; track $index) {
             <ul class="list-group list-group-horizontal pb-1">
               <li class="list-group-item active">Serie {{ $index + 1 }}</li>
               <li class="list-group-item">{{ serie.brzycki | number: '1.2-2' }}kg</li>
@@ -151,7 +151,7 @@
           }
           <ul class="list-group list-group-horizontal pb-1">
             <li class="list-group-item active">Average</li>
-            <li class="list-group-item">{{ originalValue()?.brzyckiAverage | number: '1.2-2' }}kg</li>
+            <li class="list-group-item">{{ originalValue.value()?.brzyckiAverage | number: '1.2-2' }}kg</li>
           </ul>
         </div>
       }

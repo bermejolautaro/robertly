@@ -32,11 +32,16 @@ export class ExerciseLogApiService {
 
   public getExerciseLogs(
     page: number = 0,
+    userFirebaseUuid: string | null = null,
     exerciseType: string | null = null,
     exerciseId: number | null = null,
     weightInKg: number | null = null
   ): Observable<ExerciseLogDto[]> {
     let queryParams = new HttpParams();
+
+    if (!!userFirebaseUuid) {
+      queryParams = queryParams.append('userFirebaseUuid', userFirebaseUuid);
+    }
 
     if (!!exerciseType) {
       queryParams = queryParams.append('exerciseType', exerciseType);
@@ -59,8 +64,21 @@ export class ExerciseLogApiService {
     return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/latest-workout`).pipe(map(x => x.data));
   }
 
-  public getFilters(type: string | null = null, weightInKg: number | null = null): Observable<Filter> {
+  public getFilters(
+    userFirebaseUuid: string | null = null,
+    exerciseId: number | null,
+    type: string | null = null,
+    weightInKg: number | null = null
+  ): Observable<Filter> {
     let queryParams = new HttpParams();
+
+    if (!!userFirebaseUuid) {
+      queryParams = queryParams.append('userFirebaseUuid', userFirebaseUuid);
+    }
+
+    if (!!exerciseId) {
+      queryParams = queryParams.append('exerciseId', exerciseId);
+    }
 
     if (!!type) {
       queryParams = queryParams.append('type', type);

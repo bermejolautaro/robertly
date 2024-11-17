@@ -1,4 +1,4 @@
-import { NgClass, NgTemplateOutlet } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { NgbAccordionModule } from '@ng-bootstrap/ng-bootstrap';
@@ -8,8 +8,8 @@ import { ExerciseRowBodyComponent } from '@components/exercise-row-body.componen
 import { ExerciseLogDto } from '@models/exercise-log.model';
 
 @Component({
-  selector: 'app-exercise-rows',
-  template: `
+    selector: 'app-exercise-rows',
+    template: `
     <div class="row my-2">
       <div class="col">
         <div ngbAccordion>
@@ -33,10 +33,9 @@ import { ExerciseLogDto } from '@models/exercise-log.model';
       </div>
     </div>
   `,
-  styles: [``],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, NgTemplateOutlet, NgbAccordionModule, ExerciseRowTitleComponent, ExerciseRowBodyComponent],
+    styles: [``],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgClass, NgbAccordionModule, ExerciseRowTitleComponent, ExerciseRowBodyComponent]
 })
 export class ExerciseRowsComponent {
   @Input() public exerciseLogs: ExerciseLogDto[] = [];

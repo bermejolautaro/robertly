@@ -17,8 +17,8 @@ type State = {
 };
 
 @Component({
-  selector: 'app-series-per-muscle-group-weekly',
-  template: `
+    selector: 'app-series-per-muscle-group-weekly',
+    template: `
     <div class="card border-0 shadow-material-1">
       <div class="card-body">
         <div class="card-title mb-3">
@@ -76,16 +76,15 @@ type State = {
       </div>
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         display: block;
       }
     `,
-  ],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgClass, TitleCasePipe, KeyValuePipe, NgbDropdownModule]
 })
 export class SeriesPerMuscleGroupWeeklyComponent {
   @Input({ required: true }) public set rows(value: ExerciseRow[]) {

@@ -4,7 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthApiService } from '@services/auth-api.service';
 import { ToastService } from '@services/toast.service';
-import { firstValueFrom } from 'rxjs'
+import { firstValueFrom } from 'rxjs';
 import { Paths } from 'src/main';
 
 @Component({
@@ -20,7 +20,6 @@ import { Paths } from 'src/main';
       gap: 5px;
     }
   `,
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, ReactiveFormsModule, NgOptimizedImage],
 })
@@ -31,8 +30,6 @@ export class SignInComponent implements OnInit {
 
   public email: string = '';
   public password: string = '';
-
-  public constructor() { }
 
   public async ngOnInit(): Promise<void> {
     await this.authApiService.tryRefreshToken();
@@ -58,6 +55,5 @@ export class SignInComponent implements OnInit {
     } catch (error) {
       this.toastService.error('Sign in with google failed.');
     }
-
   }
 }

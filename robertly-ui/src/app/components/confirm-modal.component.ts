@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-confirm-modal',
-  template: `<div class="modal-header">
+    selector: 'app-confirm-modal',
+    template: `<div class="modal-header">
       <h4
         class="modal-title"
         id="modal-title"
@@ -37,12 +37,11 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         {{ okText }}
       </button>
     </div>`,
-  styles: `
+    styles: `
 
   `,
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: []
 })
 export class ConfirmModalComponent {
   @Input() public title: string = '';

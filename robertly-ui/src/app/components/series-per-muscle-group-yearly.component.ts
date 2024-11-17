@@ -18,8 +18,8 @@ type State = {
 };
 
 @Component({
-  selector: 'app-series-per-muscle-group-yearly',
-  template: `
+    selector: 'app-series-per-muscle-group-yearly',
+    template: `
     <div class="card border-0 shadow-material-1">
       <div class="card-body">
         <div class="card-title mb-3">
@@ -77,8 +77,8 @@ type State = {
       </div>
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         display: block;
       }
@@ -88,10 +88,9 @@ type State = {
         right: 0;
       }
     `,
-  ],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, ParseToYearPipe, TitleCasePipe, KeyValuePipe, NgbDropdownModule],
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgClass, ParseToYearPipe, TitleCasePipe, KeyValuePipe, NgbDropdownModule]
 })
 export class SeriesPerMuscleGroupYearlyComponent {
   @Input({ required: true }) public set rows(value: ExerciseRow[]) {

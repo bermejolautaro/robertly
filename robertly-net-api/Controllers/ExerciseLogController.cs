@@ -30,14 +30,16 @@ namespace robertly.Controllers
 
     [HttpGet("filters")]
     public async Task<Ok<Filter>> GetFiltersByUser(
+      [FromQuery] string? userFirebaseUuid,
+      [FromQuery] int? exerciseId,
       [FromQuery] string? type = null,
       [FromQuery] decimal? weightInKg = null)
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+      userFirebaseUuid ??= HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
-      var types = await _exerciseLogRepository.GetExerciseTypesByUser(userFirebaseUuid, type, weightInKg);
-      var weights = await _exerciseLogRepository.GetWeightsByUser(userFirebaseUuid, type, weightInKg);
-      var exercisesIds = await _exerciseLogRepository.GetExercisesIdsByUser(userFirebaseUuid, type, weightInKg);
+      var types = await _exerciseLogRepository.GetExerciseTypesByUser(userFirebaseUuid, type, weightInKg, exerciseId);
+      var weights = await _exerciseLogRepository.GetWeightsByUser(userFirebaseUuid, type, weightInKg, exerciseId);
+      var exercisesIds = await _exerciseLogRepository.GetExercisesIdsByUser(userFirebaseUuid, type, weightInKg, exerciseId);
 
       return TypedResults.Ok(new Filter
       {
@@ -73,6 +75,7 @@ namespace robertly.Controllers
     [HttpGet]
     public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetExerciseLogs(
         [FromQuery] PaginationRequest pagination,
+        [FromQuery] string? userFirebaseUuid,
         [FromQuery] string? exerciseType = null,
         [FromQuery] int? exerciseId = null,
         [FromQuery] decimal? weightInKg = null
@@ -98,7 +101,7 @@ namespace robertly.Controllers
         return TypedResults.Unauthorized();
       }
 
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+      userFirebaseUuid ??= HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
 
       var queryBuilder = new GetExerciseLogsQueryBuilder()
         .AndUserFirebaseUuid(userFirebaseUuid);

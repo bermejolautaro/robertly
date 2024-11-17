@@ -1,12 +1,11 @@
 import { NgClass, TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { ExerciseLogDto } from '@models/exercise-log.model';
-import { ExerciseRow } from '@models/exercise-row.model';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 
 @Component({
-  selector: 'app-exercise-row-title',
-  template: `
+    selector: 'app-exercise-row-title',
+    template: `
     <div class="w-100">
       @if (exerciseLog) {
         <div class="row w-100 pb-1" [ngClass]="showDate && showUsername ? 'fw-semibold' : null">
@@ -29,17 +28,16 @@ import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
       </div>
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         display: flex;
         flex: 1;
       }
     `,
-  ],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass, TitleCasePipe, ParseToDatePipe],
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: [NgClass, TitleCasePipe, ParseToDatePipe]
 })
 export class ExerciseRowTitleComponent {
   @Input() showStar: boolean = false;

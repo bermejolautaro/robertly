@@ -1,4 +1,4 @@
-import { NgClass, TitleCasePipe } from '@angular/common';
+import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, TemplateRef, inject } from '@angular/core';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TypeaheadComponent } from '@components/typeahead.component';
@@ -11,9 +11,8 @@ import { CreateExerciseRequest, ExerciseApiService, UpdateExerciseRequest } from
   selector: 'app-exercises-page',
   templateUrl: './exercises.page.component.html',
   styles: ``,
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TitleCasePipe, NgbModalModule, NgClass, FormsModule, ReactiveFormsModule, TypeaheadComponent],
+  imports: [TitleCasePipe, NgbModalModule, FormsModule, ReactiveFormsModule, TypeaheadComponent],
 })
 export class ExercisesPageComponent implements OnInit {
   private readonly modalService = inject(NgbModal);

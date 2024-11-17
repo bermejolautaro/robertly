@@ -3,8 +3,8 @@ import { ExerciseLogDto } from '@models/exercise-log.model';
 import { ExerciseLogService } from '@services/exercise-log.service';
 
 @Component({
-  selector: 'app-exercise-row-body',
-  template: `
+    selector: 'app-exercise-row-body',
+    template: `
     @if (exerciseLog) {
       <table class="table table-striped table-sm m-0" (click)="exerciseLogService.logClicked$.next(exerciseLog)">
         <tbody>
@@ -41,10 +41,9 @@ import { ExerciseLogService } from '@services/exercise-log.service';
       </table>
     }
   `,
-  styles: [``],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+    styles: [``],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: []
 })
 export class ExerciseRowBodyComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);

@@ -3,12 +3,11 @@ button:has(.fa.fa-plus) {
   position: fixed;
   right: 25px;
   bottom: 75px;
+  z-index: 4;
 
   @supports (-webkit-hyphens: none) {
     bottom: 100px;
   }
-
-  z-index: 4;
 }
 
 .offcanvas-header {

@@ -8,9 +8,9 @@ const foods: Food[] = [
     calories: 22.5,
     protein: 120,
     unit: 'g',
-    amount: 100
-  }
-]
+    amount: 100,
+  },
+];
 
 const data: FoodLog[] = [
   {
@@ -19,18 +19,15 @@ const data: FoodLog[] = [
     userId: '1enjdqwedniu21h3',
     meal: 'lunch',
     foodId: '123dqwsede21ew',
-    amount: 50
-  }
-]
+    amount: 50,
+  },
+];
 
 @Component({
   selector: 'app-foods-page',
-  standalone: true,
   imports: [],
   templateUrl: './foods.page.component.html',
   styles: ``,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FoodsPageComponent {
-
-}
+export class FoodsPageComponent {}

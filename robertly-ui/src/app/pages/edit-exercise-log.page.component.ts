@@ -1,5 +1,14 @@
 import { DecimalPipe, KeyValuePipe, Location, NgClass, TitleCasePipe } from '@angular/common';
-import { Component, ChangeDetectionStrategy, inject, signal, computed, effect, untracked } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  inject,
+  signal,
+  computed,
+  effect,
+  untracked,
+  linkedSignal,
+} from '@angular/core';
 import { ExerciseLogDto, Serie } from '@models/exercise-log.model';
 import { Exercise } from '@models/exercise.model';
 import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
@@ -19,9 +28,9 @@ import { AuthService } from '@services/auth.service';
 import { DayjsService } from '@services/dayjs.service';
 import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
 import { ExerciseLogComponent } from '@components/exercise-log.component';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
-import { lastValueFrom, startWith, take } from 'rxjs';
+import { lastValueFrom, of, take } from 'rxjs';
 import { Dayjs } from 'dayjs';
 import { CreateOrUpdateSerieFormGroupValue } from '@models/create-or-update-serie';
 import { User } from '@models/user.model';
@@ -32,7 +41,6 @@ import * as R from 'remeda';
   selector: 'edit-exercise-log-page',
   templateUrl: 'edit-exercise-log.page.component.html',
   styleUrl: 'edit-exercise-log.page.component.scss',
-  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ReactiveFormsModule,
@@ -59,139 +67,86 @@ export class EditExerciseLogPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly modalService = inject(NgbModal);
 
-  public originalValue = signal<ExerciseLogDto | null>(null);
-  public isLoading = signal<boolean>(false);
-  public saveButtonClicked = signal<boolean>(false);
-
+  public isLoading = linkedSignal(() => this.originalValue.isLoading());
   public paramMap = toSignal(this.route.paramMap);
   public exerciseLogId = computed(() => this.paramMap()?.get(Paths.LOGS_ID_PARAM));
 
   public url = toSignal(this.route.url, { initialValue: [] });
   public mode = computed(() => (this.url().some(x => x.path === Paths.LOGS_CREATE) ? 'create' : 'edit'));
 
-  public createOrUpdateLogFormGroup = computed(() => {
-    const mode = this.mode();
-    const updateFormGroup = this.updateLogFormGroup();
+  public formGroup = signal(createLogFormGroup());
+  public formGroupValue = toSignal(this.formGroup().valueChanges);
 
-    const logFromGroup = createLogFormGroup();
+  public originalValue = rxResource({
+    request: this.exerciseLogId,
+    loader: ({ request: exerciseLogIdString }) => {
+      const exerciseLogId = Number(exerciseLogIdString);
+      return !!exerciseLogId ? this.exerciseLogApiService.getExerciseLogById(exerciseLogId) : of(null);
+    },
+  });
+
+  readonly #onModeOrOriginalValueChangeTheUpdateForm = effect(() => {
+    const mode = this.mode();
+    const exerciseLog = this.originalValue.value();
 
     if (mode === 'create') {
-      const todayDate = this.dayjs().format('YYYY-MM-DD');
-      logFromGroup.controls.date.patchValue(todayDate);
+      untracked(() => {
+        const user = this.authService.user();
+        const todayDate = this.dayjs().format('YYYY-MM-DD');
 
-      return logFromGroup;
+        this.formGroup.update(formGroup => {
+          formGroup.patchValue({
+            date: todayDate,
+            user: user?.name ?? '',
+          });
+
+          return formGroup;
+        });
+      });
     }
 
-    if (mode === 'edit') {
-      return updateFormGroup;
-    }
+    if (mode === 'edit' && !!exerciseLog) {
+      if (exerciseLog) {
+        this.formGroup.update(form => {
+          form.reset();
+          form.patchValue({
+            exercise: exerciseLog.exercise,
+            date: this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'),
+            user: exerciseLog.user.name,
+            series: exerciseLog.series.map(x => ({
+              exerciseLogId: x.exerciseLogId,
+              serieId: x.serieId,
+              reps: x.reps,
+              weightInKg: x.weightInKg,
+            })),
+          });
 
-    return logFromGroup;
+          return form;
+        });
+      }
+    }
   });
 
   public hasUnsavedChanges = signal(false);
 
+  readonly #onFormValueOrOriginalValueChangeThenUpdateHasUnsavedChanges = effect(() => {
+    const formValue = this.formGroupValue();
+    const originalValue = this.originalValue.value();
+    const mode = this.mode();
+
+    if (!formValue) {
+      this.hasUnsavedChanges.set(false);
+      return;
+    }
+
+    const originalLog = { series: toSeries(originalValue?.series.map(x => ({ ...x, brzycki: null }))) ?? [] };
+    const updatedLog = { series: toSeries(formValue.series) };
+
+    this.hasUnsavedChanges.set( mode === 'edit' && !R.isDeepEqual(originalLog, updatedLog));
+  });
+
   public readonly exerciseSelector = (x: string | Exercise | null) =>
     typeof x === 'string' ? '' : this.titleCasePipe.transform(x?.name) ?? '';
-
-  private updateLogFormGroup = signal(createLogFormGroup());
-
-  public constructor() {
-    effect(cleanUp => {
-      const formGroup = this.createOrUpdateLogFormGroup();
-      const originalValue = this.originalValue();
-
-      untracked(() => {
-        const subscription = formGroup.valueChanges.pipe(startWith(null)).subscribe(formValue => {
-          if (!formValue) {
-            this.hasUnsavedChanges.set(false);
-            return;
-          }
-
-          const originalLog = { series: toSeries(originalValue?.series.map(x => ({ ...x, brzycki: null }))) ?? [] };
-          const updatedLog = { series: toSeries(formValue.series) };
-
-          this.hasUnsavedChanges.set(!R.isDeepEqual(originalLog, updatedLog));
-        });
-
-        cleanUp(() => subscription.unsubscribe());
-      });
-    });
-
-    effect(() => {
-      const saveButtonClicked = this.saveButtonClicked();
-      const exerciseLogIdString = this.exerciseLogId();
-
-      untracked(async () => {
-        const mode = this.mode();
-        const formGroup = this.createOrUpdateLogFormGroup();
-
-        this.isLoading.set(true);
-
-        if (saveButtonClicked) {
-          const exercise = formGroup.value.exercise;
-          const date = this.dayjsService.parseDate(formGroup.value.date!);
-          const exerciseLog = this.originalValue();
-
-          const user = this.authService.user();
-
-          if (!user) {
-            throw new Error('User cannot be null');
-          }
-
-          if (formGroup.valid && typeof exercise !== 'string' && !!exercise) {
-            if (mode === 'create') {
-              const request = toCreateExerciseLogRequest(formGroup, user, exercise, date);
-
-              try {
-                const exerciseLogId = await lastValueFrom(this.exerciseLogApiService.createExerciseLog(request));
-                localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-                this.toastService.ok('Log created successfully!');
-                this.router.navigate([Paths.LOGS, Paths.LOGS_EDIT, exerciseLogId]);
-              } catch (e) {
-                this.toastService.error(`${e}`);
-              }
-            } else {
-              const request = toUpdateExerciseLogRequest(exerciseLog?.id!, formGroup, user, exercise!, date);
-
-              try {
-                await lastValueFrom(this.exerciseLogApiService.updateExerciseLog(request));
-                this.toastService.ok('Log updated successfully!');
-              } catch (e) {
-                this.toastService.error(`${e}`);
-              }
-            }
-          }
-        } else {
-          const exerciseLogId = Number(exerciseLogIdString);
-
-          if (!!exerciseLogId) {
-            const exerciseLog = await lastValueFrom(this.exerciseLogApiService.getExerciseLogById(exerciseLogId));
-
-            const formGroup = createLogFormGroup();
-
-            this.originalValue.set(exerciseLog);
-            formGroup.patchValue({
-              exercise: exerciseLog.exercise,
-              date: this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'),
-              user: exerciseLog.user.name,
-              series: exerciseLog.series.map(x => ({
-                exerciseLogId: x.exerciseLogId,
-                serieId: x.serieId,
-                reps: x.reps,
-                weightInKg: x.weightInKg,
-              })),
-            });
-
-            this.updateLogFormGroup.set(formGroup);
-          }
-        }
-
-        this.saveButtonClicked.set(false);
-        this.isLoading.set(false);
-      });
-    });
-  }
 
   public openDeleteModal(): void {
     const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
@@ -204,8 +159,54 @@ export class EditExerciseLogPageComponent {
     instance.okType = 'danger';
 
     modalRef.closed.pipe(take(1)).subscribe(() => {
-      this.exerciseLogService.deleteLog$.next(this.originalValue()!);
+      this.exerciseLogService.deleteLog$.next(this.originalValue.value()!);
     });
+  }
+
+  public async save(): Promise<void> {
+    const mode = this.mode();
+    const formGroup = this.formGroup();
+
+    this.isLoading.set(true);
+
+    const exercise = formGroup.value.exercise;
+    const date = this.dayjsService.parseDate(formGroup.value.date!);
+    const exerciseLog = this.originalValue.value();
+
+    const user = this.authService.user();
+
+    if (!user) {
+      throw new Error('User cannot be null');
+    }
+
+    if (formGroup.valid && typeof exercise !== 'string' && !!exercise) {
+      if (mode === 'create') {
+        const request = toCreateExerciseLogRequest(formGroup, user, exercise, date);
+
+        try {
+          const exerciseLogId = await lastValueFrom(this.exerciseLogApiService.createExerciseLog(request));
+          localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
+          this.toastService.ok('Log created successfully!');
+          this.router.navigate([Paths.LOGS, Paths.LOGS_EDIT, exerciseLogId]);
+        } catch (e) {
+          this.toastService.error(`${e}`);
+        }
+      }
+
+      if (mode === 'edit') {
+        const request = toUpdateExerciseLogRequest(exerciseLog?.id!, formGroup, user, exercise!, date);
+
+        try {
+          await lastValueFrom(this.exerciseLogApiService.updateExerciseLog(request));
+          this.toastService.ok('Log updated successfully!');
+          this.originalValue.reload();
+        } catch (e) {
+          this.toastService.error(`${e}`);
+        }
+      }
+    }
+
+    this.isLoading.set(false);
   }
 
   public cancel(): void {

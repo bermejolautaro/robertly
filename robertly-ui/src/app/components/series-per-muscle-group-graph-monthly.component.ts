@@ -10,22 +10,21 @@ import * as R from 'remeda';
 type ChartDataSetItem = { label: string; data: number[]; borderWidth: number };
 
 @Component({
-  selector: 'app-series-per-muscle-group-graph-monthly',
-  template: `
+    selector: 'app-series-per-muscle-group-graph-monthly',
+    template: `
     <div>
       <canvas #chart></canvas>
     </div>
   `,
-  styles: [
-    `
+    styles: [
+        `
       :host {
         display: block;
       }
     `,
-  ],
-  standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    imports: []
 })
 export class SeriesPerMuscleGroupGraphMonthlyComponent implements OnInit {
   @ViewChild('chart', { static: true }) chartCanvasElementRef: ElementRef<HTMLCanvasElement> | null = null;
