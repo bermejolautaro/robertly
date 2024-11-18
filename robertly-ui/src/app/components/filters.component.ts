@@ -78,7 +78,7 @@ export class FiltersComponent {
     const user = this.authService.user();
 
     if (filters) {
-      this.users.set([user!]);
+      this.users.set([user!, ...(user?.assignedUsers ?? [])]);
       this.types.set(filters.types);
       this.weights.set(filters.weights.map(x => `${x}`));
       this.exercises.set(this.exerciseLogService.exercises().filter(x => filters.exercisesIds.includes(x.exerciseId!)));

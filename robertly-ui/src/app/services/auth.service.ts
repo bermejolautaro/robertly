@@ -36,6 +36,7 @@ export class AuthService {
         userId: userFromDb.userId,
         name: userFromDb.name,
         userFirebaseUuid: userFromDb.userFirebaseUuid,
+        assignedUsers: userFromDb.assignedUsers
       });
     });
   }

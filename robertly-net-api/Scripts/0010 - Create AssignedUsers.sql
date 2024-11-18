@@ -1,0 +1,5 @@
+CREATE TABLE AssignedUsers(
+  AssignedUsersId INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  OwnerUserId INT NOT NULL,
+  AssignedUserId INT NOT NULL
+);

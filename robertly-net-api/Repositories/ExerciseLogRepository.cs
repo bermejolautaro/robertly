@@ -172,7 +172,7 @@ public class ExerciseLogRepository
         splitOn: "ExerciseId,UserId"
     );
 
-    var series = await connection.QueryAsync<Models.Serie>(
+    var series = await connection.QueryAsync<Serie>(
       $"""
       SELECT
          S.SerieId

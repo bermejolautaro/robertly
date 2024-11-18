@@ -3,4 +3,5 @@ export interface User {
   userId: number;
   name: string;
   userFirebaseUuid: string | null;
+  assignedUsers: User[];
 }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace robertly.Models;
 
-public record Exercise()
+public record Exercise
 {
     public int? ExerciseId { get; init; }
     public required string? Name { get; init; }
@@ -10,7 +10,7 @@ public record Exercise()
     public required string? Type { get; init; }
 }
 
-public record GetExercisesResponse()
+public record GetExercisesResponse
 {
     public required IEnumerable<Exercise> Data { get; init;}
 };

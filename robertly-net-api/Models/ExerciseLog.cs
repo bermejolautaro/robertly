@@ -12,12 +12,12 @@ public record Serie()
   public decimal? Brzycki { get; init; }
 }
 
-public record ExerciseLogRequest()
+public record ExerciseLogRequest
 {
   public ExerciseLog? ExerciseLog { get; set; }
 }
 
-public record ExerciseLog()
+public record ExerciseLog
 {
   public int? ExerciseLogId { get; init; }
   public string? ExerciseLogUsername { get; init; }
@@ -47,7 +47,7 @@ public record ExerciseLog()
 }
 
 // TODO: Highlighted should be refactor to be more abstract
-public record ExerciseLogDto()
+public record ExerciseLogDto
 {
   public required int Id { get; init; }
   public required User User { get; init; }
@@ -62,7 +62,7 @@ public record ExerciseLogDto()
   public required IEnumerable<ExerciseLogDto> RecentLogs { get; init; }
 }
 
-public record ExerciseLogsDto()
+public record ExerciseLogsDto
 {
   public required IEnumerable<ExerciseLogDto> Data { get; init; }
 };

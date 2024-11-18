@@ -23,20 +23,40 @@ public class UserRepository
 
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
     var query =
-        $"""
-        SELECT
-           UserId
-          ,UserFirebaseUuid
-          ,Email
-          ,Name
-        FROM {_schema}.Users
-        WHERE UserFirebaseUuid = @FirebaseUuid
-        """;
+      $"""
+      SELECT
+         U.UserId
+        ,U.UserFirebaseUuid
+        ,U.Email
+        ,U.Name
+      FROM {_schema}.Users U
+      WHERE UserFirebaseUuid = @FirebaseUuid
+      """;
 
     var user = await connection.QuerySingleOrDefaultAsync<User>(query, new
     {
       FirebaseUuid = firebaseUuid
     });
+
+    if (user is null) {
+      return null;
+    }
+
+    var queryAssignedUsers =
+      $"""
+      SELECT
+         U.UserId
+        ,U.UserFirebaseUuid
+        ,U.Email
+        ,U.Name
+      FROM {_schema}.AssignedUsers AU
+      INNER JOIN {_schema}.Users U ON AU.AssignedUserId = U.UserId
+      WHERE AU.OwnerUserId = @UserId
+      """;
+
+    var assignedUsers = await connection.QueryAsync<User>(queryAssignedUsers, new { UserId = user?.UserId });
+
+    user!.AssignedUsers = assignedUsers;
 
     return user;
   }
