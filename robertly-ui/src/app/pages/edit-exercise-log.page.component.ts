@@ -55,11 +55,11 @@ import * as R from 'remeda';
 })
 export class EditExerciseLogPageComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
+  public readonly authService = inject(AuthService);
 
   private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  private readonly authService = inject(AuthService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly titleCasePipe = inject(TitleCasePipe);
   private readonly dayjsService = inject(DayjsService);
@@ -67,15 +67,26 @@ export class EditExerciseLogPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly modalService = inject(NgbModal);
 
-  public isLoading = linkedSignal(() => this.originalValue.isLoading());
-  public paramMap = toSignal(this.route.paramMap);
-  public exerciseLogId = computed(() => this.paramMap()?.get(Paths.LOGS_ID_PARAM));
+  public readonly isLoading = linkedSignal(() => this.originalValue.isLoading());
+  public readonly paramMap = toSignal(this.route.paramMap);
+  public readonly exerciseLogId = computed(() => this.paramMap()?.get(Paths.LOGS_ID_PARAM));
 
-  public url = toSignal(this.route.url, { initialValue: [] });
-  public mode = computed(() => (this.url().some(x => x.path === Paths.LOGS_CREATE) ? 'create' : 'edit'));
+  public readonly url = toSignal(this.route.url, { initialValue: [] });
+  public readonly mode = computed(() => (this.url().some(x => x.path === Paths.LOGS_CREATE) ? 'create' : 'edit'));
 
-  public formGroup = signal(createLogFormGroup());
-  public formGroupValue = toSignal(this.formGroup().valueChanges);
+  public readonly formGroup = signal(createLogFormGroup());
+  public readonly formGroupValue = toSignal(this.formGroup().valueChanges);
+
+  public readonly userSelector = (x: string | User | null) => (typeof x === 'string' ? '' : x?.name ?? '');
+
+  public readonly exerciseSelector = (x: string | Exercise | null) =>
+    typeof x === 'string' ? '' : this.titleCasePipe.transform(x?.name) ?? '';
+
+  public readonly users = computed(() => {
+    const user = this.authService.user()!;
+
+    return [user, ...(user?.assignedUsers ?? [])];
+  });
 
   public originalValue = rxResource({
     request: this.exerciseLogId,
@@ -88,10 +99,10 @@ export class EditExerciseLogPageComponent {
   readonly #onModeOrOriginalValueChangeTheUpdateForm = effect(() => {
     const mode = this.mode();
     const exerciseLog = this.originalValue.value();
+    const { user } = untracked(() => ({ user: this.authService.user() }));
 
     if (mode === 'create') {
       untracked(() => {
-        const user = this.authService.user();
         const todayDate = this.dayjs().format('YYYY-MM-DD');
 
         this.formGroup.update(formGroup => {
@@ -106,24 +117,22 @@ export class EditExerciseLogPageComponent {
     }
 
     if (mode === 'edit' && !!exerciseLog) {
-      if (exerciseLog) {
-        this.formGroup.update(form => {
-          form.reset();
-          form.patchValue({
-            exercise: exerciseLog.exercise,
-            date: this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'),
-            user: exerciseLog.user.name,
-            series: exerciseLog.series.map(x => ({
-              exerciseLogId: x.exerciseLogId,
-              serieId: x.serieId,
-              reps: x.reps,
-              weightInKg: x.weightInKg,
-            })),
-          });
-
-          return form;
+      this.formGroup.update(form => {
+        form.reset();
+        form.patchValue({
+          exercise: exerciseLog.exercise,
+          date: this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'),
+          user: exerciseLog.user,
+          series: exerciseLog.series.map(x => ({
+            exerciseLogId: x.exerciseLogId,
+            serieId: x.serieId,
+            reps: x.reps,
+            weightInKg: x.weightInKg,
+          })),
         });
-      }
+
+        return form;
+      });
     }
   });
 
@@ -142,11 +151,8 @@ export class EditExerciseLogPageComponent {
     const originalLog = { series: toSeries(originalValue?.series.map(x => ({ ...x, brzycki: null }))) ?? [] };
     const updatedLog = { series: toSeries(formValue.series) };
 
-    this.hasUnsavedChanges.set( mode === 'edit' && !R.isDeepEqual(originalLog, updatedLog));
+    this.hasUnsavedChanges.set(mode === 'edit' && !R.isDeepEqual(originalLog, updatedLog));
   });
-
-  public readonly exerciseSelector = (x: string | Exercise | null) =>
-    typeof x === 'string' ? '' : this.titleCasePipe.transform(x?.name) ?? '';
 
   public openDeleteModal(): void {
     const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
@@ -169,17 +175,16 @@ export class EditExerciseLogPageComponent {
 
     this.isLoading.set(true);
 
+    const user = formGroup.value.user;
     const exercise = formGroup.value.exercise;
     const date = this.dayjsService.parseDate(formGroup.value.date!);
     const exerciseLog = this.originalValue.value();
-
-    const user = this.authService.user();
 
     if (!user) {
       throw new Error('User cannot be null');
     }
 
-    if (formGroup.valid && typeof exercise !== 'string' && !!exercise) {
+    if (formGroup.valid && typeof exercise !== 'string' && !!exercise && typeof user !== 'string' && !!user) {
       if (mode === 'create') {
         const request = toCreateExerciseLogRequest(formGroup, user, exercise, date);
 
@@ -252,7 +257,7 @@ function toUpdateExerciseLogRequest(
   return {
     id: exerciseLogId,
     exerciseLog: {
-      exerciseLogUsername: user?.name ?? formGroup.value.user!.toLocaleLowerCase(),
+      exerciseLogUsername: user?.name,
       exerciseLogUserId: user.userId,
       exerciseLogExerciseId: exercise.exerciseId,
       exerciseLogDate: date.format('YYYY-MM-DD'),

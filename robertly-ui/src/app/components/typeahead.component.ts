@@ -4,12 +4,11 @@ import {
   effect,
   ElementRef,
   input,
+  model,
   OnInit,
   Signal,
-  signal,
   viewChild,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
@@ -27,7 +26,7 @@ import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
       [popupClass]="'typeahead'"
       [resultFormatter]="itemSelector()"
       [inputFormatter]="itemSelector()"
-      (focus)="focus$.next(internalControl().value)"
+      (focus)="focus$.next(control().value)"
     />
     <button
       class="btn btn-outline-secondary"
@@ -49,41 +48,16 @@ import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
 export class TypeaheadComponent<T> implements OnInit {
   private readonly inputHtml = viewChild.required<ElementRef<HTMLInputElement>>('typeaheadInput');
   public readonly items = input.required<T[]>();
-  public readonly control = input.required<FormControl<T | null>>();
+  public readonly control = model.required<FormControl<T | null>>();
   public readonly itemSelector = input<(item: T | null) => string>(x => `${x ?? ''}`);
   public readonly placeholder = input<string>('Placeholder');
 
-  readonly internalControl = signal(new FormControl<T | null>(null));
-  private readonly internalControlValues = toSignal(this.internalControl().valueChanges);
-
-  readonly #onInternalControlChange = effect(() => {
-    const internalControlValue = this.internalControlValues();
-
-    if (internalControlValue) {
-      this.control().patchValue(internalControlValue);
-    } else {
-      this.control().reset();
-    }
-  });
-
-  readonly #onControlChange = effect(() => {
-    const control = this.control();
-    this.items();
-
-    if (control) {
-      this.internalControl.update(x => {
-        x.patchValue(control.value);
-        return x;
-      });
-    }
-  });
-
   readonly #updateNativeElementOnFormChange = effect(() => {
-    const value = this.internalControlValues();
+    const control = this.control();
     const inputHtml = this.inputHtml();
 
     if (inputHtml) {
-      inputHtml.nativeElement.value = this.itemSelector()(value!);
+      inputHtml.nativeElement.value = this.itemSelector()(control.value!);
     }
   });
 
@@ -97,7 +71,7 @@ export class TypeaheadComponent<T> implements OnInit {
   public clear(): void {
     const inputHtml = this.inputHtml();
 
-    this.internalControl.update(x => {
+    this.control.update(x => {
       x.reset();
       return x;
     });
@@ -108,7 +82,7 @@ export class TypeaheadComponent<T> implements OnInit {
   }
 
   public onSelectItem(evnt: NgbTypeaheadSelectItemEvent<T>) {
-    this.internalControl.update(x => {
+    this.control.update(x => {
       x.patchValue(evnt.item);
       return x;
     });

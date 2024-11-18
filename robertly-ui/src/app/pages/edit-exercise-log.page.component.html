@@ -28,14 +28,14 @@
         </div>
         <!-- #endregion -->
 
-        <!-- #region INPUT DATE -->
-        <div class="mb-2">
-          <input
-            type="text"
-            class="form-control"
+        <!-- #region TYPEAHEAD USER -->
+        <div class="col-12 mb-2">
+          <app-typeahead
             placeholder="User"
-            [formControl]="formGroup().controls.user"
-          />
+            [control]="formGroup().controls.user"
+            [items]="users()"
+            [itemSelector]="userSelector"
+          ></app-typeahead>
         </div>
         <!-- #endregion -->
 
@@ -44,8 +44,8 @@
           <div class="input-group">
             <app-typeahead
               placeholder="Exercise"
-              [items]="exerciseLogService.exercises()"
               [control]="formGroup().controls.exercise"
+              [items]="exerciseLogService.exercises()"
               [itemSelector]="exerciseSelector"
             ></app-typeahead>
           </div>

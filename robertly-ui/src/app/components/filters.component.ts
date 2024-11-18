@@ -34,10 +34,11 @@ export class FiltersComponent {
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly titleCasePipe = inject(TitleCasePipe);
 
+  public readonly userSelector = (x: User | null) => x?.name ?? '';
   public readonly exerciseFormatter = (x: string) => this.titleCasePipe.transform(x);
   public readonly weightFormatter = (x: string | null | undefined) => (!isNaN(parseInt(x ?? '')) ? `${x}kg` : '');
-  public readonly exerciseSelector = (x: Exercise | null) => x?.name ?? '';
-  public readonly userSelector = (x: User | null) => x?.name ?? '';
+  public readonly exerciseSelector = (x: string | Exercise | null) =>
+    typeof x === 'string' ? '' : this.titleCasePipe.transform(x?.name) ?? '';
 
   public readonly userControl = new FormControl<User | null>(null);
   public readonly typeControl = new FormControl<string | null>(null);
