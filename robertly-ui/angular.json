@@ -21,7 +21,8 @@
               "dayjs"
             ],
             "outputPath": {
-              "base": "dist/gym-angular-excel"
+              "base": "dist/gym-angular-excel",
+              "browser": ""
             },
             "index": "src/index.html",
             "polyfills": [
