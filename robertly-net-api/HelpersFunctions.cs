@@ -36,7 +36,7 @@ public static class HelpersFunctions
     }
   }
 
-  public static string? GetUserId(this JwtSecurityToken token)
+  public static string? GetUserFirebaseUuid(this JwtSecurityToken token)
   {
     return token.Claims.First(x => x.Type == "user_id")?.Value ?? null;
   }

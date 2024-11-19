@@ -58,20 +58,12 @@ export class FiltersComponent {
   private readonly filters = rxResource({
     loader: () => {
       return this.exerciseLogApiService.getFilters(
-        this.userControl.value?.userFirebaseUuid,
+        this.userControl.value?.userId,
         this.exerciseControl.value?.exerciseId!,
         this.typeControl.value,
         this.weightControl.value ? +this.weightControl.value : null
       );
     },
-  });
-
-  readonly #onUserLoadUpdateUserControl = effect(() => {
-    const user = this.authService.user();
-
-    if (user) {
-      this.userControl.patchValue(user);
-    }
   });
 
   readonly #onFetchFilters = effect(() => {
@@ -92,12 +84,12 @@ export class FiltersComponent {
     const exerciseValue = this.exerciseControlValues();
     const weightValue = this.weightControlValues();
 
-    const userFirebaseUuid = !!userValue ? [userValue.userFirebaseUuid] : [];
+    const userId = !!userValue ? [userValue.userId] : [];
     const types = !!typeValue ? [typeValue] : [];
     const exercisesIds = !!exerciseValue?.exerciseId ? [exerciseValue.exerciseId] : [];
     const weights = !!weightValue ? [+weightValue] : [];
 
     this.filters.reload();
-    this.filtersChanged.emit({ userFirebaseUuid, exercisesIds, types, weights });
+    this.filtersChanged.emit({ userId, exercisesIds, types, weights });
   });
 }

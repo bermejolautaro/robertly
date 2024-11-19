@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace robertly.Helpers;
@@ -10,22 +11,18 @@ public class GetExerciseLogsQueryBuilder
   private readonly StringBuilder _sb = new();
   private readonly Dictionary<string, object> _params = [];
 
-  public GetExerciseLogsQueryBuilder AndBeginParen()
-  {
-    _sb.AppendLine($"AND (");
-    return this;
-  }
+  private readonly string _exerciseLogAlias;
+  private readonly string _usersAlias;
+  private readonly string _exercisesAlias;
+  private readonly string _seriesAlias;
 
-  public GetExerciseLogsQueryBuilder CloseParen()
-  {
-    _sb.AppendLine($")");
-    return this;
-  }
+  public GetExerciseLogsQueryBuilder(string exerciseLogsAlias, string usersAlias, string exercisesAlias, string seriesAlias) =>
+    (_exerciseLogAlias, _usersAlias, _exercisesAlias, _seriesAlias) = (exerciseLogsAlias, usersAlias, exercisesAlias, seriesAlias);
 
   public GetExerciseLogsQueryBuilder AndExerciseLogId(int exerciseLogId)
   {
     var param = $"@ExerciseLogId_{UseIndex()}";
-    _sb.AppendLine($"AND EL.ExerciseLogId = {param}");
+    _sb.AppendLine($"AND {_exerciseLogAlias}.ExerciseLogId = {param}");
     _params.Add(param, exerciseLogId);
 
     return this;
@@ -34,17 +31,36 @@ public class GetExerciseLogsQueryBuilder
   public GetExerciseLogsQueryBuilder AndUserFirebaseUuid(string userFirebaseUuid)
   {
     var param = $"@UserFirebaseUuid_{UseIndex()}";
-    _sb.AppendLine($"AND U.UserFirebaseUuid = {param}");
+    _sb.AppendLine($"AND {_usersAlias}.UserFirebaseUuid = {param}");
     _params.Add(param, userFirebaseUuid);
 
     return this;
   }
 
-  public GetExerciseLogsQueryBuilder WhereDate(DateTime date, string comparisonOperator = "=")
+  public GetExerciseLogsQueryBuilder AndUserIds(List<int> userIds)
   {
-    var param = $"@Date_{UseIndex()}";
-    _sb.AppendLine($"EL.Date {comparisonOperator} {param}");
-    _params.Add(param, date);
+    List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"UserId_{UseIndex()}", x)).ToList();
+    var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
+    _sb.AppendLine($"AND {_usersAlias}.UserId IN ({@params})");
+
+    foreach (var (param, value) in @paramsWithValue)
+    {
+      _params.Add(param, value);
+    }
+
+    return this;
+  }
+
+  public GetExerciseLogsQueryBuilder AndDate(List<DateTime> dates)
+  {
+    List<(string Param, DateTime Value)> paramsWithValue = dates.Select(x => ($"Date_{UseIndex()}", x)).ToList();
+    var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
+    _sb.AppendLine($"AND {_exerciseLogAlias}.Date IN ({@params})");
+
+    foreach (var (param, value) in @paramsWithValue)
+    {
+      _params.Add(param, value);
+    }
 
     return this;
   }
@@ -52,16 +68,7 @@ public class GetExerciseLogsQueryBuilder
   public GetExerciseLogsQueryBuilder AndDate(DateTime date, string comparisonOperator = "=")
   {
     var param = $"@Date_{UseIndex()}";
-    _sb.AppendLine($"AND EL.Date {comparisonOperator} {param}");
-    _params.Add(param, date);
-
-    return this;
-  }
-
-  public GetExerciseLogsQueryBuilder OrDate(DateTime date, string comparisonOperator = "=")
-  {
-    var param = $"@Date_{UseIndex()}";
-    _sb.AppendLine($"OR EL.Date {comparisonOperator} {param}");
+    _sb.AppendLine($"AND {_exerciseLogAlias}.Date {comparisonOperator} {param}");
     _params.Add(param, date);
 
     return this;
@@ -70,7 +77,7 @@ public class GetExerciseLogsQueryBuilder
   public GetExerciseLogsQueryBuilder AndExerciseId(int exerciseId)
   {
     var param = $"@ExerciseId_{UseIndex()}";
-    _sb.AppendLine($"AND E.ExerciseId = {param}");
+    _sb.AppendLine($"AND {_exercisesAlias}.ExerciseId = {param}");
     _params.Add(param, exerciseId);
 
     return this;
@@ -79,7 +86,7 @@ public class GetExerciseLogsQueryBuilder
   public GetExerciseLogsQueryBuilder AndExerciseType(string exerciseType)
   {
     var param = $"@ExerciseType_{UseIndex()}";
-    _sb.AppendLine($"AND E.Type = {param}");
+    _sb.AppendLine($"AND {_exercisesAlias}.Type = {param}");
     _params.Add(param, exerciseType);
 
     return this;
@@ -88,7 +95,7 @@ public class GetExerciseLogsQueryBuilder
   public GetExerciseLogsQueryBuilder AndWeightInKg(decimal weightInKg)
   {
     var param = $"@WeightInKg_{UseIndex()}";
-    _sb.AppendLine($"AND S.WeightInKg = {param}");
+    _sb.AppendLine($"AND {_seriesAlias}.WeightInKg = {param}");
     _params.Add(param, weightInKg);
 
     return this;

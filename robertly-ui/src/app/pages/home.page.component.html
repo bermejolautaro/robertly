@@ -1,9 +1,16 @@
 <div class="footer-padding">
-  @if (!logs.isLoading()) {
+  @if (!latestWorkoutLogs.isLoading()) {
     <div class="container">
-      @for (log of logs.value(); track $index) {
+      <div class="pb-2">
+        <h6>Recently updated</h6>
+      </div>
+      <div class="pb-2">
+        <h6>Latest Workout</h6>
+      </div>
+      @for (log of latestWorkoutLogs.value() | slice: 0 : latestWorkoutAmountToShow(); track $index) {
         <app-exercise-log [exerciseLog]="log"></app-exercise-log>
       }
+      <div (click)="toggleShowMore()" style="font-size: 14px; padding: 0 .4rem">{{ showMore() ? 'Show less...' : 'Show more...' }}</div>
     </div>
   } @else {
     <div class="position-absolute top-50 start-50 translate-middle">

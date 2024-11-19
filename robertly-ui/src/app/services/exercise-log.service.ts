@@ -1,14 +1,12 @@
-import { Injectable, computed, signal, inject, effect } from '@angular/core';
+import { Injectable, computed, signal, effect } from '@angular/core';
 import { ExerciseLogDto } from '@models/exercise-log.model';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import * as R from 'remeda';
-import { Subject, forkJoin, tap } from 'rxjs';
+import { Subject } from 'rxjs';
 import { Exercise } from '@models/exercise.model';
-import { ExerciseLogApiService } from './exercise-log-api.service';
 
 type State = {
-  logs: ExerciseLogDto[];
   exercises: Exercise[];
 };
 
@@ -17,15 +15,11 @@ export const WEIGHT_DEFAULT_LABEL = 'Weight';
 
 @Injectable({ providedIn: 'root' })
 export class ExerciseLogService {
-  private readonly exerciseLogApiService = inject(ExerciseLogApiService);
-
   private readonly state = signal<State>({
-    logs: [],
     exercises: [],
   });
 
   public readonly refreshLogs$: Subject<void> = new Subject();
-  public readonly updateLogs$: Subject<ExerciseLogDto[]> = new Subject();
   public readonly createLogClicked$: Subject<void> = new Subject();
   public readonly logClicked$: Subject<ExerciseLogDto> = new Subject();
   public readonly deleteLog$: Subject<ExerciseLogDto> = new Subject();
@@ -53,24 +47,6 @@ export class ExerciseLogService {
 
   public constructor() {
     effect(() => console.log(this.state()));
-
-    this.refreshLogs$.pipe(takeUntilDestroyed()).subscribe(x => {
-      const exerciseLogs$ = this.exerciseLogApiService.getExerciseLogsLatestWorkout();
-
-      forkJoin([exerciseLogs$]).pipe(
-        tap(([exerciseLogs]) => {
-          this.updateLogs$.next(exerciseLogs);
-        })
-      );
-    });
-
-    this.updateLogs$.pipe(takeUntilDestroyed()).subscribe({
-      next: logs =>
-        this.state.update(state => ({
-          ...state,
-          logs,
-        })),
-    });
 
     this.updateExercises$.pipe(takeUntilDestroyed()).subscribe({
       next: exercises => this.state.update(state => ({ ...state, exercises })),

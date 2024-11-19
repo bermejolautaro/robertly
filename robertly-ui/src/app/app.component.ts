@@ -55,7 +55,6 @@ export class AppComponent implements OnInit {
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly document = inject(DOCUMENT);
   private readonly dayjsService = inject(DayjsService);
-  private readonly dayjs = this.dayjsService.instance;
   private readonly router = inject(Router);
   private readonly offcanvasService = inject(NgbOffcanvas);
   private readonly modalService = inject(NgbModal);

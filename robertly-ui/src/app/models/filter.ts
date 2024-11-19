@@ -1,5 +1,5 @@
 export interface Filter {
-  userFirebaseUuid: (string | null)[];
+  userId: (number | null)[];
   exercisesIds: number[];
   types: string[];
   weights: number[];

@@ -25,14 +25,14 @@ export class ExerciseLogsPageComponent implements OnInit {
   public readonly logs = rxResource({
     request: this.filter,
     loader: ({ request: filter }) => {
-      const userFirebaseUuid = filter?.userFirebaseUuid.at(0);
+      const userId = filter?.userId.at(0);
       const exerciseType = filter?.types.at(0);
       const exerciseId = filter?.exercisesIds.at(0);
       const weightInKg = filter?.weights.at(0);
 
       return this.exerciseLogApiService.getExerciseLogs(
         this.currentPage(),
-        userFirebaseUuid,
+        userId,
         exerciseType ?? null,
         exerciseId ?? null,
         weightInKg ?? null
@@ -47,6 +47,7 @@ export class ExerciseLogsPageComponent implements OnInit {
   }
 
   public onFilterChange(filter: Filter) {
+    this.currentPage.set(0);
     this.filter.set(filter);
     this.logs.reload();
   }

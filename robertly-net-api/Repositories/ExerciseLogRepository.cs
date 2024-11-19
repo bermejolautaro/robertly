@@ -12,6 +12,13 @@ using robertly.Models;
 
 namespace robertly.Repositories;
 
+public enum FilterEnum
+{
+  Exercise,
+  Weight,
+  Type
+}
+
 public class ExerciseLogRepository
 {
   private readonly IConfiguration _config;
@@ -23,125 +30,95 @@ public class ExerciseLogRepository
     _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
   }
 
-  public async Task<DateTime?> GetMostRecentButNotTodayDateByUserFirebaseUuid(string userFirebaseUuid)
+  public async Task<DateTime?> GetMostRecentButNotTodayDateByUserId(int userId)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
     var date = await connection.QueryFirstOrDefaultAsync<DateTime?>(
-      $"SELECT MAX(Date) FROM {_schema}.ExerciseLogs WHERE UserFirebaseUuid = @UserFirebaseUuid AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
-      new { UserFirebaseUuid = userFirebaseUuid });
+      $"SELECT MAX(Date) FROM {_schema}.ExerciseLogs WHERE UserId = @UserId AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
+      new { UserId = userId });
 
     return date;
   }
 
   public async Task<ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId, bool includeExtraData = false)
   {
-    var qb = new GetExerciseLogsQueryBuilder().AndExerciseLogId(exerciseLogId);
-    var exerciseLog = (await GetExerciseLogsAsync(0, 1000, qb)).FirstOrDefault();
+    var exerciseLog = (await GetExerciseLogsAsync(0, 1000, qb => qb.AndExerciseLogId(exerciseLogId))).FirstOrDefault();
+
+    if (exerciseLog is null)
+    {
+      return null;
+    }
 
     if (includeExtraData)
     {
-      var qbExtraData = new GetExerciseLogsQueryBuilder()
-        .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
-        .AndUserFirebaseUuid(exerciseLog.User!.UserFirebaseUuid!)
-        .AndDate(exerciseLog.ExerciseLogDate, "<");
+      GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
+      {
+        return queryBuilder
+          .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
+          .AndUserIds([exerciseLog.User!.UserId!.Value])
+          .AndDate(exerciseLog.ExerciseLogDate, "<");
+      };
 
-      var recentLogs = await GetExerciseLogsAsync(0, 5, qbExtraData);
+      var recentLogs = await GetExerciseLogsAsync(0, 5, queryBuilderFunc);
       exerciseLog = exerciseLog with { RecentLogs = recentLogs };
     }
 
     return exerciseLog;
   }
 
-  public async Task<IEnumerable<string>> GetExerciseTypesByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
+  public async Task<IEnumerable<T>> GetFilterByUser<T>(int userId, FilterEnum filter, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
-    var query =
-      $"""
-      SELECT DISTINCT E.Type
-      FROM {_schema}.ExerciseLogs EL
-      INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
-      WHERE EL.UserFirebaseUuid = @UserFirebaseUuid
-      {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
-      {(type is not null ? "AND E.Type = @Type" : "")}
-      {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
-      ORDER BY E.Type ASC
-      """;
-
-    var types = await connection.QueryAsync<string>(
-        query,
-        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
-
-    return types;
-  }
-
-  public async Task<IEnumerable<decimal>> GetWeightsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
-  {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    var column = filter switch
+    {
+      FilterEnum.Weight => "S.WeightInKg",
+      FilterEnum.Exercise => "E.ExerciseId",
+      FilterEnum.Type => "E.Type",
+      _ => throw new ArgumentException("Invalid filter")
+    };
 
     var query =
       $"""
-      SELECT DISTINCT S.WeightInKg
+      SELECT DISTINCT {column}
       FROM {_schema}.ExerciseLogs EL
       INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
-      WHERE el.UserFirebaseUuid = @UserFirebaseUuid
+      WHERE EL.UserId = @UserId
       {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
       {(type is not null ? "AND E.Type = @Type" : "")}
       {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
-      ORDER BY S.WeightInKg ASC
+      ORDER BY {column} ASC
       """;
 
-    var weights = await connection.QueryAsync<decimal>(
+    var values = await connection.QueryAsync<T>(
         query,
-        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
+        new { UserId = userId, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
 
-    return weights;
-  }
-
-  public async Task<IEnumerable<int>> GetExercisesIdsByUser(string userFirebaseUuid, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
-  {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
-
-    var query =
-      $"""
-      SELECT DISTINCT EL.ExerciseId
-      FROM {_schema}.ExerciseLogs EL
-      INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
-      WHERE el.UserFirebaseUuid = @UserFirebaseUuid
-      {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
-      {(type is not null ? "AND E.Type = @Type" : "")}
-      {(weightInKg is not null ? "AND S.WeightInKg = @WeightInKg" : "")}
-      ORDER BY EL.ExerciseId ASC
-      """;
-
-    var exercises = await connection.QueryAsync<int>(
-        query,
-        new { UserFirebaseUuid = userFirebaseUuid, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
-
-    return exercises;
+    return values;
   }
 
   public async Task<IEnumerable<ExerciseLog>> GetExerciseLogsAsync(
       int page,
       int size,
-      GetExerciseLogsQueryBuilder queryBuilder)
+      Func<GetExerciseLogsQueryBuilder, GetExerciseLogsQueryBuilder> queryBuilderFunc)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
-
-    var (filters, queryParams) = queryBuilder.BuildFilters();
+    var queryBuilder = new GetExerciseLogsQueryBuilder("EL", "U", "E", "S");
+    var (filters, queryParams) = queryBuilderFunc(queryBuilder).BuildFilters();
 
     var query =
       $"""
       SELECT DISTINCT
          EL.ExerciseLogId
-        ,EL.Username AS ExerciseLogUsername
         ,EL.UserId AS ExerciseLogUserId
         ,EL.ExerciseId AS ExerciseLogExerciseId
         ,EL.Date AS ExerciseLogDate
+        ,EL.CreatedByUserId
+        ,EL.CreatedAtUtc
+        ,EL.LastUpdatedByUserId
+        ,EL.LastUpdatedAtUtc
         ,E.ExerciseId
         ,E.Name
         ,E.MuscleGroup
@@ -152,7 +129,7 @@ public class ExerciseLogRepository
         ,U.Name
       FROM {_schema}.ExerciseLogs EL
       INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
-      LEFT JOIN  {_schema}.Users U ON EL.UserId = U.UserId
+      INNER JOIN  {_schema}.Users U ON EL.UserId = U.UserId
       LEFT JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
@@ -196,14 +173,14 @@ public class ExerciseLogRepository
     return exerciseLogs;
   }
 
-  public async Task<int> CreateExerciseLogAsync(ExerciseLog exerciseLog, string userFirebaseUuid)
+  public async Task<int> CreateExerciseLogAsync(ExerciseLog exerciseLog, int triggeringUserId)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
     var exerciseLogQuery =
       $"""
-        INSERT INTO {_schema}.ExerciseLogs (Username, UserFirebaseUuid, UserId, ExerciseId, Date)
-        VALUES (@Username, @UserFirebaseUuid, @UserId, @ExerciseId, @Date)
+        INSERT INTO {_schema}.ExerciseLogs (UserId, ExerciseId, Date, CreatedByUserId, CreatedAtUtc, LastUpdatedByUserId, LastUpdatedAtUtc)
+        VALUES (@UserId, @ExerciseId, @Date, @CreatedByUserId, @CreatedAtUtc, @LastUpdatedByUserId, @LastUpdatedAtUtc)
         RETURNING ExerciseLogs.ExerciseLogId
       """;
 
@@ -215,15 +192,19 @@ public class ExerciseLogRepository
       .Append(";\n")
       .ToString();
 
+    var nowUtc = DateTime.UtcNow;
+
     var exerciseLogId = await connection.QuerySingleAsync<int>(
         exerciseLogQuery,
         new
         {
-          Username = exerciseLog.ExerciseLogUsername,
-          UserFirebaseUuid = userFirebaseUuid,
           UserId = exerciseLog.ExerciseLogUserId,
           ExerciseId = exerciseLog.ExerciseLogExerciseId,
           Date = exerciseLog.ExerciseLogDate,
+          CreatedByUserId = triggeringUserId,
+          CreatedAtUtc = nowUtc,
+          LastUpdatedByUserId = triggeringUserId,
+          LastUpdatedAtUtc = nowUtc
         }
     );
 
@@ -235,38 +216,47 @@ public class ExerciseLogRepository
     return exerciseLogId;
   }
 
-  public async Task UpdateExerciseLogAsync(ExerciseLog exerciseLog)
+  public async Task UpdateExerciseLogAsync(ExerciseLog exerciseLog, int triggeringUserId)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
-    var query = $"""
-            UPDATE {_schema}.ExerciseLogs SET
-                 Username = @Username
-                ,UserId = @UserId
-                ,ExerciseId = @ExerciseId
-                ,Date = @Date
-            WHERE ExerciseLogId = @ExerciseLogId
-            """;
+    var utcNow = DateTime.UtcNow;
+
+    var query =
+      $"""
+      UPDATE {_schema}.ExerciseLogs SET
+         UserId = @UserId
+        ,ExerciseId = @ExerciseId
+        ,Date = @Date
+        ,LastUpdatedByUserId = @LastUpdatedByUserId
+        ,LastUpdatedAtUtc = @LastUpdatedAtUtc
+      WHERE ExerciseLogId = @ExerciseLogId
+      """;
 
     await connection.ExecuteAsync(
         query,
         param: new
         {
           exerciseLog.ExerciseLogId,
-          Username = exerciseLog.ExerciseLogUsername,
           UserId = exerciseLog.ExerciseLogUserId,
           ExerciseId = exerciseLog.ExerciseLogExerciseId,
-          Date = exerciseLog.ExerciseLogDate
+          Date = exerciseLog.ExerciseLogDate,
+          LastUpdatedByUserId = triggeringUserId,
+          LastUpdatedAtUtc = utcNow
         }
     );
 
     var seriesValues = string.Join(
         ",\n",
         exerciseLog.Series?.Select(x =>
-            $"({x.SerieId?.ToString() ?? "DEFAULT"}, {x.ExerciseLogId}, NULL, {x.Reps}, {x.WeightInKg.ToString(CultureInfo.InvariantCulture)})"
+            $"({x.SerieId?.ToString() ?? "DEFAULT"}, {x.ExerciseLogId}, {x.Reps}, {x.WeightInKg.ToString(CultureInfo.InvariantCulture)})"
         ) ?? []);
 
-    var seriesIds = string.Join(",", exerciseLog.Series?.Where(x => x.SerieId is not null).Select(x => x.SerieId) ?? []);
+    var seriesIds = exerciseLog.Series?
+      .Where(x => x.SerieId is not null)
+      .Select(x => x.SerieId) ?? [];
+
+    var seriesIdsString = string.Join(",", seriesIds);
 
     if (string.IsNullOrEmpty(seriesValues))
     {
@@ -275,23 +265,22 @@ public class ExerciseLogRepository
 
     var seriesQuery = new StringBuilder();
 
-    if (!string.IsNullOrEmpty(seriesIds))
+    if (!string.IsNullOrEmpty(seriesIdsString))
     {
       seriesQuery.AppendLine(
       $"""
       DELETE FROM {_schema}.Series
-      WHERE ExerciseLogId = {exerciseLog.ExerciseLogId} AND SerieId NOT IN ({seriesIds});
+      WHERE ExerciseLogId = {exerciseLog.ExerciseLogId} AND SerieId NOT IN ({seriesIdsString});
       """);
     }
 
     seriesQuery.AppendLine(
       $"""
-      INSERT INTO {_schema}.Series (SerieId, ExerciseLogId, ExerciseLogFirebaseId, Reps, WeightInKg)
+      INSERT INTO {_schema}.Series (SerieId, ExerciseLogId, Reps, WeightInKg)
       VALUES
           {seriesValues}
       ON CONFLICT (SerieId) DO UPDATE
           SET ExerciseLogId = EXCLUDED.ExerciseLogId,
-              ExerciseLogFirebaseId = EXCLUDED.ExerciseLogFirebaseId,
               Reps = EXCLUDED.Reps,
               WeightInKg = EXCLUDED.WeightInKg;
       """);

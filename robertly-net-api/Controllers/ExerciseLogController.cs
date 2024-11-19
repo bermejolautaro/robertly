@@ -18,28 +18,28 @@ namespace robertly.Controllers
   public class ExerciseLogController : ControllerBase
   {
     private readonly ExerciseLogRepository _exerciseLogRepository;
+    private readonly UserRepository _userRepository;
     private readonly FirebaseApp _app;
 
     public ExerciseLogController(
         ExerciseLogRepository exerciseLogsRepository,
-        FirebaseApp app)
-    {
-      _exerciseLogRepository = exerciseLogsRepository;
-      _app = app;
-    }
+        UserRepository userRepository,
+        FirebaseApp app) => (_exerciseLogRepository, _userRepository, _app) = (exerciseLogsRepository, userRepository, app);
 
     [HttpGet("filters")]
     public async Task<Ok<Filter>> GetFiltersByUser(
-      [FromQuery] string? userFirebaseUuid,
-      [FromQuery] int? exerciseId,
+      [FromQuery] string? userFirebaseUuid = null,
+      [FromQuery] int? exerciseId = null,
       [FromQuery] string? type = null,
       [FromQuery] decimal? weightInKg = null)
     {
-      userFirebaseUuid ??= HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+      userFirebaseUuid ??= HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
 
-      var types = await _exerciseLogRepository.GetExerciseTypesByUser(userFirebaseUuid, type, weightInKg, exerciseId);
-      var weights = await _exerciseLogRepository.GetWeightsByUser(userFirebaseUuid, type, weightInKg, exerciseId);
-      var exercisesIds = await _exerciseLogRepository.GetExercisesIdsByUser(userFirebaseUuid, type, weightInKg, exerciseId);
+
+      var types = await _exerciseLogRepository.GetFilterByUser<string>(user.UserId!.Value, FilterEnum.Type, type, weightInKg, exerciseId);
+      var weights = await _exerciseLogRepository.GetFilterByUser<decimal>(user.UserId!.Value, FilterEnum.Weight, type, weightInKg, exerciseId);
+      var exercisesIds = await _exerciseLogRepository.GetFilterByUser<int>(user.UserId!.Value, FilterEnum.Exercise, type, weightInKg, exerciseId);
 
       return TypedResults.Ok(new Filter
       {
@@ -52,20 +52,21 @@ namespace robertly.Controllers
     [HttpGet("latest-workout")]
     public async Task<Ok<ExerciseLogsDto>> GetCurrentAndPreviousWorkoutByUser()
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
-      var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserFirebaseUuid(userFirebaseUuid);
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+      var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId!.Value);
 
-      var queryBuilder = new GetExerciseLogsQueryBuilder()
-        .AndUserFirebaseUuid(userFirebaseUuid)
-        .AndBeginParen()
-        .WhereDate(DateTime.Now.Date)
-        .OrDate(date?.Date ?? DateTime.Now.Date)
-        .CloseParen();
+      GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
+      {
+        return queryBuilder
+          .AndUserIds([user.UserId.Value])
+          .AndDate(date.HasValue ? [DateTime.Now.Date, date.Value.Date] : [DateTime.Now.Date]);
+      };
 
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
           0,
           1000,
-          queryBuilder);
+          queryBuilderFunc);
 
       var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
 
@@ -75,7 +76,7 @@ namespace robertly.Controllers
     [HttpGet]
     public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetExerciseLogs(
         [FromQuery] PaginationRequest pagination,
-        [FromQuery] string? userFirebaseUuid,
+        [FromQuery] int? userId,
         [FromQuery] string? exerciseType = null,
         [FromQuery] int? exerciseId = null,
         [FromQuery] decimal? weightInKg = null
@@ -101,30 +102,42 @@ namespace robertly.Controllers
         return TypedResults.Unauthorized();
       }
 
-      userFirebaseUuid ??= HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
 
-      var queryBuilder = new GetExerciseLogsQueryBuilder()
-        .AndUserFirebaseUuid(userFirebaseUuid);
-
-      if (exerciseId is not null)
+      GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
       {
-        queryBuilder = queryBuilder.AndExerciseId(exerciseId.Value);
-      }
+        if (userId is null)
+        {
+          queryBuilder = queryBuilder.AndUserIds([user!.UserId!.Value, .. user!.AssignedUsers.Select(x => x.UserId!.Value)]);
+        }
+        else
+        {
+          queryBuilder = queryBuilder.AndUserIds([userId.Value]);
+        }
 
-      if (exerciseType is not null)
-      {
-        queryBuilder = queryBuilder.AndExerciseType(exerciseType);
-      }
+        if (exerciseId is not null)
+        {
+          queryBuilder = queryBuilder.AndExerciseId(exerciseId.Value);
+        }
 
-      if (weightInKg is not null)
-      {
-        queryBuilder = queryBuilder.AndWeightInKg(weightInKg.Value);
-      }
+        if (exerciseType is not null)
+        {
+          queryBuilder = queryBuilder.AndExerciseType(exerciseType);
+        }
+
+        if (weightInKg is not null)
+        {
+          queryBuilder = queryBuilder.AndWeightInKg(weightInKg.Value);
+        }
+
+        return queryBuilder;
+      };
 
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
           pagination.Page ?? 0,
           pagination.Count ?? 1000,
-          queryBuilder
+          queryBuilderFunc
       );
 
       var exerciseLogsDtos = MapToExerciseLogDto(exerciseLogs);
@@ -148,8 +161,10 @@ namespace robertly.Controllers
     [HttpPost]
     public async Task<Ok<int>> Post([FromBody] ExerciseLogRequest request)
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserId() ?? "";
-      var exerciseLogId = await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog!, userFirebaseUuid);
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
+
+      var exerciseLogId = await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog!, user!.UserId!.Value);
 
       return TypedResults.Ok(exerciseLogId);
     }
@@ -160,6 +175,9 @@ namespace robertly.Controllers
         [FromBody] ExerciseLogRequest request
     )
     {
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
+
       var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id);
 
       if (logDb is null)
@@ -174,7 +192,7 @@ namespace robertly.Controllers
         Series = request.ExerciseLog!.Series?.Select(x => x with { ExerciseLogId = id }),
       };
 
-      await _exerciseLogRepository.UpdateExerciseLogAsync(logDb);
+      await _exerciseLogRepository.UpdateExerciseLogAsync(logDb, user!.UserId!.Value);
 
       return TypedResults.Ok();
     }

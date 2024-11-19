@@ -32,15 +32,15 @@ export class ExerciseLogApiService {
 
   public getExerciseLogs(
     page: number = 0,
-    userFirebaseUuid: string | null = null,
+    userId: number | null = null,
     exerciseType: string | null = null,
     exerciseId: number | null = null,
     weightInKg: number | null = null
   ): Observable<ExerciseLogDto[]> {
     let queryParams = new HttpParams();
 
-    if (!!userFirebaseUuid) {
-      queryParams = queryParams.append('userFirebaseUuid', userFirebaseUuid);
+    if (!!userId) {
+      queryParams = queryParams.append('userId', userId);
     }
 
     if (!!exerciseType) {
@@ -65,15 +65,15 @@ export class ExerciseLogApiService {
   }
 
   public getFilters(
-    userFirebaseUuid: string | null = null,
+    userId: number | null = null,
     exerciseId: number | null,
     type: string | null = null,
     weightInKg: number | null = null
   ): Observable<Filter> {
     let queryParams = new HttpParams();
 
-    if (!!userFirebaseUuid) {
-      queryParams = queryParams.append('userFirebaseUuid', userFirebaseUuid);
+    if (!!userId) {
+      queryParams = queryParams.append('userId', userId);
     }
 
     if (!!exerciseId) {
