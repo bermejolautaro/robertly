@@ -60,6 +60,10 @@ export class ExerciseLogApiService {
       .pipe(map(x => x.data));
   }
 
+  public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {
+    return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/recently-updated`).pipe(map(x => x.data));
+  }
+
   public getExerciseLogsLatestWorkout(): Observable<ExerciseLogDto[]> {
     return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/latest-workout`).pipe(map(x => x.data));
   }

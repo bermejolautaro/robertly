@@ -106,7 +106,10 @@ public class ExerciseLogRepository
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
     var queryBuilder = new GetExerciseLogsQueryBuilder("EL", "U", "E", "S");
-    var (filters, queryParams) = queryBuilderFunc(queryBuilder).BuildFilters();
+    queryBuilder = queryBuilderFunc(queryBuilder);
+
+    var (filters, queryParams) = queryBuilder.BuildFilters();
+    var orderBy = queryBuilder.BuildOrderBy();
 
     var query =
       $"""
@@ -133,7 +136,7 @@ public class ExerciseLogRepository
       LEFT JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
-      ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
+      {orderBy}
       OFFSET {page * size} LIMIT {size};
       """;
 

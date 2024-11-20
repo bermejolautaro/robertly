@@ -17,8 +17,25 @@ export class HomePageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
-  public readonly showMore = signal(false);
-  public readonly latestWorkoutAmountToShow = computed(() => this.showMore() ? this.latestWorkoutLogs.value()?.length ?? 10 : 3);
+  public readonly showMoreRecentlyUpdated = signal(false);
+  public readonly recentlyUpdatedAmountToShow = computed(() =>
+    this.showMoreRecentlyUpdated() ? this.recentlyUpdatedLogs.value()?.length ?? 10 : 2
+  );
+
+  public readonly showMoreLatestWorkout = signal(false);
+  public readonly latestWorkoutAmountToShow = computed(() =>
+    this.showMoreLatestWorkout() ? this.latestWorkoutLogs.value()?.length ?? 10 : 2
+  );
+
+  public readonly isLoading = computed(
+    () => this.recentlyUpdatedLogs.isLoading() && this.latestWorkoutLogs.isLoading()
+  );
+
+  public readonly recentlyUpdatedLogs = rxResource({
+    loader: () => {
+      return this.exerciseLogApiService.getRecentlyUpdated();
+    },
+  });
 
   public readonly latestWorkoutLogs = rxResource({
     loader: () => {
@@ -30,7 +47,11 @@ export class HomePageComponent implements OnInit {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
   }
 
-  public toggleShowMore(): void {
-    this.showMore.update(x => !x);
+  public toggleShowMoreRecentlyUpdated(): void {
+    this.showMoreRecentlyUpdated.update(x => !x);
+  }
+
+  public toggleShowMoreLatestWorkout(): void {
+    this.showMoreLatestWorkout.update(x => !x);
   }
 }

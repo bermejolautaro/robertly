@@ -5,11 +5,18 @@ using System.Text;
 
 namespace robertly.Helpers;
 
+public enum Direction
+{
+  Asc,
+  Desc
+}
+
 public class GetExerciseLogsQueryBuilder
 {
   private int _index = 0;
   private readonly StringBuilder _sb = new();
   private readonly Dictionary<string, object> _params = [];
+  private readonly List<string> orderBy = [];
 
   private readonly string _exerciseLogAlias;
   private readonly string _usersAlias;
@@ -42,6 +49,20 @@ public class GetExerciseLogsQueryBuilder
     List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"UserId_{UseIndex()}", x)).ToList();
     var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
     _sb.AppendLine($"AND {_usersAlias}.UserId IN ({@params})");
+
+    foreach (var (param, value) in @paramsWithValue)
+    {
+      _params.Add(param, value);
+    }
+
+    return this;
+  }
+
+  public GetExerciseLogsQueryBuilder AndLastUpdatedByUserId(List<int> userIds)
+  {
+    List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"LastUpdatedByUserId_{UseIndex()}", x)).ToList();
+    var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
+    _sb.AppendLine($"AND {_exerciseLogAlias}.LastUpdatedByUserId IN ({@params})");
 
     foreach (var (param, value) in @paramsWithValue)
     {
@@ -101,9 +122,31 @@ public class GetExerciseLogsQueryBuilder
     return this;
   }
 
+  public GetExerciseLogsQueryBuilder OrderByDate(Direction direction)
+  {
+    orderBy.Add($"{_exerciseLogAlias}.Date {ParseDirection(direction)}");
+    return this;
+  }
+
+  public GetExerciseLogsQueryBuilder OrderByLastUpdatedAtUtc(Direction direction)
+  {
+    orderBy.Add($"{_exerciseLogAlias}.LastUpdatedAtUtc {ParseDirection(direction)}");
+    return this;
+  }
+
   public (string Query, IReadOnlyDictionary<string, object> Params) BuildFilters()
   {
     return (_sb.ToString(), _params.AsReadOnly());
+  }
+
+  public string BuildOrderBy()
+  {
+    if (!orderBy.Any())
+    {
+      return $"ORDER BY {_exerciseLogAlias}.Date DESC, {_exerciseLogAlias}.ExerciseLogId DESC";
+    }
+
+    return $"ORDER BY {string.Join(",", orderBy)}";
   }
 
   private int UseIndex()
@@ -112,4 +155,12 @@ public class GetExerciseLogsQueryBuilder
     _index++;
     return previousIndex;
   }
+
+  private static string ParseDirection(Direction direction) =>
+    direction switch
+    {
+      Direction.Asc => "ASC",
+      Direction.Desc => "DESC",
+      _ => throw new ArgumentException("Impossible State"),
+    };
 }
