@@ -10,21 +10,21 @@
             [value]="this.stats.value()?.daysTrainedThisWeek ?? 0"
             [maxValue]="daysPerWeekTarget() * 1"
           ></app-ring>
-          <div style="text-align: center; font-size: 12px">Dias entrenados esta semana</div>
+          <div style="text-align: center; font-size: 12px; padding: .5rem">Dias entrenados esta semana</div>
         </div>
         <div class="d-flex justify-content-center align-items-center flex-column">
           <app-ring
             [value]="this.stats.value()?.daysTrainedThisMonth ?? 0"
             [maxValue]="daysPerWeekTarget() * 4"
           ></app-ring>
-          <div style="text-align: center; font-size: 12px">Dias entrenados este mes</div>
+          <div style="text-align: center; font-size: 12px; padding: .5rem">Dias entrenados este mes</div>
         </div>
         <div class="d-flex justify-content-center align-items-center flex-column">
           <app-ring
             [value]="this.stats.value()?.daysTrainedThisYear ?? 0"
             [maxValue]="daysPerWeekTarget() * 52"
           ></app-ring>
-          <div style="text-align: center; font-size: 12px">Dias entrenados este año</div>
+          <div style="text-align: center; font-size: 12px; padding: .5rem">Dias entrenados este año</div>
         </div>
       </div>
 
