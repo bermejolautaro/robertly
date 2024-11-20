@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { ExerciseLog, ExerciseLogDto } from '@models/exercise-log.model';
 import { Filter } from '@models/filter';
+import { Stats } from '@models/stats';
 import { Observable, map } from 'rxjs';
 
 import { API_URL } from 'src/main';
@@ -58,6 +59,14 @@ export class ExerciseLogApiService {
     return this.http
       .get<ExercisesLogsDto>(`${this.apiUrl}/logs?page=${page}&count=10`, { params: queryParams })
       .pipe(map(x => x.data));
+  }
+
+  public getStats(): Observable<Stats> {
+    return this.http.get<Stats>(`${this.apiUrl}/logs/stats`);
+  }
+
+  public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {
+    return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/recently-updated`).pipe(map(x => x.data));
   }
 
   public getExerciseLogsLatestWorkout(): Observable<ExerciseLogDto[]> {

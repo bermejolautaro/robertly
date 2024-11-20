@@ -73,6 +73,42 @@ namespace robertly.Controllers
       return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
     }
 
+    [HttpGet("stats")]
+    public async Task<Ok<Stats>> GetStats()
+    {
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+
+      var stats = await _exerciseLogRepository.GetStatsAsync(user.UserId!.Value);
+
+      return TypedResults.Ok(stats);
+    }
+
+    [HttpGet("recently-updated")]
+    public async Task<Ok<ExerciseLogsDto>> GetRecentlyUpdated()
+    {
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+
+      var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId!.Value);
+
+      GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
+      {
+        return queryBuilder
+          .AndLastUpdatedByUserId([user.UserId.Value])
+          .OrderByLastUpdatedAtUtc(Direction.Desc);
+      };
+
+      var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
+          0,
+          10,
+          queryBuilderFunc);
+
+      var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
+
+      return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
+    }
+
     [HttpGet]
     public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetExerciseLogs(
         [FromQuery] PaginationRequest pagination,

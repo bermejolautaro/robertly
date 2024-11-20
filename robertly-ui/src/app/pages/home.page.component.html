@@ -1,16 +1,58 @@
 <div class="footer-padding">
-  @if (!latestWorkoutLogs.isLoading()) {
+  @if (!isLoading()) {
     <div class="container">
+      <div
+        class="pb-5"
+        style="display: grid; grid-template-columns: 1fr 1fr 1fr"
+      >
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <app-ring
+            [value]="this.stats.value()?.daysTrainedThisWeek ?? 0"
+            [maxValue]="daysPerWeekTarget() * 1"
+          ></app-ring>
+          <div style="text-align: center; font-size: 12px">Dias entrenados esta semana</div>
+        </div>
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <app-ring
+            [value]="this.stats.value()?.daysTrainedThisMonth ?? 0"
+            [maxValue]="daysPerWeekTarget() * 4"
+          ></app-ring>
+          <div style="text-align: center; font-size: 12px">Dias entrenados este mes</div>
+        </div>
+        <div class="d-flex justify-content-center align-items-center flex-column">
+          <app-ring
+            [value]="this.stats.value()?.daysTrainedThisYear ?? 0"
+            [maxValue]="daysPerWeekTarget() * 52"
+          ></app-ring>
+          <div style="text-align: center; font-size: 12px">Dias entrenados este año</div>
+        </div>
+      </div>
+
       <div class="pb-2">
         <h6>Recently updated</h6>
       </div>
-      <div class="pb-2">
+      @for (log of recentlyUpdatedLogs.value() | slice: 0 : recentlyUpdatedAmountToShow(); track $index) {
+        <app-exercise-log [exerciseLog]="log"></app-exercise-log>
+      }
+      <div
+        (click)="toggleShowMoreRecentlyUpdated()"
+        style="font-size: 14px; padding: 0 0.4rem"
+      >
+        {{ showMoreRecentlyUpdated() ? 'Show less...' : 'Show more...' }}
+      </div>
+
+      <div class="pt-4 pb-2">
         <h6>Latest Workout</h6>
       </div>
       @for (log of latestWorkoutLogs.value() | slice: 0 : latestWorkoutAmountToShow(); track $index) {
         <app-exercise-log [exerciseLog]="log"></app-exercise-log>
       }
-      <div (click)="toggleShowMore()" style="font-size: 14px; padding: 0 .4rem">{{ showMore() ? 'Show less...' : 'Show more...' }}</div>
+      <div
+        (click)="toggleShowMoreLatestWorkout()"
+        style="font-size: 14px; padding: 0 0.4rem"
+      >
+        {{ showMoreLatestWorkout() ? 'Show less...' : 'Show more...' }}
+      </div>
     </div>
   } @else {
     <div class="position-absolute top-50 start-50 translate-middle">

@@ -30,6 +30,51 @@ public class ExerciseLogRepository
     _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
   }
 
+  public async Task<Stats> GetStatsAsync(int userId)
+  {
+    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+
+    var now = DateTime.UtcNow;
+    var currentYear = now.Year;
+    var currentMonth = now.Month;
+    var endOfMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+
+    var startOfWeek = DateTime.Today.AddDays(-1 * (int)DateTime.Today.DayOfWeek);
+    var endOfWeek = startOfWeek.AddDays(7);
+
+    var query = $"""
+    -- DaysTrainedThisWeek
+    SELECT COUNT(DISTINCT Date)
+    FROM {_schema}.ExerciseLogs
+    WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
+    AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
+    AND UserId = @UserId;
+
+    -- DaysTrainedThisMonth
+    SELECT COUNT(DISTINCT Date)
+    FROM {_schema}.ExerciseLogs
+    WHERE Date >= '{currentYear}-{currentMonth}-1'
+    AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
+    AND UserId = @UserId;
+
+    -- DaysTrainedThisYear
+    SELECT COUNT(DISTINCT Date)
+    FROM {_schema}.ExerciseLogs
+    WHERE Date >= '{currentYear}-1-1'
+    AND Date <='{currentYear}-12-31'
+    AND UserId = @UserId;
+    """;
+
+    using var values = await connection.QueryMultipleAsync(query, new { UserId = userId });
+
+    return new Stats
+    {
+      DaysTrainedThisWeek = values.ReadFirst<int>(),
+      DaysTrainedThisMonth = values.ReadFirst<int>(),
+      DaysTrainedThisYear = values.ReadFirst<int>()
+    };
+  }
+
   public async Task<DateTime?> GetMostRecentButNotTodayDateByUserId(int userId)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
@@ -106,7 +151,10 @@ public class ExerciseLogRepository
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
     var queryBuilder = new GetExerciseLogsQueryBuilder("EL", "U", "E", "S");
-    var (filters, queryParams) = queryBuilderFunc(queryBuilder).BuildFilters();
+    queryBuilder = queryBuilderFunc(queryBuilder);
+
+    var (filters, queryParams) = queryBuilder.BuildFilters();
+    var orderBy = queryBuilder.BuildOrderBy();
 
     var query =
       $"""
@@ -133,7 +181,7 @@ public class ExerciseLogRepository
       LEFT JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
-      ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
+      {orderBy}
       OFFSET {page * size} LIMIT {size};
       """;
 
