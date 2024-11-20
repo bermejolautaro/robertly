@@ -89,7 +89,6 @@ namespace robertly.Controllers
     {
       var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
       var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
-
       var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId!.Value);
 
       GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
