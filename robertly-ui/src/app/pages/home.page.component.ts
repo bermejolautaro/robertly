@@ -18,7 +18,7 @@ export class HomePageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
-  public readonly daysPerWeekTarget = computed(() => 3);
+  public readonly daysPerWeekTarget = computed(() => 4);
 
   public readonly showMoreRecentlyUpdated = signal(false);
   public readonly recentlyUpdatedAmountToShow = computed(() =>
