@@ -78,8 +78,8 @@ import {
 })
 export class RingComponent {
   public readonly ring = viewChild<ElementRef<SVGCircleElement>>('ring');
-  public readonly value = input<number>(100);
-  public readonly maxValue = input<number>(100);
+  public readonly value = input<number>(0);
+  public readonly maxValue = input<number>(0);
   public readonly percent = computed(() => Math.min(100, (this.value() * 100) / this.maxValue()));
   public readonly isSuccess = computed(() => this.percent() >= 80);
   public readonly isDanger = computed(() => this.percent() < 50);
@@ -89,7 +89,7 @@ export class RingComponent {
 
   public readonly radius = computed(() => (this.size() / 2) - (this.strokeWidth() * 2));
 
-  #asd = effect(() => {
+  #onRadiusOrPercentChangeThenUpdateStroke = effect(() => {
     const radius = this.radius();
     const percent = this.percent();
     const ring = this.ring();
