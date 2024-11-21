@@ -1,7 +1,4 @@
-<div
-  class="footer-padding"
-  [hidden]="logs.isLoading()"
->
+<div class="footer-padding">
   <app-filters (filtersChanged)="onFilterChange($event)"></app-filters>
 
   <div class="container d-flex justify-content-end align-items-center gap-2">
@@ -22,21 +19,9 @@
 
   <div class="mt-4">
     <div class="container">
-      @for (log of logs.value(); track $index) {
+      @for (log of logs(); track $index) {
         <app-exercise-log [exerciseLog]="log"></app-exercise-log>
       }
     </div>
-  </div>
-</div>
-
-<div
-  [hidden]="!logs.isLoading()"
-  class="position-absolute top-50 start-50 translate-middle"
->
-  <div
-    class="spinner-border text-primary"
-    role="status"
-  >
-    <span class="visually-hidden">Loading...</span>
   </div>
 </div>

@@ -27,19 +27,22 @@ namespace robertly.Controllers
         FirebaseApp app) => (_exerciseLogRepository, _userRepository, _app) = (exerciseLogsRepository, userRepository, app);
 
     [HttpGet("filters")]
-    public async Task<Ok<Filter>> GetFiltersByUser(
-      [FromQuery] string? userFirebaseUuid = null,
+    public async Task<Results<Ok<Filter>, BadRequest>> GetFiltersByUser(
+      [FromQuery] int? userId = null,
       [FromQuery] int? exerciseId = null,
       [FromQuery] string? type = null,
       [FromQuery] decimal? weightInKg = null)
     {
-      userFirebaseUuid ??= HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
+      var triggeringUser = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
 
+      var user = triggeringUser.AssignedUsers.FirstOrDefault(x => x.UserId == userId);
 
-      var types = await _exerciseLogRepository.GetFilterByUser<string>(user.UserId!.Value, FilterEnum.Type, type, weightInKg, exerciseId);
-      var weights = await _exerciseLogRepository.GetFilterByUser<decimal>(user.UserId!.Value, FilterEnum.Weight, type, weightInKg, exerciseId);
-      var exercisesIds = await _exerciseLogRepository.GetFilterByUser<int>(user.UserId!.Value, FilterEnum.Exercise, type, weightInKg, exerciseId);
+      var userIdFilter = user?.UserId ?? triggeringUser!.UserId!.Value;
+
+      var types = await _exerciseLogRepository.GetFilterByUser<string>(userIdFilter, FilterEnum.Type, type, weightInKg, exerciseId);
+      var weights = await _exerciseLogRepository.GetFilterByUser<decimal>(userIdFilter, FilterEnum.Weight, type, weightInKg, exerciseId);
+      var exercisesIds = await _exerciseLogRepository.GetFilterByUser<int>(userIdFilter, FilterEnum.Exercise, type, weightInKg, exerciseId);
 
       return TypedResults.Ok(new Filter
       {

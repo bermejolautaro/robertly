@@ -1,12 +1,12 @@
 import { NgClass, TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, OnInit, Output, Signal, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, OnInit, output, signal } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
 import { startWith } from 'rxjs';
 
 @Component({
-    selector: 'app-dropdown',
-    template: `<div
+  selector: 'app-dropdown',
+  template: `<div
     ngbDropdown
     class="d-flex justify-content-center"
   >
@@ -16,12 +16,16 @@ import { startWith } from 'rxjs';
         class="btn btn-outline-primary d-flex justify-content-between align-items-center w-100 dropdown"
         ngbDropdownToggle
       >
-        <span [ngClass]="{ 'dropdown-label': true, active: control.value }">{{ selectedValue() | titlecase }}</span>
+        <span
+          class="dropdown-label"
+          [class.active]="control().value"
+          >{{ selectedValue() | titlecase }}</span
+        >
       </button>
       <button
         class="btn btn-outline-secondary"
         type="button"
-        (click)="control.patchValue(null)"
+        (click)="control().patchValue(null)"
       >
         <i class="fa fa-times"></i>
       </button>
@@ -33,16 +37,16 @@ import { startWith } from 'rxjs';
         @for (item of items(); track $index) {
           <button
             ngbDropdownItem
-            [ngClass]="{ active: isActive(item) }"
-            (click)="control.patchValue(item)"
+            [ngClass]="{ active: isActive()(item) }"
+            (click)="control().patchValue(item)"
           >
-            {{ formatter(item) | titlecase }}
+            {{ formatter()(item) | titlecase }}
           </button>
         }
       </div>
     </div>
   </div>`,
-    styles: `
+  styles: `
     :host {
       display: block;
       width: 100%;
@@ -69,24 +73,27 @@ import { startWith } from 'rxjs';
       }
     }
   `,
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    imports: [ReactiveFormsModule, FormsModule, NgbDropdownModule, TitleCasePipe, NgClass]
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [ReactiveFormsModule, FormsModule, NgbDropdownModule, TitleCasePipe, NgClass],
 })
 export class DropdownComponent<T> implements OnInit {
-  @Input() public placeholder: string = 'Placeholder';
-  @Input({ required: true }) public control: FormControl<T | null> = new FormControl(null);
-  @Input({ required: true }) public items: Signal<T[]> = signal<T[]>([]);
-  @Input() public isActive: (item: T) => boolean = () => false;
-  @Input() public formatter: (item: T | null) => string = x => `${x ?? ''}`;
+  public readonly placeholder = input<string>('Placeholder');
+  public readonly control = model<FormControl<T | null>>(new FormControl(null));
+  public readonly items = input<T[]>([]);
 
-  @Output() public readonly clearFilterClicked = new EventEmitter<void>();
-  @Output() public readonly elementSelected = new EventEmitter<T>();
+  public readonly formatter = input<(item: T | null) => string>(x => `${x ?? ''}`);
+  public readonly isActive = input<(item: T) => boolean>(() => false);
+
+  public readonly clearFilterClicked = output<T>();
+  public readonly elementSelected = output<T>();
 
   public readonly selectedValue = signal<string | null>('');
 
   public ngOnInit(): void {
-    this.control.valueChanges.pipe(startWith(null)).subscribe(x => {
-      this.selectedValue.set(this.control.value ? this.formatter(this.control.value) : this.placeholder);
-    });
+    this.control()
+      .valueChanges.pipe(startWith(null))
+      .subscribe(value => {
+        this.selectedValue.set(value ? this.formatter()(value) : this.placeholder());
+      });
   }
 }

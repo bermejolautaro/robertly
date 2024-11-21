@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ExerciseLogComponent } from '@components/exercise-log.component';
@@ -22,7 +22,7 @@ export class ExerciseLogsPageComponent implements OnInit {
   public readonly currentPage = signal(0);
   private readonly filter = signal<Filter | null>(null);
 
-  public readonly logs = rxResource({
+  public readonly logsResource = rxResource({
     request: this.filter,
     loader: ({ request: filter }) => {
       const userId = filter?.userId.at(0);
@@ -40,6 +40,10 @@ export class ExerciseLogsPageComponent implements OnInit {
     },
   });
 
+  public readonly logs = computed(() =>
+    this.logsResource.isLoading() ? [null, null, null, null, null] : this.logsResource.value()
+  );
+
   public constructor() {}
 
   public ngOnInit(): void {
@@ -49,7 +53,7 @@ export class ExerciseLogsPageComponent implements OnInit {
   public onFilterChange(filter: Filter) {
     this.currentPage.set(0);
     this.filter.set(filter);
-    this.logs.reload();
+    this.logsResource.reload();
   }
 
   public prevPage(): void {
@@ -57,7 +61,7 @@ export class ExerciseLogsPageComponent implements OnInit {
     this.currentPage.update(x => Math.max(x - 1, 0));
 
     if (prevValue !== this.currentPage()) {
-      this.logs.reload();
+      this.logsResource.reload();
     }
   }
 
@@ -66,7 +70,7 @@ export class ExerciseLogsPageComponent implements OnInit {
     this.currentPage.update(x => x + 1);
 
     if (prevValue !== this.currentPage()) {
-      this.logs.reload();
+      this.logsResource.reload();
     }
   }
 }
