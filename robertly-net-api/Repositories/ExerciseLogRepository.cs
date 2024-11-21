@@ -24,11 +24,9 @@ public class ExerciseLogRepository
   private readonly IConfiguration _config;
   private readonly string _schema;
 
-  public ExerciseLogRepository(IConfiguration config)
-  {
-    _config = config;
-    _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
-  }
+  public ExerciseLogRepository(IConfiguration config) => (_config, _schema) =
+    (config, config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null"));
+
 
   public async Task<Stats> GetStatsAsync(int userId)
   {

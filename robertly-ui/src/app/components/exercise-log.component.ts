@@ -1,5 +1,5 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { ExerciseLogDto } from '@models/exercise-log.model';
 import { PadStartPipe } from '@pipes/pad-start.pipe';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
@@ -18,5 +18,5 @@ import { ExerciseLogService } from '@services/exercise-log.service';
 })
 export class ExerciseLogComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
-  @Input({ required: true }) exerciseLog!: ExerciseLogDto;
+  public readonly exerciseLog = input<ExerciseLogDto | null>();
 }

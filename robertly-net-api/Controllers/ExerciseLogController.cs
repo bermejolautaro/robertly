@@ -50,10 +50,21 @@ namespace robertly.Controllers
     }
 
     [HttpGet("latest-workout")]
-    public async Task<Ok<ExerciseLogsDto>> GetCurrentAndPreviousWorkoutByUser()
+    public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetCurrentAndPreviousWorkoutByUser()
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid();
+
+      if (userFirebaseUuid is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
+
+      if (user is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
       var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId!.Value);
 
       GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)

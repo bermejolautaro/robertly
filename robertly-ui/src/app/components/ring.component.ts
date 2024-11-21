@@ -55,7 +55,7 @@ import {
       dominant-baseline: middle;
     }
     .progress-ring__circle {
-      transition: stroke-dashoffset 0.35s;
+      transition: stroke-dashoffset 1s;
       transform: rotate(-90deg);
       transform-origin: 50% 50%;
       stroke: #fdcd00;

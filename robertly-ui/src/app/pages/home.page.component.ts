@@ -22,16 +22,16 @@ export class HomePageComponent implements OnInit {
 
   public readonly showMoreRecentlyUpdated = signal(false);
   public readonly recentlyUpdatedAmountToShow = computed(() =>
-    this.showMoreRecentlyUpdated() ? this.recentlyUpdatedLogs.value()?.length ?? 10 : 2
+    this.showMoreRecentlyUpdated() ? this.recentlyUpdatedLogsResource.value()?.length ?? 10 : 2
   );
 
   public readonly showMoreLatestWorkout = signal(false);
   public readonly latestWorkoutAmountToShow = computed(() =>
-    this.showMoreLatestWorkout() ? this.latestWorkoutLogs.value()?.length ?? 10 : 2
+    this.showMoreLatestWorkout() ? this.latestWorkoutLogsResource.value()?.length ?? 10 : 2
   );
 
   public readonly isLoading = computed(
-    () => this.recentlyUpdatedLogs.isLoading() && this.latestWorkoutLogs.isLoading() && this.stats.isLoading()
+    () => this.recentlyUpdatedLogsResource.isLoading() && this.latestWorkoutLogsResource.isLoading() && this.stats.isLoading()
   );
 
   public readonly stats = rxResource({
@@ -40,17 +40,24 @@ export class HomePageComponent implements OnInit {
     },
   });
 
-  public readonly recentlyUpdatedLogs = rxResource({
+  public readonly recentlyUpdatedLogsResource = rxResource({
     loader: () => {
       return this.exerciseLogApiService.getRecentlyUpdated();
     },
   });
 
-  public readonly latestWorkoutLogs = rxResource({
+  public readonly latestWorkoutLogsResource = rxResource({
     loader: () => {
       return this.exerciseLogApiService.getExerciseLogsLatestWorkout();
     },
   });
+
+  public readonly recentlyUpdatedLogs = computed(() =>
+    this.recentlyUpdatedLogsResource.isLoading() ? [null, null] : this.recentlyUpdatedLogsResource.value()
+  );
+  public readonly latestWorkoutLogs = computed(() =>
+    this.latestWorkoutLogsResource.isLoading() ? [null, null] : this.latestWorkoutLogsResource.value()
+  );
 
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
@@ -64,4 +71,3 @@ export class HomePageComponent implements OnInit {
     this.showMoreLatestWorkout.update(x => !x);
   }
 }
-

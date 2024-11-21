@@ -30,8 +30,8 @@ export function jwtInterceptor(
       if (e instanceof HttpErrorResponse) {
         if (e.status === HttpStatusCode.Unauthorized) {
           return from(authApiService.tryRefreshToken()).pipe(
-            switchMap(x => {
-              const path = x ? Paths.SIGN_IN : Paths.LOGS;
+            switchMap(isRefreshSuccessful => {
+              const path = isRefreshSuccessful ? Paths.HOME : Paths.SIGN_IN;
               return router.navigate([path]);
             })
           );
