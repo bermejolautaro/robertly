@@ -1,24 +1,24 @@
 <div class="footer-padding">
-  <app-filters (filtersChanged)="onFilterChange($event)"></app-filters>
+  <div class="container">
+    <app-filters (filtersChanged)="onFilterChange($event)"></app-filters>
 
-  <div class="container d-flex justify-content-end align-items-center gap-2">
-    <button
-      class="btn btn-secondary"
-      (click)="prevPage()"
-    >
-      <i class="fa fa-angle-left"></i>
-    </button>
-    {{ currentPage() + 1 }}
-    <button
-      class="btn btn-secondary"
-      (click)="nextPage()"
-    >
-      <i class="fa fa-angle-right"></i>
-    </button>
-  </div>
+    <div class="container d-flex justify-content-end align-items-center gap-2">
+      <button
+        class="btn btn-secondary"
+        (click)="prevPage()"
+      >
+        <i class="fa fa-angle-left"></i>
+      </button>
+      {{ currentPage() + 1 }}
+      <button
+        class="btn btn-secondary"
+        (click)="nextPage()"
+      >
+        <i class="fa fa-angle-right"></i>
+      </button>
+    </div>
 
-  <div class="mt-4">
-    <div class="container">
+    <div class="mt-4">
       @for (log of logs(); track $index) {
         <app-exercise-log [exerciseLog]="log"></app-exercise-log>
       }

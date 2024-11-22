@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { ExerciseLog, ExerciseLogDto } from '@models/exercise-log.model';
 import { Filter } from '@models/filter';
+import { SeriesPerMuscle } from '@models/series-per-muscle';
 import { Stats } from '@models/stats';
 import { Observable, map } from 'rxjs';
 
@@ -61,8 +62,12 @@ export class ExerciseLogApiService {
       .pipe(map(x => x.data));
   }
 
-  public getStats(): Observable<Stats> {
-    return this.http.get<Stats>(`${this.apiUrl}/logs/stats`);
+  public getSeriesPerMuscle(): Observable<SeriesPerMuscle> {
+    return this.http.get<SeriesPerMuscle>(`${this.apiUrl}/logs/series-per-muscle`);
+  }
+
+  public getDaysTrained(): Observable<Stats> {
+    return this.http.get<Stats>(`${this.apiUrl}/logs/days-trained`);
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {

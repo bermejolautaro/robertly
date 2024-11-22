@@ -1,46 +1,44 @@
-<div class="container">
-  <!-- #region TYPEAHEAD USER -->
-  <div class="col-12 mb-2">
-    <app-typeahead
-      placeholder="User"
-      [control]="userControl"
-      [items]="users()"
-      [itemSelector]="userSelector"
-    ></app-typeahead>
-  </div>
-  <!-- #endregion -->
-
-  <!-- #region DROPDOWN TYPE -->
-  <div class="row mb-2 gx-2">
-    <div class="col-12">
-      <app-dropdown
-        placeholder="Type"
-        [control]="typeControl"
-        [items]="types()"
-      ></app-dropdown>
-    </div>
-  </div>
-  <!-- #endregion -->
-
-  <!-- #region TYPEAHEAD EXERCISE -->
-  <div class="col-12 mb-2">
-    <app-typeahead
-      placeholder="Exercise"
-      [control]="exerciseControl"
-      [items]="exercises()"
-      [itemSelector]="exerciseSelector"
-    ></app-typeahead>
-  </div>
-  <!-- #endregion -->
-
-  <!-- #region TYPEAHEAD WEIGHT -->
-  <div class="col-12 mb-2">
-    <app-typeahead
-      placeholder="Weight (kg)"
-      [control]="weightControl"
-      [items]="weights()"
-      [itemSelector]="weightFormatter"
-    ></app-typeahead>
-  </div>
-  <!-- #endregion -->
+<!-- #region TYPEAHEAD USER -->
+<div class="col-12 mb-2">
+  <app-typeahead
+    placeholder="User"
+    [control]="userControl"
+    [items]="users()"
+    [itemSelector]="userSelector"
+  ></app-typeahead>
 </div>
+<!-- #endregion -->
+
+<!-- #region DROPDOWN TYPE -->
+<div class="row mb-2 gx-2">
+  <div class="col-12">
+    <app-dropdown
+      placeholder="Type"
+      [control]="typeControl"
+      [items]="types()"
+    ></app-dropdown>
+  </div>
+</div>
+<!-- #endregion -->
+
+<!-- #region TYPEAHEAD EXERCISE -->
+<div class="col-12 mb-2">
+  <app-typeahead
+    placeholder="Exercise"
+    [control]="exerciseControl"
+    [items]="exercises()"
+    [itemSelector]="exerciseSelector"
+  ></app-typeahead>
+</div>
+<!-- #endregion -->
+
+<!-- #region TYPEAHEAD WEIGHT -->
+<div class="col-12 mb-2">
+  <app-typeahead
+    placeholder="Weight (kg)"
+    [control]="weightControl"
+    [items]="weights()"
+    [itemSelector]="weightFormatter"
+  ></app-typeahead>
+</div>
+<!-- #endregion -->

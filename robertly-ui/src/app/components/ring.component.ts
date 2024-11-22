@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, input, signal } from '@angular/core';
+import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-ring',
@@ -6,6 +7,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, input, signal } f
     class="progress-ring"
     [attr.height]="this.size()"
     [attr.width]="this.size()"
+    ngbTooltip="{{this.value()}} / {{ this.maxValue()}}"
   >
     <text
       class="progress-ring__text"
@@ -40,6 +42,9 @@ import { ChangeDetectionStrategy, Component, computed, effect, input, signal } f
     />
   </svg>`,
   styles: `
+    svg:focus {
+      outline: none;
+    }
     .progress-ring__text {
       font-size: 24px;
       font-weight: bold;
@@ -67,7 +72,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, input, signal } f
     }
       `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [],
+  imports: [NgbTooltipModule],
 })
 export class RingComponent {
   public readonly value = input<number>(0);
@@ -77,8 +82,8 @@ export class RingComponent {
 
   public readonly percent = computed(() => Math.min(100, (this.value() * 100) / this.maxValue()));
 
-  public readonly isSuccess = computed(() => this.percent() >= 80);
-  public readonly isAverage = computed(() => this.percent() >= 50 && this.percent() < 80);
+  public readonly isSuccess = computed(() => this.percent() >= 70);
+  public readonly isAverage = computed(() => this.percent() >= 50 && this.percent() < 70);
   public readonly isDanger = computed(() => this.percent() > 0 && this.percent() < 50);
 
   public readonly size = signal(100);

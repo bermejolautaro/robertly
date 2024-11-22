@@ -1,6 +1,6 @@
 namespace robertly.Models;
 
-public record Stats
+public record DaysTrained
 {
   public required int DaysTrainedThisWeek { get; init; } = 0;
   public required int DaysTrainedThisMonth { get; init; } = 0;

@@ -87,8 +87,19 @@ namespace robertly.Controllers
       return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
     }
 
-    [HttpGet("stats")]
-    public async Task<Ok<Stats>> GetStats()
+    [HttpGet("series-per-muscle")]
+    public async Task<Ok<SeriesPerMuscle>> GetSeriesPerMuscle()
+    {
+      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
+      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+
+      var stats = await _exerciseLogRepository.GetSeriesPerMuscle(user.UserId!.Value);
+
+      return TypedResults.Ok(stats);
+    }
+
+    [HttpGet("days-trained")]
+    public async Task<Ok<DaysTrained>> GetStats()
     {
       var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
       var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");

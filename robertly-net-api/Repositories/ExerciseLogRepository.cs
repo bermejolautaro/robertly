@@ -28,7 +28,88 @@ public class ExerciseLogRepository
     (config, config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null"));
 
 
-  public async Task<Stats> GetStatsAsync(int userId)
+  public async Task<SeriesPerMuscle> GetSeriesPerMuscle(int userId)
+  {
+    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+
+    var query = $"""
+    WITH WeeklyCounts AS (
+        SELECT
+            e.MuscleGroup,
+            EXTRACT(YEAR FROM el.date) AS Year,
+            EXTRACT(WEEK FROM el.date) AS Week,
+            COUNT(s.SerieId) AS TotalSeries,
+            MIN(el.date) AS FirstDateInPeriod
+        FROM  prod.exerciselogs el
+        INNER JOIN  prod.series s ON el.exerciselogid = s.exerciselogid
+        INNER JOIN  prod.exercises e ON el.exerciseId = e.exerciseId
+        WHERE  el.UserId = @UserId
+        GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(WEEK FROM el.date)
+    )
+    SELECT
+        MuscleGroup,
+        Year,
+        Week,
+        TotalSeries,
+        FirstDateInPeriod
+    FROM WeeklyCounts
+    ORDER BY MuscleGroup ASC;
+
+    WITH MonthlyCounts AS (
+    SELECT
+        e.MuscleGroup,
+        EXTRACT(YEAR FROM el.date) AS Year,
+        EXTRACT(MONTH FROM el.date) AS Month,
+        COUNT(s.SerieId) AS TotalSeries,
+        MIN(el.date) AS FirstDateInPeriod
+    FROM prod.exerciselogs el
+    INNER JOIN prod.series s ON el.exerciselogid = s.exerciselogid
+    INNER JOIN prod.exercises e ON el.exerciseId = e.exerciseId
+    WHERE el.UserId = @UserId
+    GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(MONTH FROM el.date)
+    )
+    SELECT
+        MuscleGroup,
+        year,
+        month,
+        TotalSeries,
+        FirstDateInPeriod
+    FROM
+        MonthlyCounts
+    ORDER BY MuscleGroup ASC;
+
+    WITH YearlyCounts AS (
+    SELECT
+        e.MuscleGroup,
+        EXTRACT(YEAR FROM el.date) AS Year,
+        COUNT(s.SerieId) AS TotalSeries,
+        MIN(el.date) AS FirstDateInPeriod
+    FROM prod.exerciselogs el
+    INNER JOIN prod.series s ON el.exerciselogid = s.exerciselogid
+    INNER JOIN prod.exercises e ON el.exerciseId = e.exerciseId
+    WHERE el.UserId = @UserId
+    GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date)
+    )
+    SELECT
+        MuscleGroup,
+        Year,
+        TotalSeries,
+        FirstDateInPeriod
+    FROM YearlyCounts
+    ORDER BY MuscleGroup ASC;
+    """;
+
+    using var values = await connection.QueryMultipleAsync(query, new { UserId = userId });
+
+    return new SeriesPerMuscle
+    {
+      SeriesPerMuscleWeekly = values.Read<SeriesPerMuscleRow>(),
+      SeriesPerMuscleMonthly = values.Read<SeriesPerMuscleRow>(),
+      SeriesPerMuscleYearly = values.Read<SeriesPerMuscleRow>(),
+    };
+  }
+
+  public async Task<DaysTrained> GetStatsAsync(int userId)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
@@ -65,7 +146,7 @@ public class ExerciseLogRepository
 
     using var values = await connection.QueryMultipleAsync(query, new { UserId = userId });
 
-    return new Stats
+    return new DaysTrained
     {
       DaysTrainedThisWeek = values.ReadFirst<int>(),
       DaysTrainedThisMonth = values.ReadFirst<int>(),

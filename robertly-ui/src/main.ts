@@ -85,7 +85,7 @@ export type RoutePath = (typeof routes)[number]['path'];
 
 export const API_URL = new InjectionToken<string>('API_URL');
 
-export const DAY_JS = new InjectionToken<dayjs.Dayjs>('DAY_JS');
+export const DAY_JS = new InjectionToken<typeof dayjs>('DAY_JS');
 
 bootstrapApplication(AppComponent, {
   providers: [

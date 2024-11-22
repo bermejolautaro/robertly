@@ -36,7 +36,7 @@ export class HomePageComponent implements OnInit {
 
   public readonly stats = rxResource({
     loader: () => {
-      return this.exerciseLogApiService.getStats();
+      return this.exerciseLogApiService.getDaysTrained();
     },
   });
 
