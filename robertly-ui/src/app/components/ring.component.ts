@@ -8,6 +8,8 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
     [attr.height]="this.size()"
     [attr.width]="this.size()"
     ngbTooltip="{{this.value()}} / {{ this.maxValue()}}"
+    ontouchstart
+    tabindex="-1"
   >
     <text
       class="progress-ring__text"
