@@ -42,7 +42,7 @@ export class StatsPageComponent implements OnInit {
 
     if (seriesPerMuscle) {
       const currentYear = this.dayjs().year();
-      const currentMonth = this.dayjs().month();
+      const currentMonth = this.dayjs().month() + 1;
       const currentWeek = this.dayjs().week();
 
       const perWeek = seriesPerMuscle.seriesPerMuscleWeekly.filter(
@@ -55,9 +55,17 @@ export class StatsPageComponent implements OnInit {
 
       const perYear = seriesPerMuscle.seriesPerMuscleYearly.filter(x => x.year === currentYear);
 
-      this.seriesPerWeek.set(perWeek);
-      this.seriesPerMonth.set(perMonth);
-      this.seriesPerYear.set(perYear);
+      if (perWeek.length) {
+        this.seriesPerWeek.set(perWeek);
+      }
+
+      if (perMonth) {
+        this.seriesPerMonth.set(perMonth);
+      }
+
+      if (perYear) {
+        this.seriesPerYear.set(perYear);
+      }
     }
   });
 

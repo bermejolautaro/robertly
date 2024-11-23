@@ -40,9 +40,9 @@ public class ExerciseLogRepository
             EXTRACT(WEEK FROM el.date) AS Week,
             COUNT(s.SerieId) AS TotalSeries,
             MIN(el.date) AS FirstDateInPeriod
-        FROM  prod.exerciselogs el
-        INNER JOIN  prod.series s ON el.exerciselogid = s.exerciselogid
-        INNER JOIN  prod.exercises e ON el.exerciseId = e.exerciseId
+        FROM  {_schema}.exerciselogs el
+        INNER JOIN  {_schema}.series s ON el.exerciselogid = s.exerciselogid
+        INNER JOIN  {_schema}.exercises e ON el.exerciseId = e.exerciseId
         WHERE  el.UserId = @UserId
         GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(WEEK FROM el.date)
     )
@@ -62,9 +62,9 @@ public class ExerciseLogRepository
         EXTRACT(MONTH FROM el.date) AS Month,
         COUNT(s.SerieId) AS TotalSeries,
         MIN(el.date) AS FirstDateInPeriod
-    FROM prod.exerciselogs el
-    INNER JOIN prod.series s ON el.exerciselogid = s.exerciselogid
-    INNER JOIN prod.exercises e ON el.exerciseId = e.exerciseId
+    FROM {_schema}.exerciselogs el
+    INNER JOIN {_schema}.series s ON el.exerciselogid = s.exerciselogid
+    INNER JOIN {_schema}.exercises e ON el.exerciseId = e.exerciseId
     WHERE el.UserId = @UserId
     GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(MONTH FROM el.date)
     )
@@ -84,9 +84,9 @@ public class ExerciseLogRepository
         EXTRACT(YEAR FROM el.date) AS Year,
         COUNT(s.SerieId) AS TotalSeries,
         MIN(el.date) AS FirstDateInPeriod
-    FROM prod.exerciselogs el
-    INNER JOIN prod.series s ON el.exerciselogid = s.exerciselogid
-    INNER JOIN prod.exercises e ON el.exerciseId = e.exerciseId
+    FROM {_schema}.exerciselogs el
+    INNER JOIN {_schema}.series s ON el.exerciselogid = s.exerciselogid
+    INNER JOIN {_schema}.exercises e ON el.exerciseId = e.exerciseId
     WHERE el.UserId = @UserId
     GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date)
     )

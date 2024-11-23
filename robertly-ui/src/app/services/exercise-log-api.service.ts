@@ -29,7 +29,7 @@ export class ExerciseLogApiService {
   private readonly apiUrl = inject(API_URL);
 
   public getExerciseLogById(exerciseLogId: number): Observable<ExerciseLogDto> {
-    return this.http.get<ExerciseLogDto>(`${this.apiUrl}/logs/${exerciseLogId}`);
+    return this.http.get<ExerciseLogDto>(`${this.apiUrl}/logs/${exerciseLogId}?serviceWorkerCache=true`);
   }
 
   public getExerciseLogs(
@@ -63,11 +63,11 @@ export class ExerciseLogApiService {
   }
 
   public getSeriesPerMuscle(): Observable<SeriesPerMuscle> {
-    return this.http.get<SeriesPerMuscle>(`${this.apiUrl}/logs/series-per-muscle`);
+    return this.http.get<SeriesPerMuscle>(`${this.apiUrl}/logs/series-per-muscle?serviceWorkerCache=true`);
   }
 
   public getDaysTrained(): Observable<Stats> {
-    return this.http.get<Stats>(`${this.apiUrl}/logs/days-trained`);
+    return this.http.get<Stats>(`${this.apiUrl}/logs/days-trained?serviceWorkerCache=true`);
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {
