@@ -1,10 +1,10 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { ExerciseLog, ExerciseLogDto } from '@models/exercise-log.model';
 import { Filter } from '@models/filter';
 import { SeriesPerMuscle } from '@models/series-per-muscle';
 import { Stats } from '@models/stats';
-import { Observable, map } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 
 import { API_URL } from 'src/main';
 
@@ -28,8 +28,11 @@ export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
 
+  private readonly recentlyUpdatedCache = signal<ExerciseLogDto[]>([]);
+  public readonly recentlyUpdated = this.recentlyUpdatedCache.asReadonly();
+
   public getExerciseLogById(exerciseLogId: number): Observable<ExerciseLogDto> {
-    return this.http.get<ExerciseLogDto>(`${this.apiUrl}/logs/${exerciseLogId}?serviceWorkerCache=true`);
+    return this.http.get<ExerciseLogDto>(`${this.apiUrl}/logs/${exerciseLogId}`);
   }
 
   public getExerciseLogs(
@@ -71,7 +74,10 @@ export class ExerciseLogApiService {
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {
-    return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/recently-updated`).pipe(map(x => x.data));
+    return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/recently-updated`).pipe(
+      map(x => x.data),
+      tap(x => this.recentlyUpdatedCache.set(x))
+    );
   }
 
   public getExerciseLogsLatestWorkout(): Observable<ExerciseLogDto[]> {

@@ -109,7 +109,7 @@ public class ExerciseLogRepository
     };
   }
 
-  public async Task<DaysTrained> GetStatsAsync(int userId)
+  public async Task<DaysTrained> GetDaysTrained(int userId)
   {
     using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
 
@@ -118,8 +118,15 @@ public class ExerciseLogRepository
     var currentMonth = now.Month;
     var endOfMonth = DateTime.DaysInMonth(currentYear, currentMonth);
 
-    var startOfWeek = DateTime.Today.AddDays(-1 * (int)DateTime.Today.DayOfWeek);
-    var endOfWeek = startOfWeek.AddDays(7);
+    var dayOfWeek = DateTime.Today.DayOfWeek;
+    var daysUntilStartOfWeek = dayOfWeek switch
+    {
+      DayOfWeek.Sunday => 6,
+      _ => (int)dayOfWeek - 1
+    };
+
+    var startOfWeek = DateTime.Today.AddDays(daysUntilStartOfWeek * -1);
+    var endOfWeek = startOfWeek.AddDays(6);
 
     var query = $"""
     -- DaysTrainedThisWeek

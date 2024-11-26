@@ -34,7 +34,7 @@ import { startWith } from 'rxjs';
         ngbDropdownMenu
         class="w-100"
       >
-        @for (item of items(); track $index) {
+        @for (item of items(); track $index; let last = $last) {
           <button
             ngbDropdownItem
             [ngClass]="{ active: isActive()(item) }"
@@ -42,6 +42,9 @@ import { startWith } from 'rxjs';
           >
             {{ formatter()(item) | titlecase }}
           </button>
+          @if (!last) {
+            <div class="dropdown-divider"></div>
+          }
         }
       </div>
     </div>
@@ -82,7 +85,7 @@ export class DropdownComponent<T> implements OnInit {
   public readonly items = input<T[]>([]);
 
   public readonly formatter = input<(item: T | null) => string>(x => `${x ?? ''}`);
-  public readonly isActive = input<(item: T) => boolean>(() => false);
+  public readonly isActive = input<(item: T) => boolean>(y => this.selectedValue() === y);
 
   public readonly clearFilterClicked = output<T>();
   public readonly elementSelected = output<T>();
@@ -91,7 +94,7 @@ export class DropdownComponent<T> implements OnInit {
 
   public ngOnInit(): void {
     this.control()
-      .valueChanges.pipe(startWith(null))
+      .valueChanges.pipe(startWith(this.control().value))
       .subscribe(value => {
         this.selectedValue.set(value ? this.formatter()(value) : this.placeholder());
       });

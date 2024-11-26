@@ -10,14 +10,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
-import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
+import { NgbTypeahead, NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
+import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, merge } from 'rxjs';
 
 @Component({
   selector: 'app-typeahead',
   template: `<div class="input-group">
     <input
       #typeaheadInput
+      #typeaheadInstance="ngbTypeahead"
       type="text"
       class="form-control"
       [placeholder]="placeholder()"
@@ -27,6 +28,7 @@ import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
       [resultFormatter]="itemSelector()"
       [inputFormatter]="itemSelector()"
       (focus)="focus$.next(control().value)"
+      (click)="click$.next(control().value)"
     />
     <button
       class="btn btn-outline-secondary"
@@ -46,7 +48,8 @@ import { Observable, Subject, distinctUntilChanged, map, merge } from 'rxjs';
   imports: [ReactiveFormsModule, FormsModule, NgbTypeaheadModule],
 })
 export class TypeaheadComponent<T> implements OnInit {
-  private readonly inputHtml = viewChild.required<ElementRef<HTMLInputElement>>('typeaheadInput');
+  private readonly typeaheadInputHtml = viewChild.required<ElementRef<HTMLInputElement>>('typeaheadInput');
+  private readonly typeaheadInstance = viewChild.required<NgbTypeahead>('typeaheadInstance');
   public readonly items = input.required<T[]>();
   public readonly control = model.required<FormControl<T | null>>();
   public readonly itemSelector = input<(item: T | null) => string>(x => `${x ?? ''}`);
@@ -54,7 +57,7 @@ export class TypeaheadComponent<T> implements OnInit {
 
   readonly #updateNativeElementOnFormChange = effect(() => {
     const control = this.control();
-    const inputHtml = this.inputHtml();
+    const inputHtml = this.typeaheadInputHtml();
 
     if (inputHtml) {
       inputHtml.nativeElement.value = this.itemSelector()(control.value!);
@@ -62,14 +65,22 @@ export class TypeaheadComponent<T> implements OnInit {
   });
 
   public readonly focus$: Subject<T | null> = new Subject<T | null>();
+  public readonly click$: Subject<T | null> = new Subject<T | null>();
+
   public search: ((text$: Observable<string>) => Observable<T[]>) | null = null;
 
   public ngOnInit(): void {
-    this.search = createAutocomplete(this.focus$, this.items, this.itemSelector());
+    this.search = createAutocomplete(
+      this.focus$,
+      this.click$,
+      this.typeaheadInstance(),
+      this.items,
+      this.itemSelector()
+    );
   }
 
   public clear(): void {
-    const inputHtml = this.inputHtml();
+    const inputHtml = this.typeaheadInputHtml();
 
     this.control.update(x => {
       x.reset();
@@ -91,15 +102,44 @@ export class TypeaheadComponent<T> implements OnInit {
 
 function createAutocomplete<T>(
   focus$: Observable<T | null>,
+  click$: Observable<T | null>,
+  instance: NgbTypeahead,
   elementsSignal: Signal<T[]>,
   selector: (item: T | null) => string
 ) {
   return (text$: Observable<string>) => {
     const debouncedText$ = text$.pipe(distinctUntilChanged());
+    const mappedFocus$ = focus$.pipe(map(x => ({ type: 'focus', value: selector(x) })));
+    const mappedClick$ = click$.pipe(map(x => ({ type: 'click', value: selector(x) })));
 
-    return merge(debouncedText$, focus$.pipe(map(x => selector(x)))).pipe(
+    const combined$ = merge(mappedFocus$, mappedClick$).pipe(
+      bufferTime(50),
+      filter(x => !!x.length),
+      map(events => {
+        if (events.map(x => x.type).includes('focus') && events.map(x => x.type).includes('click')) {
+          return '';
+        }
+
+        if (events.map(x => x.type).includes('click')) {
+          if (instance.isPopupOpen()) {
+            return null;
+          } else {
+            return '';
+          }
+        }
+
+        return null;
+      })
+    );
+
+    return merge(debouncedText$, combined$).pipe(
       map(text => {
         const elements = elementsSignal();
+
+        if (text === null) {
+          return [];
+        }
+
         return !text
           ? elements
           : elements.filter(x => !!x).filter(x => selector(x).toLowerCase().includes(text.toLowerCase()));

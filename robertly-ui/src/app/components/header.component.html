@@ -1,46 +1,10 @@
-<nav class="navbar px-1">
+<nav class="navbar fixed-top px-1 z-3">
   <div class="container-fluid d-flex">
-    <div style="color: white; font-weight: bold; font-size: 14px">
+    <div style="color: white; font-weight: bold; font-size: 16px">
       @if (authService.user()) {
         Hello! {{ authService.user()?.name }}
       }
     </div>
-    <!-- #region USERNAME DROPDOWN -->
-    <!-- @if (exerciseLogService.usernames().length > 1) {
-      <div ngbDropdown display="dynamic" class="d-flex justify-content-end">
-        <button
-          type="button"
-          class="btn d-flex justify-content-between align-items-center me-3"
-          style="outline: none; border: none; color: white; font-weight: 500"
-          ngbDropdownToggle
-        >
-          {{ exerciseLogService.selectedUsernameLabel() | titlecase }}
-        </button>
-        <div ngbDropdownMenu>
-          <button ngbDropdownItem (click)="exerciseLogService.selectedUsername$.next(null)">All Users</button>
-          @for (username of exerciseLogService.usernames(); track username) {
-            <button
-              ngbDropdownItem
-              [ngClass]="{ active: username === exerciseLogService.selectedUsername() }"
-              (click)="exerciseLogService.selectedUsername$.next(username)"
-            >
-              {{ username | titlecase }}
-            </button>
-          }
-        </div>
-      </div>
-    } @else {
-      <div display="dynamic" class="d-flex justify-content-end">
-        <button
-          type="button"
-          class="btn d-flex justify-content-between align-items-center me-3"
-          style="outline: none; border: none; color: white; font-weight: 500"
-        >
-          {{ exerciseLogService.usernames()[0] | titlecase }}
-        </button>
-      </div>
-    } -->
-    <!-- #endregion -->
 
     <!-- #region MENU -->
     <button

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, effect, inject, linkedSignal, signal } from '@angular/core';
 
 import { DOCUMENT, TitleCasePipe } from '@angular/common';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
@@ -7,31 +7,36 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DAY_JS } from 'src/main';
 import { SeriesPerMuscleRow } from '@models/series-per-muscle';
+import { DropdownComponent } from '../components/dropdown.component';
+import { FormControl } from '@angular/forms';
+import { ExerciseLogService } from '@services/exercise-log.service';
 
 @Component({
   selector: 'app-stats-page',
   templateUrl: './stats.page.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgbNavModule, RingComponent, TitleCasePipe],
+  imports: [NgbNavModule, RingComponent, TitleCasePipe, DropdownComponent],
 })
 export class StatsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly dayjs = inject(DAY_JS);
+  private readonly exerciseLogService = inject(ExerciseLogService);
+
   public readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
-  private readonly defaultValues: SeriesPerMuscleRow[] = [
-    { totalSeries: 0, muscleGroup: 'arms', firstDateInPeriod: '', month: 0, week: 0, year: 0 },
-    { totalSeries: 0, muscleGroup: 'back', firstDateInPeriod: '', month: 0, week: 0, year: 0 },
-    { totalSeries: 0, muscleGroup: 'calves', firstDateInPeriod: '', month: 0, week: 0, year: 0 },
-    { totalSeries: 0, muscleGroup: 'chest', firstDateInPeriod: '', month: 0, week: 0, year: 0 },
-    { totalSeries: 0, muscleGroup: 'legs', firstDateInPeriod: '', month: 0, week: 0, year: 0 },
-    { totalSeries: 0, muscleGroup: 'shoulders', firstDateInPeriod: '', month: 0, week: 0, year: 0 },
-  ];
+  private readonly defaultValues = linkedSignal(() =>
+    this.exerciseLogService
+      .muscleGroups()
+      .map(x => ({ totalSeries: 0, muscleGroup: x ?? '', firstDateInPeriod: '', month: 0, week: 0, year: 0 }))
+  );
 
-  public seriesPerWeek = signal<SeriesPerMuscleRow[]>(this.defaultValues);
-  public seriesPerMonth = signal<SeriesPerMuscleRow[]>(this.defaultValues);
-  public seriesPerYear = signal<SeriesPerMuscleRow[]>(this.defaultValues);
+  public readonly seriesPerWeek = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
+  public readonly seriesPerMonth = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
+  public readonly seriesPerYear = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
+
+  public readonly selectedOptionControl = signal(new FormControl('Series Per Muscle'));
+  public readonly options = signal(['Series Per Muscle', 'Exercise', 'Tonnage']);
 
   public readonly seriesPerMuscle = rxResource({
     loader: () => this.exerciseLogApiService.getSeriesPerMuscle(),
@@ -56,15 +61,30 @@ export class StatsPageComponent implements OnInit {
       const perYear = seriesPerMuscle.seriesPerMuscleYearly.filter(x => x.year === currentYear);
 
       if (perWeek.length) {
-        this.seriesPerWeek.set(perWeek);
+        this.seriesPerWeek.update(x =>
+          x.map(y => {
+            const serie = perWeek.find(a => a.muscleGroup === y.muscleGroup);
+            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
+          })
+        );
       }
 
-      if (perMonth) {
-        this.seriesPerMonth.set(perMonth);
+      if (perMonth.length) {
+        this.seriesPerMonth.update(x =>
+          x.map(y => {
+            const serie = perMonth.find(a => a.muscleGroup === y.muscleGroup);
+            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
+          })
+        );
       }
 
       if (perYear) {
-        this.seriesPerYear.set(perYear);
+        this.seriesPerYear.update(x =>
+          x.map(y => {
+            const serie = perYear.find(a => a.muscleGroup === y.muscleGroup);
+            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
+          })
+        );
       }
     }
   });

@@ -15,13 +15,7 @@ import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 @Component({
   selector: 'app-filters',
   templateUrl: './filters.component.html',
-  styles: `
-    ::ng-deep {
-      .dropdown-item {
-        background-color: var(--light-bg);
-      }
-    }
-  `,
+  styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgbTypeaheadModule, FormsModule, NgbDropdownModule, TypeaheadComponent, DropdownComponent],
 })

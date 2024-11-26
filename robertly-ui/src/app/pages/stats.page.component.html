@@ -1,8 +1,11 @@
-<div class="footer-padding">
+<div class="header-footer-padding">
   <div class="container">
-    <!-- <div class="pb-4">
-      <app-filters></app-filters>
-    </div> -->
+    <div class="pb-4">
+      <app-dropdown
+        [control]="selectedOptionControl()"
+        [items]="options()"
+      ></app-dropdown>
+    </div>
 
     <div class="pb-4">
       <h6>Series Per Muscle - Current Week</h6>

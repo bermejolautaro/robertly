@@ -1,3 +1,8 @@
+nav {
+  backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(255 255 255 / 10%);
+}
+
 button:focus i.fa.fa-refresh.spin {
   animation: rotate 1s ease-in-out 0s;
 }

@@ -1,4 +1,4 @@
-import { DecimalPipe, KeyValuePipe, Location, NgClass, TitleCasePipe } from '@angular/common';
+import { DecimalPipe, KeyValuePipe, Location, SlicePipe, TitleCasePipe } from '@angular/common';
 import {
   Component,
   ChangeDetectionStrategy,
@@ -50,17 +50,17 @@ import * as R from 'remeda';
     ExerciseLogComponent,
     KeyValuePipe,
     DecimalPipe,
-    NgClass,
+    SlicePipe
   ],
 })
 export class EditExerciseLogPageComponent {
   public readonly exerciseLogService = inject(ExerciseLogService);
   public readonly authService = inject(AuthService);
+  public readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
   private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
-  private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly titleCasePipe = inject(TitleCasePipe);
   private readonly dayjsService = inject(DayjsService);
   private readonly dayjs = this.dayjsService.instance;

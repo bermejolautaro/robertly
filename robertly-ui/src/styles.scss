@@ -17,12 +17,26 @@
   --bs-tooltip-color: #fff;
 }
 
+.dropdown-menu {
+  overflow-y: scroll;
+  overflow-x: hidden;
+  max-height: 400px;
+  --bs-dropdown-bg: var(--light-bg);
+  border: 1px solid rgba(255, 255, 255, 0.30);
+  margin-top: 5px;
+}
+
+.dropdown-item {
+  background-color: var(--light-bg);
+}
+
 .btn.btn-outline-secondary {
   --bs-btn-bg: var(--primary);
   --bs-btn-color: var(--font-color);
 }
 
-.footer-padding {
+.header-footer-padding {
+  padding-top: 2rem;
   padding-bottom: 7rem;
 }
 
