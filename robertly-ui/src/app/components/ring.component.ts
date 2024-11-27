@@ -8,6 +8,7 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
     [attr.height]="this.size()"
     [attr.width]="this.size()"
     ngbTooltip="{{ this.value() }} / {{ this.maxValue() }}"
+    tooltipClass="ring-tooltip"
     ontouchstart
     tabindex="-1"
   >
@@ -45,6 +46,7 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
     svg:focus {
       outline: none;
     }
+
     .progress-ring__text {
       font-size: 24px;
       font-weight: bold;

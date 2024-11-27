@@ -15,6 +15,14 @@
 
 .tooltip {
   --bs-tooltip-color: #fff;
+
+  &.show {
+    opacity: 1;
+  }
+}
+
+.ring-tooltip {
+  --bs-emphasis-color: #000;
 }
 
 .dropdown-menu {
