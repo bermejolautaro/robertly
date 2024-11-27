@@ -9,7 +9,7 @@
         "strategy": "freshness",
         "maxSize": 100,
         "maxAge": "2d",
-        "timeout": "60u"
+        "timeout": "2s"
       }
     }
   ],

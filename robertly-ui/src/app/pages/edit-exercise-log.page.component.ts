@@ -67,6 +67,7 @@ export class EditExerciseLogPageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly modalService = inject(NgbModal);
 
+  public readonly isSaveLoading = signal(false);
   public readonly isLoading = linkedSignal(() => this.originalValue.isLoading());
   public readonly paramMap = toSignal(this.route.paramMap);
   public readonly exerciseLogId = computed(() => this.paramMap()?.get(Paths.LOGS_ID_PARAM));
@@ -173,7 +174,7 @@ export class EditExerciseLogPageComponent {
     const mode = this.mode();
     const formGroup = this.formGroup();
 
-    this.isLoading.set(true);
+    this.isSaveLoading.set(true);
 
     const user = formGroup.value.user;
     const exercise = formGroup.value.exercise;
@@ -185,6 +186,8 @@ export class EditExerciseLogPageComponent {
     }
 
     if (formGroup.valid && typeof exercise !== 'string' && !!exercise && typeof user !== 'string' && !!user) {
+      formGroup.disable();
+
       if (mode === 'create') {
         const request = toCreateExerciseLogRequest(formGroup, user, exercise, date);
 
@@ -211,7 +214,8 @@ export class EditExerciseLogPageComponent {
       }
     }
 
-    this.isLoading.set(false);
+    this.isSaveLoading.set(false);
+    formGroup.enable();
   }
 
   public cancel(): void {

@@ -67,10 +67,9 @@
           }
 
           <!-- #region SERIES -->
-          <div class="pb-4">
+          <div class="mb-3">
             @for (serieControl of formGroup().controls.series.controls; track $index) {
               <div class="pb-1">
-                <span class="serie-label">Serie {{ $index + 1 }}</span>
                 <form class="row g-2">
                   <div class="col-6">
                     <input
@@ -119,13 +118,25 @@
             class="btn w-100 d-flex justify-content-center align-items-center"
             [class.btn-primary]="formGroup().valid"
             [class.btn-secondary]="formGroup().invalid"
-            [disabled]="formGroup().invalid"
+            [disabled]="formGroup().invalid || isSaveLoading()"
             (click)="save()"
           >
-            <i
-              class="fa fa-save px-2"
-              aria-hidden="true"
-            ></i>
+            @if (!isSaveLoading()) {
+              <i
+                class="fa fa-save px-2"
+                aria-hidden="true"
+              ></i>
+            } @else {
+              <span
+                class="spinner-border spinner-border-sm mx-2"
+                aria-hidden="true"
+              ></span>
+              <span
+                class="visually-hidden"
+                role="status"
+                >Loading...</span
+              >
+            }
 
             Save
           </button>
@@ -198,7 +209,7 @@
 } @else {
   <div class="position-absolute top-50 start-50 translate-middle">
     <div
-      class="spinner-border text-primary"
+      class=".robertly-spinner spinner-border text-primary"
       role="status"
     >
       <span class="visually-hidden">Loading...</span>

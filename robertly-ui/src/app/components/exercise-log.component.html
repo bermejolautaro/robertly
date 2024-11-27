@@ -8,7 +8,8 @@
     <div style="display: grid; grid-template-columns: auto auto">
       <div class="d-flex flex-column">
         <div class="title">{{ log.exercise.name | titlecase }}</div>
-        <div class="hint">{{ log.date | parseToDate }} - {{ log.user.name }}</div>
+        <div class="hint">{{ log.date | parseToDate }}</div>
+        <div class="hint">{{ log.user.name }}</div>
       </div>
       <div class="series">
         @for (serie of log.series; track $index) {

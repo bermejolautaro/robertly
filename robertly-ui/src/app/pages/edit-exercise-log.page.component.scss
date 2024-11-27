@@ -1,16 +1,14 @@
 :host {
-  display: block;
-  padding: 0 0.5rem;
-  --bs-heading-color: white;
-  --bs-modal-color: white;
   --bs-body-bg: var(--light-bg);
   --bs-body-color: var(--font-color);
   --bs-tertiary-bg: var(--primary);
   --bs-border-width: 1px;
   --bs-border-color: rgba(255, 255, 255, 0.15);
-  --bs-modal-footer-border-width: 0;
-  --bs-modal-header-border-width: 0;
-  --bs-modal-header-padding: 0.5rem;
+}
+
+.card {
+  --bs-card-spacer-y: 0.5rem;
+  --bs-card-spacer-x: 0.5rem;
 }
 
 .title {
@@ -19,7 +17,7 @@
 
 .subtitle {
   font-size: 14px;
-  opacity: .7;
+  opacity: 0.7;
 }
 
 .card {

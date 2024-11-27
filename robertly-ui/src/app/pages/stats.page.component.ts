@@ -14,7 +14,7 @@ import { ExerciseLogService } from '@services/exercise-log.service';
 @Component({
   selector: 'app-stats-page',
   templateUrl: './stats.page.component.html',
-  styles: ``,
+  styleUrl: './stats.page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgbNavModule, RingComponent, TitleCasePipe, DropdownComponent],
 })
@@ -30,6 +30,8 @@ export class StatsPageComponent implements OnInit {
       .muscleGroups()
       .map(x => ({ totalSeries: 0, muscleGroup: x ?? '', firstDateInPeriod: '', month: 0, week: 0, year: 0 }))
   );
+
+  public readonly period = signal<'week' | 'month' | 'year'>('year');
 
   public readonly seriesPerWeek = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
   public readonly seriesPerMonth = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);

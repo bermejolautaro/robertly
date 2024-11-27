@@ -29,6 +29,7 @@ import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, mer
       [inputFormatter]="itemSelector()"
       (focus)="focus$.next(control().value)"
       (click)="click$.next(control().value)"
+      [disabled]="control().disabled"
     />
     <button
       class="btn btn-outline-secondary"

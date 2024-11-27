@@ -14,7 +14,9 @@ import { startWith } from 'rxjs';
       <button
         type="button"
         class="btn btn-outline-primary d-flex justify-content-between align-items-center w-100 dropdown"
+        [class.with-clear-icon]="showClear()"
         ngbDropdownToggle
+        [disabled]="control().disabled"
       >
         <span
           class="dropdown-label"
@@ -22,13 +24,16 @@ import { startWith } from 'rxjs';
           >{{ selectedValue() | titlecase }}</span
         >
       </button>
-      <button
-        class="btn btn-outline-secondary"
-        type="button"
-        (click)="control().patchValue(null)"
-      >
-        <i class="fa fa-times"></i>
-      </button>
+
+      @if (showClear()) {
+        <button
+          class="btn btn-outline-secondary"
+          type="button"
+          (click)="control().patchValue(null)"
+        >
+          <i class="fa fa-times"></i>
+        </button>
+      }
 
       <div
         ngbDropdownMenu
@@ -55,9 +60,12 @@ import { startWith } from 'rxjs';
       width: 100%;
     }
 
-    .dropdown {
+    .with-clear-icon {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+    }
+
+    .dropdown {
       --bs-btn-color: var(--body-bg);
       --bs-btn-border-color: var(--bs-border-color);
       --bs-btn-hover-border-color: var(--bs-border-color);
@@ -83,6 +91,7 @@ export class DropdownComponent<T> implements OnInit {
   public readonly placeholder = input<string>('Placeholder');
   public readonly control = model<FormControl<T | null>>(new FormControl(null));
   public readonly items = input<T[]>([]);
+  public readonly showClear = input(true);
 
   public readonly formatter = input<(item: T | null) => string>(x => `${x ?? ''}`);
   public readonly isActive = input<(item: T) => boolean>(y => this.selectedValue() === y);

@@ -59,6 +59,7 @@
 <div class="toast-container">
   @for (toast of toastService.toasts(); track $index) {
     <ngb-toast
+      data-bs-theme="light"
       [autohide]="true"
       [delay]="toast.delay || 3000"
       (hidden)="toastService.remove(toast)"

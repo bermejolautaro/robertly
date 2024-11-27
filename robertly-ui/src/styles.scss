@@ -18,10 +18,12 @@
 }
 
 .dropdown-menu {
+  --bs-dropdown-padding-y: 0;
+  --bs-dropdown-divider-margin-y: 0.1rem;
+  --bs-dropdown-bg: var(--light-bg);
   overflow-y: scroll;
   overflow-x: hidden;
   max-height: 400px;
-  --bs-dropdown-bg: var(--light-bg);
   border: 1px solid rgba(255, 255, 255, 0.30);
   margin-top: 5px;
 }
@@ -172,7 +174,7 @@ input[type='date'] {
   }
 }
 
-.spinner-border {
+.robertly-spinner.spinner-border {
   --bs-spinner-width: 4rem;
   --bs-spinner-height: 4rem;
   --bs-spinner-border-width: 0.45em;

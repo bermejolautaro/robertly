@@ -4,11 +4,36 @@
       <app-dropdown
         [control]="selectedOptionControl()"
         [items]="options()"
+        [showClear]="false"
       ></app-dropdown>
     </div>
 
     <div class="pb-4">
-      <h6>Series Per Muscle - Current Week</h6>
+      <button
+        [class.active]="period() === 'week'"
+        class="btn me-1 badge rounded-pill chip"
+        (click)="period.set('week')"
+      >
+        Week
+      </button>
+      <button
+        [class.active]="period() === 'month'"
+        class="btn me-1 badge rounded-pill chip"
+        (click)="period.set('month')"
+      >
+        Month
+      </button>
+      <button
+        [class.active]="period() === 'year'"
+        class="btn me-1 badge rounded-pill chip"
+        (click)="period.set('year')"
+      >
+        Year
+      </button>
+    </div>
+
+    @if (period() === 'week') {
+      <h6>Series Per Muscle</h6>
       <div class="d-flex flex-wrap justify-content-around align-items-center">
         @for (series of seriesPerWeek(); track $index) {
           <div class="d-flex justify-content-center align-items-center flex-column">
@@ -16,14 +41,16 @@
               [value]="series.totalSeries"
               [maxValue]="10 * 1"
             ></app-ring>
-            <div style="text-align: center; font-size: 12px; padding: 0.5rem">{{ series.muscleGroup | titlecase }}</div>
+            <div style="text-align: center; font-size: 12px; padding: 0.5rem">
+              {{ series.muscleGroup | titlecase }}
+            </div>
           </div>
         }
       </div>
-    </div>
+    }
 
-    <div class="pb-4">
-      <h6>Series Per Muscle - Current Month</h6>
+    @if (period() === 'month') {
+      <h6>Series Per Muscle</h6>
       <div class="d-flex flex-wrap justify-content-around align-items-center">
         @for (series of seriesPerMonth(); track $index) {
           <div class="d-flex justify-content-center align-items-center flex-column">
@@ -31,14 +58,16 @@
               [value]="series.totalSeries"
               [maxValue]="10 * 4"
             ></app-ring>
-            <div style="text-align: center; font-size: 12px; padding: 0.5rem">{{ series.muscleGroup | titlecase }}</div>
+            <div style="text-align: center; font-size: 12px; padding: 0.5rem">
+              {{ series.muscleGroup | titlecase }}
+            </div>
           </div>
         }
       </div>
-    </div>
+    }
 
-    <div>
-      <h6>Series Per Muscle - Current Year</h6>
+    @if (period() === 'year') {
+      <h6>Series Per Muscle</h6>
       <div class="d-flex flex-wrap justify-content-around align-items-center">
         @for (series of seriesPerYear(); track $index) {
           <div class="d-flex justify-content-center align-items-center flex-column">
@@ -52,6 +81,6 @@
           </div>
         }
       </div>
-    </div>
+    }
   </div>
 </div>
