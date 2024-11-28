@@ -1,1 +1,0 @@
-import{Kb as n,Lb as d,dc as a,kb as t}from"./chunk-W53POS3V.js";var p=(()=>{class e{static{this.\u0275fac=function(o){return new(o||e)}}static{this.\u0275cmp=t({type:e,selectors:[["app-foods-page"]],decls:2,vars:0,template:function(o,i){o&1&&(n(0,"p"),a(1,"foods works!"),d())},encapsulation:2,changeDetection:0})}}return e})();export{p as FoodsPageComponent};
