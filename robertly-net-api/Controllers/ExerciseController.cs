@@ -50,6 +50,8 @@ namespace robertly.Controllers
         return BadRequest($"Exercise with id '{id}' does not exist.");
       }
 
+      request = request with { ExerciseId = exerciseDb.ExerciseId };
+
       await _exerciseRepository.UpdateExerciseAsync(request);
 
       return Ok();

@@ -32,7 +32,7 @@
         <app-typeahead
           placeholder="Muscle Group"
           [control]="exerciseForm.controls.muscleGroup"
-          [items]="exerciseLogService.muscleGroups()"
+          [items]="exerciseApiService.muscleGroups()"
         ></app-typeahead>
       </div>
       <!-- #endregion -->
@@ -42,7 +42,7 @@
         <app-typeahead
           placeholder="Type"
           [control]="exerciseForm.controls.type"
-          [items]="exerciseLogService.types()"
+          [items]="exerciseApiService.types()"
         ></app-typeahead>
       </div>
       <!-- #endregion -->
@@ -71,7 +71,7 @@
     </button>
   </div>
   <ul class="list-group">
-    @for (exercise of exerciseLogService.exercises(); track exercise.exerciseId) {
+    @for (exercise of exerciseApiService.exercises(); track exercise.exerciseId) {
       <li
         class="list-group-item d-flex align-items-center"
         (click)="open(content, exercise)"

@@ -9,7 +9,7 @@ import { DAY_JS } from 'src/main';
 import { SeriesPerMuscleRow } from '@models/series-per-muscle';
 import { DropdownComponent } from '../components/dropdown.component';
 import { FormControl } from '@angular/forms';
-import { ExerciseLogService } from '@services/exercise-log.service';
+import { ExerciseApiService } from '@services/exercises-api.service';
 
 @Component({
   selector: 'app-stats-page',
@@ -21,20 +21,22 @@ import { ExerciseLogService } from '@services/exercise-log.service';
 export class StatsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly dayjs = inject(DAY_JS);
-  private readonly exerciseLogService = inject(ExerciseLogService);
+  private readonly exercisesApiService = inject(ExerciseApiService);
 
   public readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
   private readonly defaultValues = linkedSignal(() =>
-    this.exerciseLogService
+    this.exercisesApiService
       .muscleGroups()
       .map(x => ({ totalSeries: 0, muscleGroup: x ?? '', firstDateInPeriod: '', month: 0, week: 0, year: 0 }))
   );
 
-  public readonly period = signal<'week' | 'month' | 'year'>('year');
+  public readonly period = signal<'week' | 'month' | 'year'>('week');
 
   public readonly seriesPerWeek = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
   public readonly seriesPerMonth = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
+  public readonly seriesPerPreviousMonth = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
+
   public readonly seriesPerYear = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
 
   public readonly selectedOptionControl = signal(new FormControl('Series Per Muscle'));
@@ -52,12 +54,18 @@ export class StatsPageComponent implements OnInit {
       const currentMonth = this.dayjs().month() + 1;
       const currentWeek = this.dayjs().week();
 
+      const previousMonth = this.dayjs().add(-1, 'month').month() + 1;
+
       const perWeek = seriesPerMuscle.seriesPerMuscleWeekly.filter(
         x => x.week === currentWeek && x.year === currentYear
       );
 
       const perMonth = seriesPerMuscle.seriesPerMuscleMonthly.filter(
         x => x.month === currentMonth && x.year === currentYear
+      );
+
+      const perPreviousMonth = seriesPerMuscle.seriesPerMuscleMonthly.filter(
+        x => x.month === previousMonth && x.year === currentYear
       );
 
       const perYear = seriesPerMuscle.seriesPerMuscleYearly.filter(x => x.year === currentYear);
@@ -75,6 +83,15 @@ export class StatsPageComponent implements OnInit {
         this.seriesPerMonth.update(x =>
           x.map(y => {
             const serie = perMonth.find(a => a.muscleGroup === y.muscleGroup);
+            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
+          })
+        );
+      }
+
+      if (perPreviousMonth.length) {
+        this.seriesPerPreviousMonth.update(x =>
+          x.map(y => {
+            const serie = perPreviousMonth.find(a => a.muscleGroup === y.muscleGroup);
             return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
           })
         );

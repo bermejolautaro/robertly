@@ -42,7 +42,7 @@ export class SignInComponent implements OnInit {
 
     try {
       await firstValueFrom(this.authApiService.signIn({ email: this.email, password: this.password }));
-      this.router.navigate([Paths.LOGS]);
+      this.router.navigate([Paths.HOME]);
     } catch (error) {
       this.toastService.error('Sign in with email failed.');
     }
@@ -51,7 +51,7 @@ export class SignInComponent implements OnInit {
   public async onClickSignInWithGoogle(): Promise<void> {
     try {
       await this.authApiService.signInWithGoogle();
-      this.router.navigate([Paths.LOGS]);
+      this.router.navigate([Paths.HOME]);
     } catch (error) {
       this.toastService.error('Sign in with google failed.');
     }

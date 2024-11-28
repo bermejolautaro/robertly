@@ -2,15 +2,15 @@ import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, output, signal } from '@angular/core';
 import { FormControl, FormsModule } from '@angular/forms';
 import { NgbDropdownModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
-import { ExerciseLogService } from '@services/exercise-log.service';
-import { TypeaheadComponent } from './typeahead.component';
+import { TypeaheadComponent } from '@components/typeahead.component';
 import { Exercise } from '@models/exercise.model';
-import { DropdownComponent } from './dropdown.component';
+import { DropdownComponent } from '@components/dropdown.component';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { Filter } from '@models/filter';
 import { AuthService } from '@services/auth.service';
 import { User } from '@models/user.model';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import { ExerciseApiService } from '@services/exercises-api.service';
 
 @Component({
   selector: 'app-filters',
@@ -22,8 +22,7 @@ import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 export class FiltersComponent {
   public readonly filtersChanged = output<Filter>();
 
-  public readonly exerciseLogService = inject(ExerciseLogService);
-
+  private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly authService = inject(AuthService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly titleCasePipe = inject(TitleCasePipe);
@@ -68,7 +67,7 @@ export class FiltersComponent {
       this.users.set([user!, ...(user?.assignedUsers ?? [])]);
       this.types.set(filters.types);
       this.weights.set(filters.weights.map(x => `${x}`));
-      this.exercises.set(this.exerciseLogService.exercises().filter(x => filters.exercisesIds.includes(x.exerciseId!)));
+      this.exercises.set(this.exerciseApiService.exercises().filter(x => filters.exercisesIds.includes(x.exerciseId!)));
     }
   });
 

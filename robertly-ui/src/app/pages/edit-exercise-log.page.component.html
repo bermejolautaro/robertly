@@ -42,7 +42,7 @@
               <app-typeahead
                 placeholder="Exercise"
                 [control]="formGroup().controls.exercise"
-                [items]="exerciseLogService.exercises()"
+                [items]="exerciseApiService.exercises()"
                 [itemSelector]="exerciseSelector"
               ></app-typeahead>
             </div>

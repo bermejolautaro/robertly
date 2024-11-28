@@ -2,12 +2,9 @@ import { Component, OnInit, TemplateRef, inject } from '@angular/core';
 import { Router, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { debounceTime, forkJoin, switchMap, take, tap } from 'rxjs';
+import { take } from 'rxjs';
 import { Paths } from 'src/main';
 
-import { ExerciseLogService } from '@services/exercise-log.service';
-
-import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DOCUMENT } from '@angular/common';
 
 import {
@@ -19,15 +16,12 @@ import {
   NgbToastModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
-import { DayjsService } from '@services/dayjs.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ToastService } from '@services/toast.service';
 import { AuthApiService } from '@services/auth-api.service';
-import { HeaderComponent } from '@components/header.component';
-import { FooterComponent } from '@components/footer.component';
+import { HeaderComponent } from '@components/header/header.component';
+import { FooterComponent } from '@components/footer/footer.component';
 import { AuthService } from '@services/auth.service';
-import { createLogFormGroup, CreateOrUpdateLogFormGroup } from '@models/create-or-update-log';
-import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 
 @Component({
@@ -46,22 +40,15 @@ import { ConfirmModalComponent } from '@components/confirm-modal.component';
   ],
 })
 export class AppComponent implements OnInit {
-  public readonly exerciseLogService = inject(ExerciseLogService);
   public readonly toastService = inject(ToastService);
   public readonly authApiService = inject(AuthApiService);
   public readonly authService = inject(AuthService);
-  private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly document = inject(DOCUMENT);
-  private readonly dayjsService = inject(DayjsService);
   private readonly router = inject(Router);
   private readonly offcanvasService = inject(NgbOffcanvas);
   private readonly modalService = inject(NgbModal);
-
-  public readonly createLogFormGroup: CreateOrUpdateLogFormGroup = createLogFormGroup();
-
-  public readonly updateLogFormGroup: CreateOrUpdateLogFormGroup = createLogFormGroup();
 
   public readonly Paths = Paths;
   public hasAppLoaded: boolean = true;
@@ -69,8 +56,6 @@ export class AppComponent implements OnInit {
   public preloaderProgress: number = 10;
 
   public constructor() {
-    this.fetchData();
-
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
 
     this.serviceWorkerUpdates.versionUpdates.subscribe({
@@ -99,73 +84,18 @@ export class AppComponent implements OnInit {
         }
       },
     });
-
-    this.createLogFormGroup.valueChanges
-      .pipe(takeUntilDestroyed(), debounceTime(1000))
-      .subscribe(value => localStorage.setItem(CREATE_LOG_VALUE_CACHE_KEY, JSON.stringify(value)));
-
-    this.exerciseLogService.logClicked$.pipe(takeUntilDestroyed()).subscribe(exerciseLog => {
-      this.updateLogFormGroup.reset();
-      this.updateLogFormGroup.patchValue({
-        exercise: exerciseLog.exercise,
-        date: this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'),
-        user: exerciseLog.user.name,
-        series: exerciseLog.series.map(x => ({
-          exerciseLogId: x.exerciseLogId,
-          serieId: x.serieId,
-          reps: x.reps,
-          weightInKg: x.weightInKg,
-        })),
-      });
-
-      this.router.navigate([Paths.LOGS, Paths.LOGS_EDIT, exerciseLog.id]);
-    });
-
-    this.exerciseLogService.createLogClicked$.pipe(takeUntilDestroyed()).subscribe(() => {
-      this.navigateToCreateLog();
-    });
-
-    this.exerciseLogService.deleteLog$
-      .pipe(
-        switchMap(x =>
-          this.exerciseLogApiService.deleteExerciseLog(x.id).pipe(
-            tap(() => {
-              this.fetchData();
-              this.toastService.ok('Log deleted successfully!');
-              this.router.navigate([Paths.LOGS]);
-            })
-          )
-        ),
-        takeUntilDestroyed()
-      )
-      .subscribe();
   }
 
-  public ngOnInit(): void {
-    const formGroupValue = JSON.parse(localStorage.getItem(CREATE_LOG_VALUE_CACHE_KEY) ?? 'null');
-
-    if (formGroupValue) {
-      this.createLogFormGroup.patchValue(formGroupValue);
-    }
+  public async ngOnInit(): Promise<void> {
+    await this.exerciseApiService.fetchExercises();
   }
 
   public navigateToCreateLog(): void {
     this.router.navigate([Paths.LOGS, Paths.LOGS_CREATE]);
   }
 
-  public fetchData(): void {
-    this.exerciseLogService.refreshLogs$.next();
-    let exercises$ = this.exerciseApiService.getExercises();
-
-    forkJoin([exercises$]).pipe(
-      tap(([exercises]) => {
-        this.exerciseLogService.updateExercises$.next(exercises);
-      })
-    ).subscribe();
-  }
-
-  public signOut(): void {
-    this.authApiService.signOut();
+  public async signOut(): Promise<void> {
+    await this.authApiService.signOut();
     this.router.navigate([Paths.SIGN_IN]);
   }
 

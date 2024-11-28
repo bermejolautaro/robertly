@@ -2,9 +2,9 @@ import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ExerciseLogComponent } from '@components/exercise-log.component';
+import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
 
-import { FiltersComponent } from '@components/filters.component';
+import { FiltersComponent } from '@components/filters/filters.component';
 import { Filter } from '@models/filter';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 

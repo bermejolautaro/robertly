@@ -12,7 +12,6 @@ import {
 import { ExerciseLogDto, Serie } from '@models/exercise-log.model';
 import { Exercise } from '@models/exercise.model';
 import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
-import { ExerciseLogService } from '@services/exercise-log.service';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TypeaheadComponent } from '@components/typeahead.component';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,8 +25,9 @@ import {
 import { ToastService } from '@services/toast.service';
 import { AuthService } from '@services/auth.service';
 import { DayjsService } from '@services/dayjs.service';
+import { ExerciseApiService } from '@services/exercises-api.service';
 import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
-import { ExerciseLogComponent } from '@components/exercise-log.component';
+import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { lastValueFrom, of, take } from 'rxjs';
@@ -50,13 +50,13 @@ import * as R from 'remeda';
     ExerciseLogComponent,
     KeyValuePipe,
     DecimalPipe,
-    SlicePipe
+    SlicePipe,
   ],
 })
 export class EditExerciseLogPageComponent {
-  public readonly exerciseLogService = inject(ExerciseLogService);
   public readonly authService = inject(AuthService);
   public readonly exerciseLogApiService = inject(ExerciseLogApiService);
+  public readonly exerciseApiService = inject(ExerciseApiService);
 
   private readonly location = inject(Location);
   private readonly router = inject(Router);
@@ -165,8 +165,18 @@ export class EditExerciseLogPageComponent {
       'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>';
     instance.okType = 'danger';
 
-    modalRef.closed.pipe(take(1)).subscribe(() => {
-      this.exerciseLogService.deleteLog$.next(this.originalValue.value()!);
+    modalRef.closed.pipe(take(1)).subscribe(async () => {
+      const log = this.originalValue.value();
+
+      if (log) {
+        try {
+          await lastValueFrom(this.exerciseLogApiService.deleteExerciseLog(log.id));
+          this.toastService.ok('Log deleted successfully!');
+          this.router.navigate([Paths.HOME]);
+        } catch (e) {
+          this.toastService.error(`${e}`);
+        }
+      }
     });
   }
 
@@ -219,10 +229,7 @@ export class EditExerciseLogPageComponent {
   }
 
   public cancel(): void {
-    this.exerciseLogService.refreshLogs$.pipe(take(1)).subscribe(() => {
-      this.location.back();
-    });
-    this.exerciseLogService.refreshLogs$.next();
+    this.location.back();
   }
 }
 

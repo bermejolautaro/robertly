@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { RouterLinkWithHref, RouterLinkActive } from '@angular/router';
-import { ExerciseLogService } from '@services/exercise-log.service';
+import { RouterLinkWithHref, RouterLinkActive, Router } from '@angular/router';
 import { Paths } from 'src/main';
 
 @Component({
@@ -11,6 +10,11 @@ import { Paths } from 'src/main';
     imports: [RouterLinkWithHref, RouterLinkActive]
 })
 export class FooterComponent {
-  public readonly exerciseLogService = inject(ExerciseLogService);
+  private readonly router = inject(Router);
+
   public readonly Paths = Paths;
+
+  public navigateToCreateLog(): void {
+    this.router.navigate([Paths.LOGS, Paths.LOGS_CREATE]);
+  }
 }
