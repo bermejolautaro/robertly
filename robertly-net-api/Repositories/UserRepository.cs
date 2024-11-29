@@ -1,27 +1,20 @@
-using System;
 using System.Threading.Tasks;
 using Dapper;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
+using robertly.Helpers;
 using robertly.Models;
 
 namespace robertly.Repositories;
 
 public class UserRepository
 {
-  private readonly IConfiguration _config;
-  private readonly string _schema;
+  private readonly ConnectionHelper _connection;
 
-  public UserRepository(IConfiguration config)
-  {
-    _config = config;
-    _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
-  }
+  public UserRepository(ConnectionHelper connection) => (_connection) = (connection);
 
   public async Task<User?> GetUserByFirebaseUuidAsync(string firebaseUuid)
   {
 
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
     var query =
       $"""
       SELECT
@@ -29,7 +22,7 @@ public class UserRepository
         ,U.UserFirebaseUuid
         ,U.Email
         ,U.Name
-      FROM {_schema}.Users U
+      FROM {_connection.Schema}.Users U
       WHERE UserFirebaseUuid = @FirebaseUuid
       """;
 
@@ -49,8 +42,8 @@ public class UserRepository
         ,U.UserFirebaseUuid
         ,U.Email
         ,U.Name
-      FROM {_schema}.AssignedUsers AU
-      INNER JOIN {_schema}.Users U ON AU.AssignedUserId = U.UserId
+      FROM {_connection.Schema}.AssignedUsers AU
+      INNER JOIN {_connection.Schema}.Users U ON AU.AssignedUserId = U.UserId
       WHERE AU.OwnerUserId = @UserId
       """;
 
@@ -64,11 +57,11 @@ public class UserRepository
   public async Task<int> CreateUserAsync(User user)
   {
 
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var query =
         $"""
-        INSERT INTO {_schema}.Users (UserFirebaseUuid, Email, Name)
+        INSERT INTO {_connection.Schema}.Users (UserFirebaseUuid, Email, Name)
         VALUES (@UserFirebaseUuid, @Email, @Name)
         RETURNING Users.UserId
         """;

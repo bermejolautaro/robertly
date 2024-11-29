@@ -1,29 +1,23 @@
 using System;
 using System.Threading.Tasks;
 using Dapper;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
+using robertly.Helpers;
 
 namespace robertly.Repositories;
 
 public class AppLogsRepository
 {
-  private readonly IConfiguration _config;
-  private readonly string _schema;
+  private readonly ConnectionHelper _connection;
 
-  public AppLogsRepository(IConfiguration config)
-  {
-    _config = config;
-    _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
-  }
+  public AppLogsRepository(ConnectionHelper connection) => (_connection) = (connection);
 
   public async Task LogError(string error, Exception e)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var query =
         $"""
-        INSERT INTO {_schema}.AppLogs (Message, TimeStamp, Exception, StackTrace) VALUES
+        INSERT INTO {_connection.Schema}.AppLogs (Message, TimeStamp, Exception, StackTrace) VALUES
         (@Message, @TimeStamp, @Exception, @StackTrace);
         """;
 

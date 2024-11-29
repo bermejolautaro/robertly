@@ -36,6 +36,7 @@ import { CreateOrUpdateSerieFormGroupValue } from '@models/create-or-update-seri
 import { User } from '@models/user.model';
 
 import * as R from 'remeda';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'edit-exercise-log-page',
@@ -95,6 +96,12 @@ export class EditExerciseLogPageComponent {
       const exerciseLogId = Number(exerciseLogIdString);
       return !!exerciseLogId ? this.exerciseLogApiService.getExerciseLogById(exerciseLogId) : of(null);
     },
+  });
+
+  readonly #onOriginalValueErrorNavigateToHome = effect(() => {
+    if (this.originalValue.error()) {
+      this.router.navigate([Paths.HOME]);
+    }
   });
 
   readonly #onModeOrOriginalValueChangeTheUpdateForm = effect(() => {
@@ -174,7 +181,8 @@ export class EditExerciseLogPageComponent {
           this.toastService.ok('Log deleted successfully!');
           this.router.navigate([Paths.HOME]);
         } catch (e) {
-          this.toastService.error(`${e}`);
+          const error = e as HttpErrorResponse;
+          this.toastService.error(`${error.message}`);
         }
       }
     });
@@ -219,7 +227,8 @@ export class EditExerciseLogPageComponent {
           this.toastService.ok('Log updated successfully!');
           this.originalValue.reload();
         } catch (e) {
-          this.toastService.error(`${e}`);
+          const error = e as HttpErrorResponse;
+          this.toastService.error(`${error.message}`);
         }
       }
     }

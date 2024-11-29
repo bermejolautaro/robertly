@@ -1,26 +1,19 @@
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
+using robertly.Helpers;
 using robertly.Models;
 
 namespace robertly.Repositories;
 
 public class ExerciseRepository
 {
-  private readonly IConfiguration _config;
-  private readonly string _schema;
+  private readonly ConnectionHelper _connection;
 
-  public ExerciseRepository(IConfiguration config)
-  {
-    _config = config;
-    _schema = config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null");
-  }
+  public ExerciseRepository(ConnectionHelper connection) => (_connection) = (connection);
 
   public async Task<Exercise?> GetExerciseByIdAsync(int exerciseId)
   {
@@ -34,7 +27,7 @@ public class ExerciseRepository
       int size,
       int? exerciseId = null)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var filters = new StringBuilder();
 
@@ -50,7 +43,7 @@ public class ExerciseRepository
         ,E.Name
         ,E.MuscleGroup
         ,E.Type
-      FROM {_schema}.Exercises E
+      FROM {_connection.Schema}.Exercises E
       WHERE 1 = 1
       {filters}
       ORDER BY E.ExerciseID DESC
@@ -64,11 +57,11 @@ public class ExerciseRepository
 
   public async Task<int> CreateExerciseAsync(Exercise exercise)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var query =
         $"""
-        INSERT INTO {_schema}.Exercises (Name, MuscleGroup, Type)
+        INSERT INTO {_connection.Schema}.Exercises (Name, MuscleGroup, Type)
         VALUES (@Name, @MuscleGroup, @Type)
         RETURNING Exercises.ExerciseId
         """;
@@ -88,11 +81,11 @@ public class ExerciseRepository
 
   public async Task UpdateExerciseAsync(Exercise exercise)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var query =
       $"""
-      UPDATE {_schema}.Exercises SET
+      UPDATE {_connection.Schema}.Exercises SET
            Name = @Name
           ,MuscleGroup = @MuscleGroup
           ,Type = @Type
@@ -113,10 +106,10 @@ public class ExerciseRepository
 
   public async Task DeleteExerciseLogAsync(int exerciseId)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
     var seriesQuery =
       $"""
-      DELETE FROM {_schema}.Exercises WHERE ExerciseId = @ExerciseId;
+      DELETE FROM {_connection.Schema}.Exercises WHERE ExerciseId = @ExerciseId;
       """;
 
     await connection.ExecuteAsync(seriesQuery, new { ExerciseId = exerciseId });

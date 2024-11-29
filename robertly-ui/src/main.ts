@@ -7,7 +7,7 @@ import { AppComponent } from 'src/app/app.component';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { JsonPipe, TitleCasePipe } from '@angular/common';
 import { environment } from './environments/environment';
-import { jwtInterceptor } from './app/interceptors/jwt.interceptor';
+import { httpErrorResponseInterceptor } from './app/interceptors/httpErrorResponse.interceptor';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 
@@ -93,7 +93,7 @@ bootstrapApplication(AppComponent, {
     JsonPipe,
     provideExperimentalZonelessChangeDetection(),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([jwtInterceptor])),
+    provideHttpClient(withInterceptors([httpErrorResponseInterceptor])),
     provideRouter(routes),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
     provideFirebaseApp(() =>

@@ -11,22 +11,14 @@ namespace robertly.Controllers
   [Route("api/exercises")]
   public class ExercisesController : ControllerBase
   {
-
-    private readonly IConfiguration _config;
     private readonly ExerciseRepository _exerciseRepository;
 
-    public ExercisesController(IConfiguration config,
-                               ExerciseRepository exerciseRepository)
-    {
-      _config = config;
-      _exerciseRepository = exerciseRepository;
-    }
+    public ExercisesController(ExerciseRepository exerciseRepository) =>
+      (_exerciseRepository) = (exerciseRepository);
 
     [HttpGet]
     public async Task<ActionResult<GetExercisesResponse>> Get()
     {
-      using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
-
       var exercises = await _exerciseRepository.GetExercisesAsync(0, 1000);
       return Ok(new GetExercisesResponse() { Data = exercises });
     }

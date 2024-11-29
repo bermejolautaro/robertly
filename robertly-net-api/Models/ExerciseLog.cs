@@ -24,25 +24,20 @@ public record ExerciseLog
   public int? ExerciseLogUserId { get; init; }
   public int? ExerciseLogExerciseId { get; init; }
   public DateTime ExerciseLogDate { get; init; }
+  public int CreatedByUserId { get; set; }
+  public DateTime CreatedAtUtc { get; set; }
+  public int LastUpdatedByUserId { get; set; }
+  public DateTime LastUpdatedAtUtc { get; set; }
 
   // Joining with Exercises
   public Exercise? Exercise { get; init; }
 
-  //public string? ExerciseName { get; init; }
-  //public string? MuscleGroup { get; init; }
-  //public string? Type { get; init; }
-
   // Joining with Users
   public User? User { get; init; }
-
-  //public string? UserFirebaseUuid { get; init; }
-  //public string? Email { get; init; }
-  //public string? Username { get; init; }
 
   // Joining with Series
   public IEnumerable<Serie>? Series { get; init; }
 
-  public ExerciseLog? PersonalRecord { get; init; }
   public IEnumerable<ExerciseLog>? RecentLogs { get; init; }
 }
 

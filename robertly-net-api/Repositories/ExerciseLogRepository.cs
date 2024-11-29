@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
-using Microsoft.Extensions.Configuration;
-using Npgsql;
 using robertly.Helpers;
 using robertly.Models;
 
@@ -21,16 +19,13 @@ public enum FilterEnum
 
 public class ExerciseLogRepository
 {
-  private readonly IConfiguration _config;
-  private readonly string _schema;
+  private readonly ConnectionHelper _connection;
 
-  public ExerciseLogRepository(IConfiguration config) => (_config, _schema) =
-    (config, config["DatabaseEnvironment"] ?? throw new ArgumentException("DatabaseEnvironment is null"));
-
+  public ExerciseLogRepository(ConnectionHelper connection) => (_connection) = (connection);
 
   public async Task<SeriesPerMuscle> GetSeriesPerMuscle(int userId)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var query = $"""
     WITH WeeklyCounts AS (
@@ -40,9 +35,9 @@ public class ExerciseLogRepository
             EXTRACT(WEEK FROM el.date) AS Week,
             COUNT(s.SerieId) AS TotalSeries,
             MIN(el.date) AS FirstDateInPeriod
-        FROM  {_schema}.exerciselogs el
-        INNER JOIN  {_schema}.series s ON el.exerciselogid = s.exerciselogid
-        INNER JOIN  {_schema}.exercises e ON el.exerciseId = e.exerciseId
+        FROM  {_connection.Schema}.exerciselogs el
+        INNER JOIN  {_connection.Schema}.series s ON el.exerciselogid = s.exerciselogid
+        INNER JOIN  {_connection.Schema}.exercises e ON el.exerciseId = e.exerciseId
         WHERE  el.UserId = @UserId
         GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(WEEK FROM el.date)
     )
@@ -62,9 +57,9 @@ public class ExerciseLogRepository
         EXTRACT(MONTH FROM el.date) AS Month,
         COUNT(s.SerieId) AS TotalSeries,
         MIN(el.date) AS FirstDateInPeriod
-    FROM {_schema}.exerciselogs el
-    INNER JOIN {_schema}.series s ON el.exerciselogid = s.exerciselogid
-    INNER JOIN {_schema}.exercises e ON el.exerciseId = e.exerciseId
+    FROM {_connection.Schema}.exerciselogs el
+    INNER JOIN {_connection.Schema}.series s ON el.exerciselogid = s.exerciselogid
+    INNER JOIN {_connection.Schema}.exercises e ON el.exerciseId = e.exerciseId
     WHERE el.UserId = @UserId
     GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(MONTH FROM el.date)
     )
@@ -84,9 +79,9 @@ public class ExerciseLogRepository
         EXTRACT(YEAR FROM el.date) AS Year,
         COUNT(s.SerieId) AS TotalSeries,
         MIN(el.date) AS FirstDateInPeriod
-    FROM {_schema}.exerciselogs el
-    INNER JOIN {_schema}.series s ON el.exerciselogid = s.exerciselogid
-    INNER JOIN {_schema}.exercises e ON el.exerciseId = e.exerciseId
+    FROM {_connection.Schema}.exerciselogs el
+    INNER JOIN {_connection.Schema}.series s ON el.exerciselogid = s.exerciselogid
+    INNER JOIN {_connection.Schema}.exercises e ON el.exerciseId = e.exerciseId
     WHERE el.UserId = @UserId
     GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date)
     )
@@ -111,7 +106,7 @@ public class ExerciseLogRepository
 
   public async Task<DaysTrained> GetDaysTrained(int userId)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var now = DateTime.UtcNow;
     var currentYear = now.Year;
@@ -131,21 +126,21 @@ public class ExerciseLogRepository
     var query = $"""
     -- DaysTrainedThisWeek
     SELECT COUNT(DISTINCT Date)
-    FROM {_schema}.ExerciseLogs
+    FROM {_connection.Schema}.ExerciseLogs
     WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
     AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
     AND UserId = @UserId;
 
     -- DaysTrainedThisMonth
     SELECT COUNT(DISTINCT Date)
-    FROM {_schema}.ExerciseLogs
+    FROM {_connection.Schema}.ExerciseLogs
     WHERE Date >= '{currentYear}-{currentMonth}-1'
     AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
     AND UserId = @UserId;
 
     -- DaysTrainedThisYear
     SELECT COUNT(DISTINCT Date)
-    FROM {_schema}.ExerciseLogs
+    FROM {_connection.Schema}.ExerciseLogs
     WHERE Date >= '{currentYear}-1-1'
     AND Date <='{currentYear}-12-31'
     AND UserId = @UserId;
@@ -163,10 +158,10 @@ public class ExerciseLogRepository
 
   public async Task<DateTime?> GetMostRecentButNotTodayDateByUserId(int userId)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var date = await connection.QueryFirstOrDefaultAsync<DateTime?>(
-      $"SELECT MAX(Date) FROM {_schema}.ExerciseLogs WHERE UserId = @UserId AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
+      $"SELECT MAX(Date) FROM {_connection.Schema}.ExerciseLogs WHERE UserId = @UserId AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
       new { UserId = userId });
 
     return date;
@@ -188,7 +183,7 @@ public class ExerciseLogRepository
         return queryBuilder
           .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
           .AndUserIds([exerciseLog.User!.UserId!.Value])
-          .AndDate(exerciseLog.ExerciseLogDate, "<");
+          .AndDate(exerciseLog.ExerciseLogDate, "<=");
       };
 
       var recentLogs = await GetExerciseLogsAsync(0, 5, queryBuilderFunc);
@@ -200,7 +195,7 @@ public class ExerciseLogRepository
 
   public async Task<IEnumerable<T>> GetFilterByUser<T>(int userId, FilterEnum filter, string? type = null, decimal? weightInKg = null, int? exerciseId = null)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var column = filter switch
     {
@@ -213,9 +208,9 @@ public class ExerciseLogRepository
     var query =
       $"""
       SELECT DISTINCT {column}
-      FROM {_schema}.ExerciseLogs EL
-      INNER JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      INNER JOIN {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+      FROM {_connection.Schema}.ExerciseLogs EL
+      INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE EL.UserId = @UserId
       {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
       {(type is not null ? "AND E.Type = @Type" : "")}
@@ -235,7 +230,7 @@ public class ExerciseLogRepository
       int size,
       Func<GetExerciseLogsQueryBuilder, GetExerciseLogsQueryBuilder> queryBuilderFunc)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
     var queryBuilder = new GetExerciseLogsQueryBuilder("EL", "U", "E", "S");
     queryBuilder = queryBuilderFunc(queryBuilder);
 
@@ -261,10 +256,10 @@ public class ExerciseLogRepository
         ,U.UserFirebaseUuid
         ,U.Email
         ,U.Name
-      FROM {_schema}.ExerciseLogs EL
-      INNER JOIN  {_schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
-      INNER JOIN  {_schema}.Users U ON EL.UserId = U.UserId
-      LEFT JOIN {_schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      FROM {_connection.Schema}.ExerciseLogs EL
+      INNER JOIN  {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+      INNER JOIN  {_connection.Schema}.Users U ON EL.UserId = U.UserId
+      LEFT JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
       {orderBy}
@@ -291,7 +286,7 @@ public class ExerciseLogRepository
         ,S.Reps
         ,S.WeightInKg
         ,(S.WeightInKg * (36.0 / (37.0 - s.Reps))) AS Brzycki
-      FROM  {_schema}.Series S
+      FROM  {_connection.Schema}.Series S
       WHERE ExerciseLogId = ANY(@ExerciseLogIds)
       """,
         new { ExerciseLogIds = exerciseLogs.Select(x => x.ExerciseLogId).ToList() }
@@ -309,11 +304,11 @@ public class ExerciseLogRepository
 
   public async Task<int> CreateExerciseLogAsync(ExerciseLog exerciseLog, int triggeringUserId)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var exerciseLogQuery =
       $"""
-        INSERT INTO {_schema}.ExerciseLogs (UserId, ExerciseId, Date, CreatedByUserId, CreatedAtUtc, LastUpdatedByUserId, LastUpdatedAtUtc)
+        INSERT INTO {_connection.Schema}.ExerciseLogs (UserId, ExerciseId, Date, CreatedByUserId, CreatedAtUtc, LastUpdatedByUserId, LastUpdatedAtUtc)
         VALUES (@UserId, @ExerciseId, @Date, @CreatedByUserId, @CreatedAtUtc, @LastUpdatedByUserId, @LastUpdatedAtUtc)
         RETURNING ExerciseLogs.ExerciseLogId
       """;
@@ -321,7 +316,7 @@ public class ExerciseLogRepository
     var seriesValues = (exerciseLog.Series ?? [])
       .Select(x => $"(@ExerciseLogId, {x.Reps}, {x.WeightInKg.ToString(CultureInfo.InvariantCulture)})");
 
-    var seriesQuery = new StringBuilder($"INSERT INTO  {_schema}.Series (ExerciseLogId, Reps, WeightInKg) VALUES\n")
+    var seriesQuery = new StringBuilder($"INSERT INTO  {_connection.Schema}.Series (ExerciseLogId, Reps, WeightInKg) VALUES\n")
       .AppendJoin(",\n", seriesValues)
       .Append(";\n")
       .ToString();
@@ -352,13 +347,13 @@ public class ExerciseLogRepository
 
   public async Task UpdateExerciseLogAsync(ExerciseLog exerciseLog, int triggeringUserId)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
 
     var utcNow = DateTime.UtcNow;
 
     var query =
       $"""
-      UPDATE {_schema}.ExerciseLogs SET
+      UPDATE {_connection.Schema}.ExerciseLogs SET
          UserId = @UserId
         ,ExerciseId = @ExerciseId
         ,Date = @Date
@@ -403,14 +398,14 @@ public class ExerciseLogRepository
     {
       seriesQuery.AppendLine(
       $"""
-      DELETE FROM {_schema}.Series
+      DELETE FROM {_connection.Schema}.Series
       WHERE ExerciseLogId = {exerciseLog.ExerciseLogId} AND SerieId NOT IN ({seriesIdsString});
       """);
     }
 
     seriesQuery.AppendLine(
       $"""
-      INSERT INTO {_schema}.Series (SerieId, ExerciseLogId, Reps, WeightInKg)
+      INSERT INTO {_connection.Schema}.Series (SerieId, ExerciseLogId, Reps, WeightInKg)
       VALUES
           {seriesValues}
       ON CONFLICT (SerieId) DO UPDATE
@@ -424,15 +419,15 @@ public class ExerciseLogRepository
 
   public async Task DeleteExerciseLogAsync(int exerciseLogId)
   {
-    using var connection = new NpgsqlConnection(_config["PostgresConnectionString"]);
+    using var connection = _connection.Create();
     var seriesQuery = $"""
-            DELETE FROM {_schema}.Series WHERE ExerciseLogId = @ExerciseLogId;
+            DELETE FROM {_connection.Schema}.Series WHERE ExerciseLogId = @ExerciseLogId;
             """;
 
     await connection.ExecuteAsync(seriesQuery, new { ExerciseLogId = exerciseLogId });
 
     var exerciseLogQuery = $"""
-            DELETE FROM {_schema}.ExerciseLogs WHERE ExerciseLogId = @ExerciseLogId;
+            DELETE FROM {_connection.Schema}.ExerciseLogs WHERE ExerciseLogId = @ExerciseLogId;
             """;
 
     await connection.ExecuteAsync(exerciseLogQuery, new { ExerciseLogId = exerciseLogId });

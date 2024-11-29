@@ -26,10 +26,6 @@ export class DayjsService {
     return this.dayjs;
   }
 
-  public parseAndCompare(dateA: string, dateB: string): -1 | 0 | 1 {
-    return this.parseDate(dateA).isBefore(this.parseDate(dateB)) ? 1 : -1;
-  }
-
   public parseDate(date: string) {
     return this.instance(date, [...DATE_FORMATS]);
   }

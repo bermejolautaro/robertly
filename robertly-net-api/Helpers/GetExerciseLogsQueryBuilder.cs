@@ -141,7 +141,7 @@ public class GetExerciseLogsQueryBuilder
 
   public string BuildOrderBy()
   {
-    if (!orderBy.Any())
+    if (orderBy.Count == 0)
     {
       return $"ORDER BY {_exerciseLogAlias}.Date DESC, {_exerciseLogAlias}.ExerciseLogId DESC";
     }

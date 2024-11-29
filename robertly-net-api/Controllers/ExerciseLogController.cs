@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FirebaseAdmin;
-using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -18,27 +16,29 @@ namespace robertly.Controllers
   public class ExerciseLogController : ControllerBase
   {
     private readonly ExerciseLogRepository _exerciseLogRepository;
-    private readonly UserRepository _userRepository;
-    private readonly FirebaseApp _app;
+    private readonly UserHelper _userHelper;
 
     public ExerciseLogController(
         ExerciseLogRepository exerciseLogsRepository,
-        UserRepository userRepository,
-        FirebaseApp app) => (_exerciseLogRepository, _userRepository, _app) = (exerciseLogsRepository, userRepository, app);
+        UserHelper userHelper) => (_exerciseLogRepository, _userHelper) = (exerciseLogsRepository, userHelper);
 
     [HttpGet("filters")]
-    public async Task<Results<Ok<Filter>, BadRequest>> GetFiltersByUser(
+    public async Task<Results<Ok<Filter>, BadRequest, UnauthorizedHttpResult>> GetFiltersByUser(
       [FromQuery] int? userId = null,
       [FromQuery] int? exerciseId = null,
       [FromQuery] string? type = null,
       [FromQuery] decimal? weightInKg = null)
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
-      var triggeringUser = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+      var user = await _userHelper.GetUser(Request);
 
-      var user = triggeringUser.AssignedUsers.FirstOrDefault(x => x.UserId == userId);
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
 
-      var userIdFilter = user?.UserId ?? triggeringUser!.UserId!.Value;
+      var userFilter = user.AssignedUsers.FirstOrDefault(x => x.UserId == userId);
+
+      var userIdFilter = userFilter?.UserId ?? user.UserId.Value;
 
       var types = await _exerciseLogRepository.GetFilterByUser<string>(userIdFilter, FilterEnum.Type, type, weightInKg, exerciseId);
       var weights = await _exerciseLogRepository.GetFilterByUser<decimal>(userIdFilter, FilterEnum.Weight, type, weightInKg, exerciseId);
@@ -55,20 +55,14 @@ namespace robertly.Controllers
     [HttpGet("latest-workout")]
     public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetCurrentAndPreviousWorkoutByUser()
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid();
+      var user = await _userHelper.GetUser(Request);
 
-      if (userFirebaseUuid is null)
-      {
-        return TypedResults.Unauthorized();
-      }
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
-
-      if (user is null)
+      if (user?.UserId is null)
       {
         return TypedResults.Unauthorized();
       }
 
-      var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId!.Value);
+      var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId.Value);
 
       GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
       {
@@ -88,33 +82,45 @@ namespace robertly.Controllers
     }
 
     [HttpGet("series-per-muscle")]
-    public async Task<Ok<SeriesPerMuscle>> GetSeriesPerMuscle()
+    public async Task<Results<Ok<SeriesPerMuscle>, UnauthorizedHttpResult>> GetSeriesPerMuscle()
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+      var user = await _userHelper.GetUser(Request);
 
-      var stats = await _exerciseLogRepository.GetSeriesPerMuscle(user.UserId!.Value);
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      var stats = await _exerciseLogRepository.GetSeriesPerMuscle(user.UserId.Value);
 
       return TypedResults.Ok(stats);
     }
 
     [HttpGet("days-trained")]
-    public async Task<Ok<DaysTrained>> GetStats()
+    public async Task<Results<Ok<DaysTrained>, UnauthorizedHttpResult>> GetStats()
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
+      var user = await _userHelper.GetUser(Request);
 
-      var stats = await _exerciseLogRepository.GetDaysTrained(user.UserId!.Value);
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+      var stats = await _exerciseLogRepository.GetDaysTrained(user.UserId.Value);
 
       return TypedResults.Ok(stats);
     }
 
     [HttpGet("recently-updated")]
-    public async Task<Ok<ExerciseLogsDto>> GetRecentlyUpdated()
+    public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetRecentlyUpdated()
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? throw new ArgumentException("User is not logged in");
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid) ?? throw new ArgumentException("Impossible state");
-      var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId!.Value);
+      var user = await _userHelper.GetUser(Request);
+
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId.Value);
 
       GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
       {
@@ -142,34 +148,21 @@ namespace robertly.Controllers
         [FromQuery] decimal? weightInKg = null
     )
     {
-      try
-      {
-        var token = await FirebaseAuth
-            .GetAuth(_app)
-            .VerifyIdTokenAsync(
-                Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "") ?? "");
-      }
-      catch (ArgumentException)
-      {
-        return TypedResults.Unauthorized();
-      }
-      catch (FirebaseAuthException)
-      {
-        return TypedResults.Unauthorized();
-      }
-      catch (Exception)
-      {
-        return TypedResults.Unauthorized();
-      }
+      var user = await _userHelper.GetUser(Request);
 
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
 
       GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
       {
         if (userId is null)
         {
-          queryBuilder = queryBuilder.AndUserIds([user!.UserId!.Value, .. user!.AssignedUsers.Select(x => x.UserId!.Value)]);
+          var assignedUsersIds = user.AssignedUsers
+            .Select(x => x.UserId ?? throw new ArgumentException("Assigned UserIds should never be null"));
+
+          queryBuilder = queryBuilder.AndUserIds(user.GetAllowedUserIds().ToList());
         }
         else
         {
@@ -206,8 +199,15 @@ namespace robertly.Controllers
     }
 
     [HttpGet("{id}")]
-    public async Task<Results<Ok<ExerciseLogDto>, BadRequest<string>>> GetExerciseLogById([FromRoute] int id)
+    public async Task<Results<Ok<ExerciseLogDto>, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> GetExerciseLogById([FromRoute] int id)
     {
+      var user = await _userHelper.GetUser(Request);
+
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
       var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id, true);
 
       if (logDb is null)
@@ -215,28 +215,60 @@ namespace robertly.Controllers
         return TypedResults.BadRequest($"Log with id '{id}' does not exist.");
       }
 
+      var canAccess = user.GetAllowedUserIds().Any(userId => userId == logDb.ExerciseLogUserId);
+
+      if (!canAccess)
+      {
+        return TypedResults.Forbid();
+      }
+
       return TypedResults.Ok(MapToExerciseLogDto(logDb));
     }
 
     [HttpPost]
-    public async Task<Ok<int>> Post([FromBody] ExerciseLogRequest request)
+    public async Task<Results<Ok<int>, UnauthorizedHttpResult, BadRequest, ForbidHttpResult>> Post([FromBody] ExerciseLogRequest request)
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
+      var user = await _userHelper.GetUser(Request);
 
-      var exerciseLogId = await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog!, user!.UserId!.Value);
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      if (request.ExerciseLog is null)
+      {
+        return TypedResults.BadRequest();
+      }
+
+      var canAccess = user.GetAllowedUserIds().Any(userId => userId == request.ExerciseLog.ExerciseLogUserId);
+
+      if (!canAccess)
+      {
+        return TypedResults.Forbid();
+      }
+
+      var exerciseLogId = await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog, user.UserId.Value);
 
       return TypedResults.Ok(exerciseLogId);
     }
 
     [HttpPut("{id}")]
-    public async Task<Results<Ok, BadRequest<string>>> Put(
+    public async Task<Results<Ok, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> Put(
         [FromRoute] int id,
         [FromBody] ExerciseLogRequest request
     )
     {
-      var userFirebaseUuid = HelpersFunctions.ParseToken(Request.Headers.Authorization)?.GetUserFirebaseUuid() ?? "";
-      var user = await _userRepository.GetUserByFirebaseUuidAsync(userFirebaseUuid);
+      var user = await _userHelper.GetUser(Request);
+
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      if (request.ExerciseLog?.Series is null)
+      {
+        return TypedResults.BadRequest("Series cannot be null");
+      }
 
       var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id);
 
@@ -245,26 +277,47 @@ namespace robertly.Controllers
         return TypedResults.BadRequest($"Log with id '{id}' does not exist.");
       }
 
+      var canAccess = user.GetAllowedUserIds().Any(userId => userId == logDb.ExerciseLogUserId);
+
+      if (!canAccess)
+      {
+        return TypedResults.Forbid();
+      }
+
       logDb = logDb with
       {
-        ExerciseLogDate = request.ExerciseLog!.ExerciseLogDate,
+        ExerciseLogDate = request.ExerciseLog.ExerciseLogDate,
         ExerciseLogExerciseId = request.ExerciseLog.ExerciseLogExerciseId,
-        Series = request.ExerciseLog!.Series?.Select(x => x with { ExerciseLogId = id }),
+        Series = request.ExerciseLog.Series.Select(x => x with { ExerciseLogId = id }),
       };
 
-      await _exerciseLogRepository.UpdateExerciseLogAsync(logDb, user!.UserId!.Value);
+      await _exerciseLogRepository.UpdateExerciseLogAsync(logDb, user.UserId.Value);
 
       return TypedResults.Ok();
     }
 
     [HttpDelete("{id}")]
-    public async Task<Results<Ok, BadRequest<string>>> Delete([FromRoute] int id)
+    public async Task<Results<Ok, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> Delete([FromRoute] int id)
     {
+      var user = await _userHelper.GetUser(Request);
+
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
       var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id);
 
       if (logDb is null)
       {
         return TypedResults.BadRequest($"Log with id '{id}' does not exist.");
+      }
+
+      var canAccess = user.GetAllowedUserIds().Any(userId => userId == logDb.ExerciseLogUserId);
+
+      if (!canAccess)
+      {
+        return TypedResults.Forbid();
       }
 
       await _exerciseLogRepository.DeleteExerciseLogAsync(id);

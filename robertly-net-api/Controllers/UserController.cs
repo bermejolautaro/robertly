@@ -11,10 +11,7 @@ public class UserController
 {
     private readonly UserRepository _userRepository;
 
-    public UserController(UserRepository userRepository)
-    {
-        _userRepository = userRepository;
-    }
+    public UserController(UserRepository userRepository) => (_userRepository) = (userRepository);
 
     [HttpGet("firebase-uuid/{firebaseUuid}")]
     public async Task<User?> GetUserByFirebaseUuidAsync(string firebaseUuid)

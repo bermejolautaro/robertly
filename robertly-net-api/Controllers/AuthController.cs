@@ -13,11 +13,8 @@ public class AuthController : Controller
     private readonly FirebaseAuthClient _authClient;
     private readonly UserRepository _userRepository;
 
-    public AuthController(FirebaseAuthClient authClient, UserRepository userRepository)
-    {
-        _authClient = authClient;
-        _userRepository = userRepository;
-    }
+    public AuthController(FirebaseAuthClient authClient, UserRepository userRepository) =>
+        (_authClient, _userRepository) = (authClient, userRepository);
 
     [HttpPost("signin")]
     public async Task<string> SignIn(SignInRequest request)
