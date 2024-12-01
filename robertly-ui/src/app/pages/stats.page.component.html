@@ -33,67 +33,81 @@
     </div>
 
     @if (period() === 'week') {
-      <div class="d-flex flex-wrap justify-content-around align-items-center">
-        @for (series of seriesPerWeek(); track $index) {
-          <div class="d-flex justify-content-center align-items-center flex-column">
-            <app-ring
-              [value]="series.totalSeries"
-              [maxValue]="10 * 1"
-            ></app-ring>
-            <div style="text-align: center; font-size: 12px; padding: 0.5rem">
-              {{ series.muscleGroup | titlecase }}
-            </div>
+      @for (keyvalue of seriesPerWeek(); track $index) {
+        <div class="pb-4">
+          <div class="pb-2 text-end">{{ keyvalue[0] }}</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem 0.2rem">
+            @for (series of keyvalue[1]; track $index) {
+              @defer (on viewport) {
+                <div class="d-flex justify-content-center align-items-center flex-column">
+                  <app-ring
+                    [value]="series.totalSeries"
+                    [maxValue]="10 * 1"
+                    size="s"
+                  ></app-ring>
+                  <div style="text-align: center; font-size: 12px">
+                    {{ series.muscleGroup | titlecase }}
+                  </div>
+                </div>
+              } @placeholder {
+                <div></div>
+              }
+            }
           </div>
-        }
-      </div>
+        </div>
+      }
     }
 
     @if (period() === 'month') {
-      <div class="mt-3">Current Month</div>
-      <div class="d-flex flex-wrap justify-content-around align-items-center">
-        @for (series of seriesPerMonth(); track $index) {
-          <div class="d-flex justify-content-center align-items-center flex-column">
-            <app-ring
-              [value]="series.totalSeries"
-              [maxValue]="10 * 4"
-            ></app-ring>
-            <div style="text-align: center; font-size: 12px; padding: 0.5rem">
-              {{ series.muscleGroup | titlecase }}
-            </div>
+      @for (keyvalue of seriesPerMonth(); track $index) {
+        <div class="pb-4">
+          <div class="pb-2 text-end">{{ keyvalue[0] }}</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem 0.2rem">
+            @for (series of keyvalue[1]; track $index) {
+              @defer (on viewport) {
+                <div class="d-flex justify-content-center align-items-center flex-column">
+                  <app-ring
+                    [value]="series.totalSeries"
+                    [maxValue]="10 * 4"
+                    size="s"
+                  ></app-ring>
+                  <div style="text-align: center; font-size: 12px">
+                    {{ series.muscleGroup | titlecase }}
+                  </div>
+                </div>
+              } @placeholder {
+                <div></div>
+              }
+            }
           </div>
-        }
-      </div>
-
-      <div class="mt-3">Previous Month</div>
-      <div class="d-flex flex-wrap justify-content-around align-items-center">
-        @for (series of seriesPerPreviousMonth(); track $index) {
-          <div class="d-flex justify-content-center align-items-center flex-column">
-            <app-ring
-              [value]="series.totalSeries"
-              [maxValue]="10 * 4"
-            ></app-ring>
-            <div style="text-align: center; font-size: 12px; padding: 0.5rem">
-              {{ series.muscleGroup | titlecase }}
-            </div>
-          </div>
-        }
-      </div>
+        </div>
+      }
     }
 
     @if (period() === 'year') {
-      <div class="d-flex flex-wrap justify-content-around align-items-center">
-        @for (series of seriesPerYear(); track $index) {
-          <div class="d-flex justify-content-center align-items-center flex-column">
-            <app-ring
-              [value]="series.totalSeries"
-              [maxValue]="10 * 52"
-            ></app-ring>
-            <div style="text-align: center; font-size: 12px; padding: 0.5rem">
-              {{ series.muscleGroup | titlecase }}
-            </div>
+      @for (keyvalue of seriesPerYear(); track $index) {
+        <div class="pb-4">
+          <div class="pb-2 text-end">{{ keyvalue[0] }}</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem 0.2rem">
+            @for (series of keyvalue[1]; track $index) {
+              @defer (on viewport) {
+                <div class="d-flex justify-content-center align-items-center flex-column">
+                  <app-ring
+                    [value]="series.totalSeries"
+                    [maxValue]="10 * 52"
+                    size="s"
+                  ></app-ring>
+                  <div style="text-align: center; font-size: 12px">
+                    {{ series.muscleGroup | titlecase }}
+                  </div>
+                </div>
+              } @placeholder {
+                <div></div>
+              }
+            }
           </div>
-        }
-      </div>
+        </div>
+      }
     }
   </div>
 </div>

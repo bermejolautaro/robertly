@@ -11,6 +11,8 @@ import { DropdownComponent } from '../components/dropdown.component';
 import { FormControl } from '@angular/forms';
 import { ExerciseApiService } from '@services/exercises-api.service';
 
+import * as R from 'remeda';
+
 @Component({
   selector: 'app-stats-page',
   templateUrl: './stats.page.component.html',
@@ -22,6 +24,7 @@ export class StatsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly dayjs = inject(DAY_JS);
   private readonly exercisesApiService = inject(ExerciseApiService);
+  private readonly titleCasePipe = inject(TitleCasePipe);
 
   public readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
@@ -33,11 +36,9 @@ export class StatsPageComponent implements OnInit {
 
   public readonly period = signal<'week' | 'month' | 'year'>('week');
 
-  public readonly seriesPerWeek = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
-  public readonly seriesPerMonth = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
-  public readonly seriesPerPreviousMonth = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
-
-  public readonly seriesPerYear = linkedSignal<SeriesPerMuscleRow[]>(this.defaultValues);
+  public readonly seriesPerWeek = signal<[key: string, value: SeriesPerMuscleRow[]][]>([]);
+  public readonly seriesPerMonth = signal<[key: string, value: SeriesPerMuscleRow[]][]>([]);
+  public readonly seriesPerYear = signal<[key: string, value: SeriesPerMuscleRow[]][]>([]);
 
   public readonly selectedOptionControl = signal(new FormControl('Series Per Muscle'));
   public readonly options = signal(['Series Per Muscle', 'Exercise', 'Tonnage']);
@@ -50,61 +51,80 @@ export class StatsPageComponent implements OnInit {
     const seriesPerMuscle = this.seriesPerMuscle.value();
 
     if (seriesPerMuscle) {
-      const currentYear = this.dayjs().year();
-      const currentMonth = this.dayjs().month() + 1;
-      const currentWeek = this.dayjs().week();
+      const perWeek = R.pipe(
+        seriesPerMuscle.seriesPerMuscleWeekly,
+        R.groupBy(x => `${x.year}-${x.week.toString().padStart(2, '0')}`),
+        R.mapValues(x => {
+          const result = this.defaultValues().map(defaultValue => {
+            const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
 
-      const previousMonth = this.dayjs().add(-1, 'month').month() + 1;
+            if (row) {
+              return row;
+            }
 
-      const perWeek = seriesPerMuscle.seriesPerMuscleWeekly.filter(
-        x => x.week === currentWeek && x.year === currentYear
+            return defaultValue as SeriesPerMuscleRow;
+          });
+
+          return result;
+        }),
+        R.entries(),
+        R.sortBy(x => x[0]),
+        R.reverse(),
+        R.map(x => [`Week ${x[0].split('-')[1]} of ${x[0].split('-')[0]}`, x[1]] as [string, SeriesPerMuscleRow[]])
       );
 
-      const perMonth = seriesPerMuscle.seriesPerMuscleMonthly.filter(
-        x => x.month === currentMonth && x.year === currentYear
+      const perYear = R.pipe(
+        seriesPerMuscle.seriesPerMuscleYearly,
+        R.groupBy(x => `${x.year}`),
+        R.mapValues(x => {
+          const result = this.defaultValues().map(defaultValue => {
+            const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
+
+            if (row) {
+              return row;
+            }
+
+            return defaultValue as SeriesPerMuscleRow;
+          });
+
+          return result;
+        }),
+        R.entries(),
+        R.sortBy(x => x[0]),
+        R.reverse()
       );
 
-      const perPreviousMonth = seriesPerMuscle.seriesPerMuscleMonthly.filter(
-        x => x.month === previousMonth && x.year === currentYear
+      const perMonth = R.pipe(
+        seriesPerMuscle.seriesPerMuscleMonthly,
+        R.groupBy(x => `${x.year.toString()}-${x.month.toString().padStart(2, '0')}-01`),
+        R.mapValues(x => {
+          const result = this.defaultValues().map(defaultValue => {
+            const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
+
+            if (row) {
+              return row;
+            }
+
+            return defaultValue as SeriesPerMuscleRow;
+          });
+
+          return result;
+        }),
+        R.entries(),
+        R.sortBy(x => x[0]),
+        R.reverse(),
+        R.map(
+          x =>
+            [this.titleCasePipe.transform(this.dayjs(x[0]).format('MMM[ - ]YYYY')), x[1]] as [
+              string,
+              SeriesPerMuscleRow[],
+            ]
+        )
       );
 
-      const perYear = seriesPerMuscle.seriesPerMuscleYearly.filter(x => x.year === currentYear);
-
-      if (perWeek.length) {
-        this.seriesPerWeek.update(x =>
-          x.map(y => {
-            const serie = perWeek.find(a => a.muscleGroup === y.muscleGroup);
-            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
-          })
-        );
-      }
-
-      if (perMonth.length) {
-        this.seriesPerMonth.update(x =>
-          x.map(y => {
-            const serie = perMonth.find(a => a.muscleGroup === y.muscleGroup);
-            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
-          })
-        );
-      }
-
-      if (perPreviousMonth.length) {
-        this.seriesPerPreviousMonth.update(x =>
-          x.map(y => {
-            const serie = perPreviousMonth.find(a => a.muscleGroup === y.muscleGroup);
-            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
-          })
-        );
-      }
-
-      if (perYear) {
-        this.seriesPerYear.update(x =>
-          x.map(y => {
-            const serie = perYear.find(a => a.muscleGroup === y.muscleGroup);
-            return !serie ? y : { ...y, totalSeries: serie?.totalSeries ?? 0 };
-          })
-        );
-      }
+      this.seriesPerWeek.set(perWeek);
+      this.seriesPerMonth.set(perMonth);
+      this.seriesPerYear.set(perYear);
     }
   });
 

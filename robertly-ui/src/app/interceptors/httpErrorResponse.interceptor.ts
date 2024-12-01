@@ -2,7 +2,7 @@ import { HttpErrorResponse, HttpInterceptorFn, HttpStatusCode } from '@angular/c
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthApiService } from '@services/auth-api.service';
-import { catchError, from, of, switchMap, throwError } from 'rxjs';
+import { catchError, from, switchMap, throwError } from 'rxjs';
 import { Paths } from 'src/main';
 
 export const httpErrorResponseInterceptor: HttpInterceptorFn = (req, next) => {
@@ -23,7 +23,7 @@ export const httpErrorResponseInterceptor: HttpInterceptorFn = (req, next) => {
           return from(authApiService.tryRefreshToken()).pipe(
             switchMap(isRefreshSuccessful => {
               const path = isRefreshSuccessful ? Paths.HOME : Paths.SIGN_IN;
-              router.navigate([path]);
+              router.navigate([path], { onSameUrlNavigation: 'reload' });
               return throwError(() => e);
             })
           );
@@ -32,7 +32,7 @@ export const httpErrorResponseInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
 
-      return throwError(() => e)
+      return throwError(() => e);
     })
   );
 };

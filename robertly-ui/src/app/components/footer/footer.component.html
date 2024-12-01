@@ -1,68 +1,63 @@
 <nav class="navbar fixed-bottom fw-bold">
-  <div class="container-fluid">
-    <ul class="navbar-nav flex-row gap-3 justify-content-center w-100">
+  <div class="container">
+    <ul class="navbar-nav flex-row justify-content-center w-100">
       <li class="nav-item w-100">
         <a
-          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
+          class="nav-link text-center d-flex justify-content-center align-items-center flex-column"
           [routerLink]="Paths.HOME"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
         >
-          <div class="item">
             <div>
               <i class="fa fa-home"></i>
             </div>
             <div>Home</div>
-          </div>
         </a>
       </li>
       <li class="nav-item w-100">
         <a
-          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
+          class="nav-link text-center d-flex justify-content-center align-items-center flex-column"
           [routerLink]="Paths.LOGS"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
         >
-          <div class="item">
             <div>
               <i class="fa fa-history"></i>
             </div>
             <div>Logs</div>
-          </div>
         </a>
       </li>
       <li class="nav-item w-100">
         <div class="d-flex justify-content-center align-items-center add-button-container">
-          <button class="btn btn-lg btn-primary d-flex justify-content-center align-items-center" (click)="navigateToCreateLog()">
+          <button
+            class="btn btn-lg btn-primary d-flex justify-content-center align-items-center"
+            (click)="navigateToCreateLog()"
+          >
             <i class="fa fa-plus"></i>
           </button>
         </div>
       </li>
       <li class="nav-item w-100">
         <a
-          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
+          class="nav-link text-center d-flex justify-content-center align-items-center flex-column"
           [routerLink]="Paths.STATS"
           routerLinkActive="active"
         >
           <div>
-            <div>
-              <i class="fa fa-bar-chart"></i>
-            </div>
-            <div>Stats</div>
+            <i class="fa fa-bar-chart"></i>
           </div>
+          <div>Stats</div>
         </a>
       </li>
       <li class="nav-item w-100">
         <a
-          class="nav-link text-center d-flex justify-content-center align-items-center gap-2"
+          class="nav-link text-center d-flex justify-content-center align-items-center flex-column"
           routerLinkActive="active"
         >
           <div>
-            <div>
-              <i class="fa fa-cog"></i>
-            </div>
-            <div>Settings</div>
+            <i class="fa fa-address-book-o"></i>
           </div>
+          <div>Friends</div>
         </a>
       </li>
     </ul>

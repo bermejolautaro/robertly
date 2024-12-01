@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, computed, effect, input, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, input, model, signal } from '@angular/core';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'app-ring',
   template: ` <svg
     class="progress-ring"
-    [attr.height]="this.size()"
-    [attr.width]="this.size()"
+    [attr.height]="this.dimensions()"
+    [attr.width]="this.dimensions()"
     ngbTooltip="{{ this.value() }} / {{ this.maxValue() }}"
     tooltipClass="ring-tooltip"
     ontouchstart
@@ -17,6 +17,7 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
       x="50%"
       y="52%"
       fill="white"
+      [style.fontSize]="fontSize()"
     >
       {{ count() }}
     </text>
@@ -25,8 +26,8 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
       [attr.stroke-width]="strokeWidth()"
       fill="transparent"
       [attr.r]="this.radius()"
-      [attr.cx]="this.size() / 2"
-      [attr.cy]="this.size() / 2"
+      [attr.cx]="this.dimensions() / 2"
+      [attr.cy]="this.dimensions() / 2"
       stroke=""
     />
     <circle
@@ -38,8 +39,8 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
       [attr.stroke-dashoffset]="strokeDashOffset()"
       fill="transparent"
       [attr.r]="this.radius()"
-      [attr.cx]="this.size() / 2"
-      [attr.cy]="this.size() / 2"
+      [attr.cx]="this.dimensions() / 2"
+      [attr.cy]="this.dimensions() / 2"
     />
   </svg>`,
   styles: `
@@ -79,6 +80,7 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
 export class RingComponent {
   public readonly value = input<number>(0);
   public readonly maxValue = input<number>(1);
+  public readonly size = model<'l' | 'm' | 's'>('m');
 
   public readonly count = signal(0);
 
@@ -89,10 +91,40 @@ export class RingComponent {
     return percent >= 70 ? 'success' : percent >= 50 ? 'average' : 'danger';
   });
 
-  public readonly size = signal(100);
-  public readonly strokeWidth = signal(7);
+  public readonly dimensions = computed(() => {
+    switch (this.size()) {
+      case 'l':
+        return 100;
+      case 'm':
+        return 100;
+      case 's':
+        return 50;
+    }
+  });
 
-  public readonly radius = computed(() => this.size() / 2 - this.strokeWidth() * 2);
+  public readonly strokeWidth = computed(() => {
+    switch (this.size()) {
+      case 'l':
+        return 7;
+      case 'm':
+        return 7;
+      case 's':
+        return 3;
+    }
+  });
+
+  public readonly fontSize = computed(() => {
+    switch (this.size()) {
+      case 'l':
+        return 7;
+      case 'm':
+        return 24;
+      case 's':
+        return 12;
+    }
+  });
+
+  public readonly radius = computed(() => this.dimensions() / 2 - this.strokeWidth() * 2);
   public readonly circumference = computed(() => this.radius() * 2 * Math.PI);
   public readonly strokeDashOffset = signal(this.circumference());
 
