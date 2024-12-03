@@ -5,6 +5,7 @@ export interface SeriesPerMuscleRow {
   week: number;
   totalSeries: number;
   firstDateInPeriod: string;
+  target: number;
 }
 
 export interface SeriesPerMuscle {

@@ -183,7 +183,7 @@ public class ExerciseLogRepository
         return queryBuilder
           .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
           .AndUserIds([exerciseLog.User!.UserId!.Value])
-          .AndDate(exerciseLog.ExerciseLogDate, "<=");
+          .AndDate(exerciseLog.ExerciseLogDate, "<");
       };
 
       var recentLogs = await GetExerciseLogsAsync(0, 5, queryBuilderFunc);

@@ -13,6 +13,25 @@ import { ExerciseApiService } from '@services/exercises-api.service';
 
 import * as R from 'remeda';
 
+function calculateTarget(muscleGroup: string) {
+  switch (muscleGroup) {
+    case 'biceps':
+    case 'triceps':
+    case 'calves':
+    case 'shoulders':
+      return 6;
+    case 'back':
+    case 'legs':
+    case 'chest':
+      return 10;
+    case 'forearms':
+    case 'glutes':
+      return 3;
+    default:
+      return 10;
+  }
+}
+
 @Component({
   selector: 'app-stats-page',
   templateUrl: './stats.page.component.html',
@@ -28,10 +47,16 @@ export class StatsPageComponent implements OnInit {
 
   public readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
-  private readonly defaultValues = linkedSignal(() =>
-    this.exercisesApiService
-      .muscleGroups()
-      .map(x => ({ totalSeries: 0, muscleGroup: x ?? '', firstDateInPeriod: '', month: 0, week: 0, year: 0 }))
+  private readonly defaultValues = linkedSignal<SeriesPerMuscleRow[]>(() =>
+    this.exercisesApiService.muscleGroups().map(x => ({
+      totalSeries: 0,
+      muscleGroup: x ?? '',
+      firstDateInPeriod: '',
+      month: 0,
+      week: 0,
+      year: 0,
+      target: calculateTarget(x),
+    }))
   );
 
   public readonly period = signal<'week' | 'month' | 'year'>('week');
@@ -59,10 +84,10 @@ export class StatsPageComponent implements OnInit {
             const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
 
             if (row) {
-              return row;
+              return { ...row, target: defaultValue.target };
             }
 
-            return defaultValue as SeriesPerMuscleRow;
+            return defaultValue;
           });
 
           return result;
@@ -81,10 +106,10 @@ export class StatsPageComponent implements OnInit {
             const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
 
             if (row) {
-              return row;
+              return { ...row, target: defaultValue.target };
             }
 
-            return defaultValue as SeriesPerMuscleRow;
+            return defaultValue;
           });
 
           return result;
@@ -102,10 +127,10 @@ export class StatsPageComponent implements OnInit {
             const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
 
             if (row) {
-              return row;
+              return { ...row, target: defaultValue.target };
             }
 
-            return defaultValue as SeriesPerMuscleRow;
+            return defaultValue;
           });
 
           return result;

@@ -87,6 +87,7 @@ export class AppComponent implements OnInit {
   }
 
   public async ngOnInit(): Promise<void> {
+    await this.authApiService.tryRefreshToken();
     await this.exerciseApiService.fetchExercises();
   }
 
