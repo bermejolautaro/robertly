@@ -30,16 +30,16 @@ public class ExerciseLogRepository
     var query = $"""
     WITH WeeklyCounts AS (
         SELECT
-            e.MuscleGroup,
-            EXTRACT(YEAR FROM el.date) AS Year,
-            EXTRACT(WEEK FROM el.date) AS Week,
+            E.MuscleGroup,
+            EXTRACT(ISOYEAR FROM EL.date) AS Year,
+            EXTRACT(WEEK FROM EL.date) AS Week,
             COUNT(s.SerieId) AS TotalSeries,
-            MIN(el.date) AS FirstDateInPeriod
-        FROM  {_connection.Schema}.exerciselogs el
-        INNER JOIN  {_connection.Schema}.series s ON el.exerciselogid = s.exerciselogid
-        INNER JOIN  {_connection.Schema}.exercises e ON el.exerciseId = e.exerciseId
-        WHERE  el.UserId = @UserId
-        GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(WEEK FROM el.date)
+            MIN(EL.date) AS FirstDateInPeriod
+        FROM {_connection.Schema}.ExerciseLogs EL
+        INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+        INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+        WHERE EL.UserId = @UserId
+        GROUP BY E.MuscleGroup, EXTRACT(ISOYEAR FROM el.date), EXTRACT(WEEK FROM el.date)
     )
     SELECT
         MuscleGroup,
@@ -52,21 +52,21 @@ public class ExerciseLogRepository
 
     WITH MonthlyCounts AS (
     SELECT
-        e.MuscleGroup,
-        EXTRACT(YEAR FROM el.date) AS Year,
-        EXTRACT(MONTH FROM el.date) AS Month,
-        COUNT(s.SerieId) AS TotalSeries,
-        MIN(el.date) AS FirstDateInPeriod
-    FROM {_connection.Schema}.exerciselogs el
-    INNER JOIN {_connection.Schema}.series s ON el.exerciselogid = s.exerciselogid
-    INNER JOIN {_connection.Schema}.exercises e ON el.exerciseId = e.exerciseId
-    WHERE el.UserId = @UserId
-    GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date), EXTRACT(MONTH FROM el.date)
+        E.MuscleGroup,
+        EXTRACT(YEAR FROM EL.date) AS Year,
+        EXTRACT(MONTH FROM EL.date) AS Month,
+        COUNT(S.SerieId) AS TotalSeries,
+        MIN(EL.date) AS FirstDateInPeriod
+    FROM {_connection.Schema}.ExerciseLogs EL
+    INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = s.ExerciseLogId
+    INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = e.ExerciseId
+    WHERE EL.UserId = @UserId
+    GROUP BY E.MuscleGroup, EXTRACT(YEAR FROM EL.date), EXTRACT(MONTH FROM EL.date)
     )
     SELECT
         MuscleGroup,
-        year,
-        month,
+        Year,
+        Month,
         TotalSeries,
         FirstDateInPeriod
     FROM
@@ -75,15 +75,15 @@ public class ExerciseLogRepository
 
     WITH YearlyCounts AS (
     SELECT
-        e.MuscleGroup,
+        E.MuscleGroup,
         EXTRACT(YEAR FROM el.date) AS Year,
-        COUNT(s.SerieId) AS TotalSeries,
-        MIN(el.date) AS FirstDateInPeriod
-    FROM {_connection.Schema}.exerciselogs el
-    INNER JOIN {_connection.Schema}.series s ON el.exerciselogid = s.exerciselogid
-    INNER JOIN {_connection.Schema}.exercises e ON el.exerciseId = e.exerciseId
-    WHERE el.UserId = @UserId
-    GROUP BY e.MuscleGroup, EXTRACT(YEAR FROM el.date)
+        COUNT(S.SerieId) AS TotalSeries,
+        MIN(EL.Date) AS FirstDateInPeriod
+    FROM {_connection.Schema}.ExerciseLogs EL
+    INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+    INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+    WHERE EL.UserId = @UserId
+    GROUP BY E.MuscleGroup, EXTRACT(YEAR FROM EL.Date)
     )
     SELECT
         MuscleGroup,
