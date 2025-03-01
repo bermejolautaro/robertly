@@ -105,6 +105,7 @@ namespace robertly.Controllers
       {
         return TypedResults.Unauthorized();
       }
+
       var stats = await _exerciseLogRepository.GetDaysTrained(user.UserId.Value);
 
       return TypedResults.Ok(stats);

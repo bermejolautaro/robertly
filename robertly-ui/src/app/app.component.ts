@@ -23,6 +23,7 @@ import { HeaderComponent } from '@components/header/header.component';
 import { FooterComponent } from '@components/footer/footer.component';
 import { AuthService } from '@services/auth.service';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
+import { Auth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-root',
@@ -49,6 +50,7 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly offcanvasService = inject(NgbOffcanvas);
   private readonly modalService = inject(NgbModal);
+  private readonly auth = inject(Auth);
 
   public readonly Paths = Paths;
   public hasAppLoaded: boolean = true;
@@ -87,6 +89,7 @@ export class AppComponent implements OnInit {
   }
 
   public async ngOnInit(): Promise<void> {
+    await this.auth.authStateReady();
     await this.authApiService.tryRefreshToken();
     await this.exerciseApiService.fetchExercises();
   }

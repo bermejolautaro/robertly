@@ -1,4 +1,5 @@
 import { Injectable, signal } from '@angular/core';
+import * as R from 'remeda'
 
 export interface Toast {
   delay?: number;
@@ -11,7 +12,7 @@ export class ToastService {
   public toasts = signal<Toast[]>([]);
 
   public show(toast: Toast): void {
-    this.toasts.update(toasts => [...toasts, toast]);
+    this.toasts.update(toasts => R.uniqueBy([...toasts, toast], x => x.text));
   }
 
   public ok(text: string) {

@@ -26,6 +26,7 @@ export class AuthApiService {
   private readonly auth = inject(Auth);
   private readonly toastService = inject(ToastService);
 
+  private readonly isRefreshingToken = signal<boolean>(false);
   public readonly idToken = signal<string | null>(null);
 
   public constructor() {
@@ -82,7 +83,20 @@ export class AuthApiService {
   }
 
   public async tryRefreshToken(): Promise<boolean> {
-    const newToken = await this.auth.currentUser?.getIdToken(true);
+    if (this.isRefreshingToken()) {
+      return false;
+    }
+
+    const currentUser = this.auth.currentUser;
+    this.isRefreshingToken.set(true);
+
+    if (!currentUser) {
+      await this.signOut();
+      return false;
+    }
+
+    const newToken = await currentUser.getIdToken();
+    this.isRefreshingToken.set(false);
 
     if (newToken) {
       localStorage.setItem(IDTOKEN_KEY, newToken);
