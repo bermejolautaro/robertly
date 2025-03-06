@@ -10,6 +10,6 @@ export class UsersService {
   private readonly apiUrl = inject(API_URL);
 
   public getUserByFirebaseUuid(firebaseUuid: string): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/users/firebase-uuid/${firebaseUuid}`);
+    return this.http.get<User>(`${this.apiUrl}/users/firebase-uuid/${firebaseUuid}?serviceWorkerCache=true`);
   }
 }

@@ -74,13 +74,17 @@
 </div>
 
 @if (hasAppLoaded) {
-  <app-header (menuSidebarClicked)="openSidebar(content)"> </app-header>
+  @if (currentRoute()?.url !== '/' + Paths.SIGN_IN) {
+    <app-header (menuSidebarClicked)="openSidebar(content)"> </app-header>
+  }
 
   <div class="main">
     <router-outlet></router-outlet>
   </div>
 
-  <app-footer></app-footer>
+  @if (currentRoute()?.url !== '/' + Paths.SIGN_IN) {
+    <app-footer></app-footer>
+  }
 } @else {
   <div class="preloader">
     <div class="preloader-content">

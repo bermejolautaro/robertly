@@ -32,7 +32,10 @@ static GoogleCredential GetGoogleCredential(GoogleCredentialOptions googleCreden
     PrivateKey = googleCredentialOptions.PrivateKey,
     ProjectId = googleCredentialOptions.ProjectId,
     Type = JsonCredentialParameters.ServiceAccountCredentialType,
-  }).CreateScoped(["https://www.googleapis.com/auth/firebase.database", "https://www.googleapis.com/auth/userinfo.email"]);
+  }).CreateScoped([
+    "https://www.googleapis.com/auth/firebase.database",
+    "https://www.googleapis.com/auth/userinfo.email",
+    "https://www.googleapis.com/auth/identitytoolkit"]);
 }
 
 builder.Services.AddSingleton(serviceProvider =>

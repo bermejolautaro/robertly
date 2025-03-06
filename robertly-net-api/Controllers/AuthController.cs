@@ -1,7 +1,11 @@
 ﻿using Firebase.Auth;
 using Firebase.Auth.Providers;
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using robertly.Repositories;
+using System;
 using System.Threading.Tasks;
 
 namespace robertly.Controllers;
@@ -12,9 +16,11 @@ public class AuthController : Controller
 {
     private readonly FirebaseAuthClient _authClient;
     private readonly UserRepository _userRepository;
+    private readonly FirebaseApp _firebaseApp;
+    private readonly IHostEnvironment _environment;
 
-    public AuthController(FirebaseAuthClient authClient, UserRepository userRepository) =>
-        (_authClient, _userRepository) = (authClient, userRepository);
+    public AuthController(FirebaseAuthClient authClient, UserRepository userRepository, FirebaseApp firebaseApp, IHostEnvironment environment) =>
+        (_authClient, _userRepository, _firebaseApp, _environment) = (authClient, userRepository, firebaseApp, environment);
 
     [HttpPost("signin")]
     public async Task<string> SignIn(SignInRequest request)
@@ -43,6 +49,15 @@ public class AuthController : Controller
         await GetOrCreateUser(cred);
 
         return await cred.User.GetIdTokenAsync();
+    }
+
+    [HttpPost("revoke/{firebaseUuid}")]
+    public async Task RevokeToken(string firebaseUuid)
+    {
+        if (_environment.IsDevelopment())
+        {
+            await FirebaseAuth.GetAuth(_firebaseApp).RevokeRefreshTokensAsync(firebaseUuid);
+        }
     }
 
     private async Task GetOrCreateUser(UserCredential cred)

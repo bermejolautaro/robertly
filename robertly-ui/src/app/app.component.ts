@@ -1,8 +1,8 @@
 import { Component, OnInit, TemplateRef, inject } from '@angular/core';
-import { Router, RouterLinkWithHref, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { firstValueFrom, take } from 'rxjs';
+import { filter, firstValueFrom, take } from 'rxjs';
 import { Paths } from 'src/main';
 
 import { DOCUMENT } from '@angular/common';
@@ -16,7 +16,7 @@ import {
   NgbToastModule,
 } from '@ng-bootstrap/ng-bootstrap';
 import { ExerciseApiService } from '@services/exercises-api.service';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ToastService } from '@services/toast.service';
 import { AuthApiService } from '@services/auth-api.service';
 import { HeaderComponent } from '@components/header/header.component';
@@ -56,6 +56,7 @@ export class AppComponent implements OnInit {
   private readonly auth = inject(Auth);
 
   public readonly Paths = Paths;
+  public readonly currentRoute = toSignal(this.router.events.pipe(filter(x => x instanceof NavigationEnd)));
   public hasAppLoaded: boolean = true;
   public preloaderMessage: string = 'Searching for updates...';
   public preloaderProgress: number = 10;
@@ -95,7 +96,7 @@ export class AppComponent implements OnInit {
     await this.auth.authStateReady();
     await this.authApiService.tryRefreshToken();
     const currentUser = this.auth.currentUser;
-    const userFromDb = await firstValueFrom(this.usersService.getUserByFirebaseUuid(currentUser?.uid ?? ''))
+    const userFromDb = await firstValueFrom(this.usersService.getUserByFirebaseUuid(currentUser?.uid ?? ''));
     this.authService.user.set(userFromDb);
     await this.exerciseApiService.fetchExercises();
   }

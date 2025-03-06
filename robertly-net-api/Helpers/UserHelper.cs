@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using robertly.Models;
 using robertly.Repositories;
 
@@ -11,9 +12,11 @@ namespace robertly.Helpers;
 public class UserHelper
 {
   private readonly UserRepository _userRepository;
+  private readonly AppLogsRepository _appLogs;
   private readonly FirebaseApp _firebaseApp;
 
-  public UserHelper(UserRepository userRepository, FirebaseApp firebaseApp) => (_userRepository, _firebaseApp) = (userRepository, firebaseApp);
+  public UserHelper(UserRepository userRepository, AppLogsRepository appLogs, FirebaseApp firebaseApp) =>
+    (_userRepository, _appLogs, _firebaseApp) = (userRepository, appLogs, firebaseApp);
 
   public async Task<User?> GetUser(HttpRequest request)
   {
@@ -24,7 +27,7 @@ public class UserHelper
     {
       token = await FirebaseAuth
         .GetAuth(_firebaseApp)
-        .VerifyIdTokenAsync(idToken);
+        .VerifyIdTokenAsync(idToken, true);
     }
     catch (ArgumentException)
     {
@@ -32,6 +35,15 @@ public class UserHelper
     }
     catch (FirebaseAuthException)
     {
+      return null;
+    }
+    catch (JsonReaderException)
+    {
+      return null;
+    }
+    catch (Exception e)
+    {
+      await _appLogs.LogError($"{e.GetType().Name} on {nameof(UserHelper)}.{nameof(UserHelper.GetUser)}", e);
       return null;
     }
 

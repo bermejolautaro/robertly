@@ -21,7 +21,7 @@ public class LoggerExceptionHandler : IExceptionHandler
       Exception exception,
       CancellationToken cancellationToken)
   {
-    await _appLogsRepository.LogError("Global Error Handler", exception);
+    await _appLogsRepository.LogError($"{exception.GetType().Name} on Global Error Handler", exception);
 
     return false;
   }

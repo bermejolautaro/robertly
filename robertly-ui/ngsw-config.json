@@ -4,7 +4,7 @@
   "dataGroups": [
     {
       "name": "api",
-      "urls": ["/api/logs/*serviceWorkerCache=true*"],
+      "urls": ["/api*serviceWorkerCache=true*"],
       "cacheConfig": {
         "strategy": "freshness",
         "maxSize": 100,

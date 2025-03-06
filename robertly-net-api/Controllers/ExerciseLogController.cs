@@ -129,9 +129,10 @@ namespace robertly.Controllers
       GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
       {
         return queryBuilder
-          .AndLastUpdatedByUserId([user.UserId.Value])
+          .AndLastUpdatedByUserId([user!.UserId!.Value])
           .OrderByLastUpdatedAtUtc(Direction.Desc);
       }
+
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
           0,
           10,
