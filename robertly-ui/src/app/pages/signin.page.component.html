@@ -1,22 +1,57 @@
 <div class="container my-3">
-  <div class="d-flex justify-content-center mt-2">
-    <button type="button" class="btn btn-light w-100 sign-in-google" (click)="onClickSignInWithGoogle()">
-      <img width="32" height="32" ngSrc="assets/icons/google-sign-in.png">
-      <span>Sign In with Google</span>
-    </button>
-  </div>
+  @if (!isLoading()) {
+    <div class="d-flex justify-content-center mt-2">
+      <button
+        type="button"
+        class="btn btn-light w-100 sign-in-google"
+        (click)="onClickSignInWithGoogle()"
+      >
+        <img
+          width="32"
+          height="32"
+          ngSrc="assets/icons/google-sign-in.png"
+        />
+        <span>Sign In with Google</span>
+      </button>
+    </div>
 
-  <!-- #region SIGN IN WITH EMAIL -->
-  <div class="my-3">
-    <div class="input-group">
-      <input type="text" class="form-control" placeholder="Email" [(ngModel)]="email" />
+    <!-- #region SIGN IN WITH EMAIL -->
+    <div class="my-3">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Email"
+          [(ngModel)]="email"
+        />
+      </div>
+      <div class="input-group my-1">
+        <input
+          type="password"
+          class="form-control"
+          placeholder="Password"
+          [(ngModel)]="password"
+        />
+      </div>
+      <div class="d-flex justify-content-end my-2">
+        <button
+          type="button"
+          class="btn btn-primary me-2"
+          (click)="onClickSignIn()"
+        >
+          Sign In
+        </button>
+      </div>
     </div>
-    <div class="input-group my-1">
-      <input type="password" class="form-control" placeholder="Password" [(ngModel)]="password" />
+    <!-- #endregion -->
+  } @else {
+    <div class="position-absolute top-50 start-50 translate-middle">
+      <div
+        class="robertly-spinner spinner-border text-primary"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
     </div>
-    <div class="d-flex justify-content-end my-2">
-      <button type="button" class="btn btn-primary me-2" (click)="onClickSignIn()">Sign In</button>
-    </div>
-  </div>
-  <!-- #endregion -->
+  }
 </div>

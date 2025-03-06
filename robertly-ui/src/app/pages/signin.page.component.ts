@@ -1,5 +1,5 @@
 import { NgOptimizedImage } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthApiService } from '@services/auth-api.service';
@@ -28,6 +28,8 @@ export class SignInComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
 
+  public readonly isLoading = signal(false);
+
   public email: string = '';
   public password: string = '';
 
@@ -41,19 +43,24 @@ export class SignInComponent implements OnInit {
     }
 
     try {
+      this.isLoading.set(true);
       await firstValueFrom(this.authApiService.signIn({ email: this.email, password: this.password }));
       this.router.navigate([Paths.HOME]);
     } catch (error) {
       this.toastService.error('Sign in with email failed.');
     }
+
+    this.isLoading.set(false);
   }
 
   public async onClickSignInWithGoogle(): Promise<void> {
     try {
+      this.isLoading.set(true);
       await this.authApiService.signInWithGoogle();
       this.router.navigate([Paths.HOME]);
     } catch (error) {
       this.toastService.error('Sign in with google failed.');
     }
+    this.isLoading.set(false);
   }
 }

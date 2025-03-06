@@ -136,29 +136,27 @@ export class RingComponent {
     return `${circumference} ${circumference}`;
   });
 
-  animateCountUp(targetValue: number, duration: number = 2000) {
-    const startValue = this.count(); // Start from the current value
-    const startTime = performance.now(); // Start time
+  private animateCountUp(targetValue: number, duration: number = 2000): void {
+    const startValue = this.count();
+    const startTime = performance.now();
 
     const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime; // Time elapsed since animation started
-      const easeOutQuad = (t: number) => t * (2 - t); // Example easing function
-      const progress = Math.min(elapsed / duration, 1); // Progress in [0, 1]
+      const elapsed = currentTime - startTime;
+      const easeOutQuad = (t: number) => t * (2 - t);
+      const progress = Math.min(elapsed / duration, 1);
       const easedProgress = easeOutQuad(progress);
 
-      // Calculate the interpolated value
       const currentValue = Math.round(startValue + (targetValue - startValue) * easedProgress);
-      this.count.set(currentValue); // Update the signal
+      this.count.set(currentValue);
 
-      // Continue the animation until progress reaches 1
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
-        this.count.set(targetValue); // Ensure the final value is exact
+        this.count.set(targetValue);
       }
     };
 
-    requestAnimationFrame(animate); // Start the animation
+    requestAnimationFrame(animate);
   }
 
   public ngOnInit() {

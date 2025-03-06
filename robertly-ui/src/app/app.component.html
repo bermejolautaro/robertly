@@ -74,7 +74,9 @@
   }
 
   <div class="main">
-    <router-outlet></router-outlet>
+    @if (!isLoading()) {
+      <router-outlet></router-outlet>
+    }
   </div>
 
   @if (currentRoute()?.url !== '/' + Paths.SIGN_IN) {

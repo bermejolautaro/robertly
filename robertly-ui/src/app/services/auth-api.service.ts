@@ -87,22 +87,26 @@ export class AuthApiService {
   }
 
   public async tryRefreshToken(): Promise<boolean> {
-    if (this.isRefreshingToken()) {
-      return false;
-    }
+    try {
+      if (this.isRefreshingToken()) {
+        return false;
+      }
+      this.isRefreshingToken.set(true);
+      await this.auth.authStateReady();
+      const currentUser = this.auth.currentUser;
+      const newToken = (await currentUser?.getIdToken(true)) ?? null;
+      this.isRefreshingToken.set(false);
 
-    this.isRefreshingToken.set(true);
-    const newToken = (await this.auth.currentUser?.getIdToken(true)) ?? null;
-    this.isRefreshingToken.set(false);
-
-    if (newToken) {
-      localStorage.setItem(IDTOKEN_KEY, newToken);
-      this.idToken.set(newToken);
-      return true;
-    } else {
-      await this.signOut();
-      localStorage.removeItem(IDTOKEN_KEY);
-      this.idToken.set(null);
+      if (newToken) {
+        localStorage.setItem(IDTOKEN_KEY, newToken);
+        this.idToken.set(newToken);
+        return true;
+      } else {
+        localStorage.removeItem(IDTOKEN_KEY);
+        this.idToken.set(null);
+        return false;
+      }
+    } catch (error) {
       return false;
     }
   }
