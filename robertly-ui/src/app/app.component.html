@@ -47,11 +47,6 @@
         (click)="offcanvas.dismiss()"
         >Food Tracker</a
       >
-      <a
-        [routerLink]="Paths.DEVELOPER"
-        (click)="offcanvas.dismiss()"
-        >Developer</a
-      >
     }
   </div>
 </ng-template>
@@ -61,7 +56,7 @@
     <ngb-toast
       data-bs-theme="light"
       [autohide]="true"
-      [delay]="toast.delay || 3000"
+      [delay]="toast.delay || 60000"
       (hidden)="toastService.remove(toast)"
     >
       <ngb-alert
