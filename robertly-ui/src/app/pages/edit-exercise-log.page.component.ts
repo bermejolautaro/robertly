@@ -166,11 +166,12 @@ export class EditExerciseLogPageComponent {
     const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
     const instance: ConfirmModalComponent = modalRef.componentInstance;
 
-    instance.title = 'Delete Record';
-    instance.subtitle = '<strong>Are you sure you want to delete this record?</strong>';
-    instance.body =
-      'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>';
-    instance.okType = 'danger';
+    instance.title.set('Delete Record');
+    instance.subtitle.set('<strong>Are you sure you want to delete this record?</strong>');
+    instance.body.set(
+      'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>'
+    );
+    instance.okType.set('danger');
 
     modalRef.closed.pipe(take(1)).subscribe(async () => {
       const log = this.originalValue.value();

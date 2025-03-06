@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, Input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, model } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
@@ -8,7 +8,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         class="modal-title"
         id="modal-title"
       >
-        {{ title }}
+        {{ title() }}
       </h4>
       <button
         type="button"
@@ -18,8 +18,8 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
       ></button>
     </div>
     <div class="modal-body">
-      <p [innerHTML]="subtitle"></p>
-      <p [innerHTML]="body"></p>
+      <p [innerHTML]="subtitle()"></p>
+      <p [innerHTML]="body()"></p>
     </div>
     <div class="modal-footer">
       <button
@@ -27,14 +27,14 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
         class="btn btn-secondary"
         (click)="modal.dismiss()"
       >
-        {{ cancelText }}
+        {{ cancelText() }}
       </button>
       <button
         type="button"
-        class="btn btn-{{okType}}"
+        class="btn btn-{{okType()}}"
         (click)="modal.close()"
       >
-        {{ okText }}
+        {{ okText() }}
       </button>
     </div>`,
     styles: `
@@ -44,13 +44,13 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
     imports: []
 })
 export class ConfirmModalComponent {
-  @Input() public title: string = '';
-  @Input() public subtitle: string = '';
-  @Input() public body: string = '';
+  public readonly title = model<string>('');
+  public readonly subtitle = model<string>('');
+  public readonly body = model<string>('');
 
-  @Input() public cancelText: string = 'Cancel';
-  @Input() public okType: 'primary' | 'danger' = 'primary'
-  @Input() public okText: string = 'Ok';
+  public readonly cancelText = model<string>('Cancel');
+  public readonly okType = model<'primary' | 'danger'>('primary');
+  public readonly okText = model<string>('Ok');
 
   public readonly modal = inject(NgbActiveModal);
 }

@@ -74,11 +74,11 @@ export class AppComponent implements OnInit {
           const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
           const instance: ConfirmModalComponent = modalRef.componentInstance;
 
-          instance.title = 'Version Update';
-          instance.subtitle = '<strong>New version found</strong>';
-          instance.body = 'Do you want to install it now?';
-          instance.cancelText = 'Later';
-          instance.okText = 'Update';
+          instance.title.set('Version Update');
+          instance.subtitle.set('<strong>New version found</strong>');
+          instance.body.set('Do you want to install it now?');
+          instance.cancelText.set('Later');
+          instance.okText.set('Update');
 
           modalRef.closed.pipe(take(1)).subscribe(() => {
             this.document.location.reload();
