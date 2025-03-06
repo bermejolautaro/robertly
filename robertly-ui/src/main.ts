@@ -16,6 +16,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import 'dayjs/locale/es-mx';
+import { LogLevel, setLogLevel } from '@angular/fire';
 
 export const Paths = {
   HOME: 'home',
@@ -87,6 +88,10 @@ export const API_URL = new InjectionToken<string>('API_URL');
 
 export const DAY_JS = new InjectionToken<typeof dayjs>('DAY_JS');
 
+if (isDevMode()) {
+  setLogLevel(LogLevel.VERBOSE);
+}
+
 bootstrapApplication(AppComponent, {
   providers: [
     TitleCasePipe,
@@ -108,14 +113,17 @@ bootstrapApplication(AppComponent, {
     ),
     provideAuth(() => getAuth()),
     { provide: API_URL, useValue: environment.apiUrl },
-    { provide: DAY_JS, useFactory: () => {
-      const dayjsInstance = dayjs;
-      dayjsInstance.extend(customParseFormat);
-      dayjsInstance.extend(weekOfYear);
-      dayjsInstance.extend(isoWeek);
-      dayjsInstance.locale('es-mx');
+    {
+      provide: DAY_JS,
+      useFactory: () => {
+        const dayjsInstance = dayjs;
+        dayjsInstance.extend(customParseFormat);
+        dayjsInstance.extend(weekOfYear);
+        dayjsInstance.extend(isoWeek);
+        dayjsInstance.locale('es-mx');
 
-      return dayjsInstance;
-    }}
+        return dayjsInstance;
+      },
+    },
   ],
 }).catch((err: unknown) => console.error(err));

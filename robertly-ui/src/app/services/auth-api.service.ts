@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { EnvironmentInjector, Injectable, inject, runInInjectionContext, signal } from '@angular/core';
 import { Observable, tap, firstValueFrom } from 'rxjs';
 import { API_URL } from 'src/main';
-import { Auth, GoogleAuthProvider, signOut } from '@angular/fire/auth';
+import { Auth, GoogleAuthProvider, signOut, signInWithPopup } from '@angular/fire/auth';
 import { ToastService } from './toast.service';
-import { signInWithPopup } from '@firebase/auth';
 
 export interface SignInRequest {
   email: string;
@@ -25,6 +24,7 @@ export class AuthApiService {
   private readonly apiUrl = inject(API_URL);
   private readonly auth = inject(Auth);
   private readonly toastService = inject(ToastService);
+  private readonly injector = inject(EnvironmentInjector);
 
   private readonly isRefreshingToken = signal<boolean>(false);
   public readonly idToken = signal<string | null>(null);
@@ -53,27 +53,31 @@ export class AuthApiService {
 
     this.auth.useDeviceLanguage();
 
-    const result = await signInWithPopup(this.auth, provider);
-    const credential = GoogleAuthProvider.credentialFromResult(result);
+    await runInInjectionContext(this.injector, async () => {
+      const result = await signInWithPopup(this.auth, provider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
 
-    if (credential) {
-      const idToken = await firstValueFrom(
-        this.http.post(
-          `${this.apiUrl}/auth/signup/google`,
-          { accessToken: credential.accessToken },
-          { responseType: 'text' }
-        )
-      );
+      if (credential) {
+        const idToken = await firstValueFrom(
+          this.http.post(
+            `${this.apiUrl}/auth/signup/google`,
+            { accessToken: credential.accessToken },
+            { responseType: 'text' }
+          )
+        );
 
-      localStorage.setItem(IDTOKEN_KEY, idToken);
-      this.idToken.set(idToken);
-      this.toastService.ok('Successfully signed in with Google');
-    }
+        localStorage.setItem(IDTOKEN_KEY, idToken);
+        this.idToken.set(idToken);
+        this.toastService.ok('Successfully signed in with Google');
+      }
+    });
   }
 
   public async signOut(): Promise<void> {
     try {
-      await signOut(this.auth);
+      await runInInjectionContext(this.injector, async () => {
+        await signOut(this.auth);
+      });
       this.toastService.ok('Successfully signed out');
       localStorage.removeItem(IDTOKEN_KEY);
       this.idToken.set(null);
@@ -88,7 +92,7 @@ export class AuthApiService {
     }
 
     this.isRefreshingToken.set(true);
-    const newToken = await this.auth.currentUser?.getIdToken(true) ?? null;
+    const newToken = (await this.auth.currentUser?.getIdToken(true)) ?? null;
     this.isRefreshingToken.set(false);
 
     if (newToken) {
