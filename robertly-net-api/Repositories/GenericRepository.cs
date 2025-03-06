@@ -3,19 +3,40 @@ using robertly.Helpers;
 using Dapper;
 using System.Linq;
 
+namespace robertly.Repositories;
+
 public class GenericRepository
 {
   private readonly ConnectionHelper _connection;
+  private readonly SchemaHelper _schema;
 
-  public GenericRepository(ConnectionHelper connection) => (_connection) = (connection);
+  public GenericRepository(ConnectionHelper connection, SchemaHelper schema) => (_connection, _schema) = (connection, schema);
 
   public async Task<int> CreateAsync<T>(T entity)
   {
     using var connection = _connection.Create();
-    var query = GetInsertQuery<T>();
+    var query = _schema.AddSchemaToQuery(GetInsertQuery<T>());
     var parameters = CreateParameters(entity);
 
     return await connection.ExecuteScalarAsync<int>(query, parameters);
+  }
+
+  public async Task<T?> GetByIdAsync<T>(int entityId)
+  {
+    using var connection = _connection.Create();
+    var query = _schema.AddSchemaToQuery(GetSelectQuery<T>());
+    var parameters = new DynamicParameters();
+    parameters.Add($"{typeof(T).Name}Id", entityId);
+
+    return await connection.QuerySingleOrDefaultAsync<T>(query, parameters);
+  }
+
+  public async Task<bool> UpdateAsync<T>(T entity)
+  {
+    using var connection = _connection.Create();
+    var query = _schema.AddSchemaToQuery(GetUpdateQuery<T>());
+    var parameters = CreateParameters(entity);
+    return await connection.ExecuteAsync(query, parameters) > 0;
   }
 
   private static string GetInsertQuery<T>(string tableName = "")
@@ -27,14 +48,16 @@ public class GenericRepository
 
     var properties = typeof(T).GetProperties().Where(x => x.Name != $"{typeof(T).Name}Id");
     var columns = string.Join(",\n", properties.Select(x => x.Name));
-    var parameters = string.Join(",\n", properties.Select(x => $"@{x}"));
+    var parameters = string.Join(",\n", properties.Select(x => $"@{x.Name}"));
 
-    var query = $"""
-    INSERT INTO {tableName}
-      ({columns})
-    VALUES
-      ({parameters})
-    """;
+    var query =
+      $"""
+      INSERT INTO {tableName}
+        ({columns})
+      VALUES
+        ({parameters})
+      RETURNING {tableName}.{typeof(T).Name}Id;
+      """;
 
     return query;
   }
@@ -49,24 +72,28 @@ public class GenericRepository
     var properties = typeof(T).GetProperties().Where(x => x.Name != $"{typeof(T).Name}Id");
     var setClause = string.Join(",\n", properties.Select(x => $"{x.Name} = @{x.Name}"));
 
-    var query = $"""
-    UPDATE {tableName} SET
-    {setClause}
-    WHERE {typeof(T).Name}Id = @{typeof(T).Name}Id
-    """;
+    var query =
+      $"""
+      UPDATE {tableName} SET
+      {setClause}
+      WHERE {typeof(T).Name}Id = @{typeof(T).Name}Id
+      """;
 
     return query;
   }
 
   private static string GetSelectQuery<T>(string tableName = "")
   {
-    if (!string.IsNullOrEmpty(tableName))
+    if (string.IsNullOrEmpty(tableName))
     {
       tableName = GetTableName<T>();
     }
 
-    var query = $"""
-    SELECT * FROM {tableName} WHERE {typeof(T).Name}Id = @{typeof(T).Name}Id
+    var query =
+    $"""
+    SELECT *
+    FROM {tableName}
+    WHERE {typeof(T).Name}Id = @{typeof(T).Name}Id
     """;
 
     return query;

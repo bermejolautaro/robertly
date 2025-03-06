@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -16,11 +17,13 @@ namespace robertly.Controllers
   public class ExerciseLogController : ControllerBase
   {
     private readonly ExerciseLogRepository _exerciseLogRepository;
+    private readonly GenericRepository _genericRepository;
     private readonly UserHelper _userHelper;
 
     public ExerciseLogController(
         ExerciseLogRepository exerciseLogsRepository,
-        UserHelper userHelper) => (_exerciseLogRepository, _userHelper) = (exerciseLogsRepository, userHelper);
+        GenericRepository genericRepository,
+        UserHelper userHelper) => (_exerciseLogRepository, _genericRepository, _userHelper) = (exerciseLogsRepository, genericRepository, userHelper);
 
     [HttpGet("filters")]
     public async Task<Results<Ok<Filter>, BadRequest, UnauthorizedHttpResult>> GetFiltersByUser(
@@ -69,7 +72,7 @@ namespace robertly.Controllers
         return queryBuilder
           .AndUserIds([user.UserId.Value])
           .AndDate(date.HasValue ? [DateTime.Now.Date, date.Value.Date] : [DateTime.Now.Date]);
-      };
+      }
 
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
           0,
@@ -128,8 +131,7 @@ namespace robertly.Controllers
         return queryBuilder
           .AndLastUpdatedByUserId([user.UserId.Value])
           .OrderByLastUpdatedAtUtc(Direction.Desc);
-      };
-
+      }
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
           0,
           10,
@@ -186,7 +188,7 @@ namespace robertly.Controllers
         }
 
         return queryBuilder;
-      };
+      }
 
       var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
           pagination.Page ?? 0,
@@ -236,10 +238,18 @@ namespace robertly.Controllers
         return TypedResults.Unauthorized();
       }
 
-      if (request.ExerciseLog is null)
+      var triggerByUserId = user.UserId.Value;
+
+      if (request.ExerciseLog?.ExerciseLogId is not null ||
+          request.ExerciseLog?.ExerciseLogUserId is null ||
+          request.ExerciseLog?.ExerciseLogExerciseId is null ||
+          request.ExerciseLog?.Series is null)
       {
         return TypedResults.BadRequest();
       }
+
+      var exerciseDoneByUserId = request.ExerciseLog.ExerciseLogUserId.Value;
+      var exerciseId = request.ExerciseLog.ExerciseLogExerciseId.Value;
 
       var canAccess = user.GetAllowedUserIds().Any(userId => userId == request.ExerciseLog.ExerciseLogUserId);
 
@@ -247,14 +257,38 @@ namespace robertly.Controllers
       {
         return TypedResults.Forbid();
       }
+      var nowUtc = DateTime.UtcNow;
 
-      var exerciseLogId = await _exerciseLogRepository.CreateExerciseLogAsync(request.ExerciseLog, user.UserId.Value);
+      var exerciseLogToCreate = new DataModels.ExerciseLog
+      {
+        UserId = exerciseDoneByUserId,
+        ExerciseId = exerciseId,
+        Date = request.ExerciseLog.ExerciseLogDate,
+        CreatedByUserId = triggerByUserId,
+        CreatedAtUtc = nowUtc,
+        LastUpdatedByUserId = triggerByUserId,
+        LastUpdatedAtUtc = nowUtc
+      };
 
-      return TypedResults.Ok(exerciseLogId);
+      var exerciseLogIdCreated = await _genericRepository.CreateAsync(exerciseLogToCreate);
+
+      foreach (var serie in request.ExerciseLog.Series)
+      {
+        var serieToCreate = new DataModels.Serie
+        {
+          ExerciseLogId = exerciseLogIdCreated,
+          Reps = serie.Reps,
+          WeightInKg = serie.WeightInKg,
+        };
+
+        await _genericRepository.CreateAsync(serieToCreate);
+      }
+
+      return TypedResults.Ok(exerciseLogIdCreated);
     }
 
     [HttpPut("{id}")]
-    public async Task<Results<Ok, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> Put(
+    public async Task<Results<Ok, BadRequest<string>, BadRequest, UnauthorizedHttpResult, ForbidHttpResult>> Put(
         [FromRoute] int id,
         [FromBody] ExerciseLogRequest request
     )
@@ -266,33 +300,76 @@ namespace robertly.Controllers
         return TypedResults.Unauthorized();
       }
 
-      if (request.ExerciseLog?.Series is null)
+      var triggerByUserId = user.UserId.Value;
+
+      if (request.ExerciseLog?.Series is null ||
+          request.ExerciseLog?.ExerciseLogExerciseId is null ||
+          request.ExerciseLog?.ExerciseLogUserId is null)
       {
-        return TypedResults.BadRequest("Series cannot be null");
+        return TypedResults.BadRequest();
       }
 
-      var logDb = await _exerciseLogRepository.GetExerciseLogByIdAsync(id);
+      var exerciseLogFromDb = await _genericRepository.GetByIdAsync<DataModels.ExerciseLog>(id);
 
-      if (logDb is null)
+      if (exerciseLogFromDb?.ExerciseLogId is null)
       {
         return TypedResults.BadRequest($"Log with id '{id}' does not exist.");
       }
 
-      var canAccess = user.GetAllowedUserIds().Any(userId => userId == logDb.ExerciseLogUserId);
+      var canAccess = user.GetAllowedUserIds().Any(userId => userId == exerciseLogFromDb.UserId);
 
       if (!canAccess)
       {
         return TypedResults.Forbid();
       }
 
-      logDb = logDb with
+      var exerciseId = request.ExerciseLog.ExerciseLogExerciseId.Value;
+      var exerciseLogId = exerciseLogFromDb.ExerciseLogId.Value;
+      var userId = request.ExerciseLog.ExerciseLogUserId.Value;
+
+      exerciseLogFromDb = exerciseLogFromDb with
       {
-        ExerciseLogDate = request.ExerciseLog.ExerciseLogDate,
-        ExerciseLogExerciseId = request.ExerciseLog.ExerciseLogExerciseId,
-        Series = request.ExerciseLog.Series.Select(x => x with { ExerciseLogId = id }),
+        UserId = userId,
+        ExerciseId = exerciseId,
+        Date = request.ExerciseLog.ExerciseLogDate,
+        CreatedByUserId = triggerByUserId,
+        LastUpdatedByUserId = triggerByUserId,
+        LastUpdatedAtUtc = DateTime.UtcNow
       };
 
-      await _exerciseLogRepository.UpdateExerciseLogAsync(logDb, user.UserId.Value);
+      await _genericRepository.UpdateAsync(exerciseLogFromDb);
+
+      foreach (var serie in request.ExerciseLog.Series)
+      {
+        if (serie.SerieId is null)
+        {
+          var serieToCreate = new DataModels.Serie
+          {
+            ExerciseLogId = exerciseLogId,
+            Reps = serie.Reps,
+            WeightInKg = serie.WeightInKg,
+          };
+
+          await _genericRepository.CreateAsync(serieToCreate);
+        }
+        else
+        {
+          var serieId = serie.SerieId.Value;
+          var serieFromDb = await _genericRepository.GetByIdAsync<DataModels.Serie>(serieId);
+
+          if (serieFromDb is not null)
+          {
+            serieFromDb = serieFromDb with
+            {
+              ExerciseLogId = exerciseLogId,
+              Reps = serie.Reps,
+              WeightInKg = serie.WeightInKg
+            };
+
+            await _genericRepository.UpdateAsync<DataModels.Serie>(serieFromDb);
+          }
+        }
+      }
 
       return TypedResults.Ok();
     }
@@ -326,7 +403,7 @@ namespace robertly.Controllers
       return TypedResults.Ok();
     }
 
-    private static IEnumerable<ExerciseLogDto> MapToExerciseLogDto(IEnumerable<ExerciseLog> exerciseLogs)
+    private static IEnumerable<ExerciseLogDto> MapToExerciseLogDto(IEnumerable<Models.ExerciseLog> exerciseLogs)
     {
       return exerciseLogs.Select(MapToExerciseLogDto);
     }

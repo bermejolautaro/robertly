@@ -13,6 +13,11 @@
   --bs-body-color: var(--font-color);
 }
 
+
+[data-bs-theme=dark] .btn-close {
+  filter: none;
+}
+
 .tooltip {
   --bs-tooltip-color: #fff;
 

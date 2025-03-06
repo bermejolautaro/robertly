@@ -77,11 +77,13 @@ builder.Services.AddScoped(serviceProvider =>
 });
 
 builder.Services.AddSingleton<ConnectionHelper>();
+builder.Services.AddSingleton<SchemaHelper>();
 builder.Services.AddSingleton<AppLogsRepository>();
 builder.Services.AddScoped<ExerciseLogRepository>();
 builder.Services.AddScoped<ExerciseRepository>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<UserHelper>();
+builder.Services.AddScoped<GenericRepository>();
 
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddLogging(logBuilder => logBuilder.AddApplicationInsights());
@@ -93,6 +95,9 @@ builder.Services.AddExceptionHandler<LoggerExceptionHandler>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
 
 var app = builder.Build();
+
+var schema = app.Services.GetRequiredService<SchemaHelper>();
+await schema.LoadTableNamesAsync();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();

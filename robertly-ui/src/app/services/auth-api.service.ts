@@ -87,15 +87,8 @@ export class AuthApiService {
       return false;
     }
 
-    const currentUser = this.auth.currentUser;
     this.isRefreshingToken.set(true);
-
-    if (!currentUser) {
-      await this.signOut();
-      return false;
-    }
-
-    const newToken = await currentUser.getIdToken();
+    const newToken = await this.auth.currentUser?.getIdToken(true) ?? null;
     this.isRefreshingToken.set(false);
 
     if (newToken) {
@@ -103,6 +96,7 @@ export class AuthApiService {
       this.idToken.set(newToken);
       return true;
     } else {
+      await this.signOut();
       localStorage.removeItem(IDTOKEN_KEY);
       this.idToken.set(null);
       return false;

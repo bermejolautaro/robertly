@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
+using robertly.DataModels;
 using robertly.Helpers;
 using robertly.Models;
 
@@ -20,8 +21,9 @@ public enum FilterEnum
 public class ExerciseLogRepository
 {
   private readonly ConnectionHelper _connection;
+  private readonly SchemaHelper _schema;
 
-  public ExerciseLogRepository(ConnectionHelper connection) => (_connection) = (connection);
+  public ExerciseLogRepository(ConnectionHelper connection, SchemaHelper schema) => (_connection, _schema) = (connection, schema);
 
   public async Task<SeriesPerMuscle> GetSeriesPerMuscle(int userId)
   {
@@ -35,9 +37,9 @@ public class ExerciseLogRepository
             EXTRACT(WEEK FROM EL.date) AS Week,
             COUNT(s.SerieId) AS TotalSeries,
             MIN(EL.date) AS FirstDateInPeriod
-        FROM {_connection.Schema}.ExerciseLogs EL
-        INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
-        INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+        FROM ExerciseLogs EL
+        INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+        INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
         WHERE EL.UserId = @UserId
         GROUP BY E.MuscleGroup, EXTRACT(ISOYEAR FROM el.date), EXTRACT(WEEK FROM el.date)
     )
@@ -57,9 +59,9 @@ public class ExerciseLogRepository
         EXTRACT(MONTH FROM EL.date) AS Month,
         COUNT(S.SerieId) AS TotalSeries,
         MIN(EL.date) AS FirstDateInPeriod
-    FROM {_connection.Schema}.ExerciseLogs EL
-    INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = s.ExerciseLogId
-    INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = e.ExerciseId
+    FROM ExerciseLogs EL
+    INNER JOIN Series S ON EL.ExerciseLogId = s.ExerciseLogId
+    INNER JOIN Exercises E ON EL.ExerciseId = e.ExerciseId
     WHERE EL.UserId = @UserId
     GROUP BY E.MuscleGroup, EXTRACT(YEAR FROM EL.date), EXTRACT(MONTH FROM EL.date)
     )
@@ -79,9 +81,9 @@ public class ExerciseLogRepository
         EXTRACT(YEAR FROM el.date) AS Year,
         COUNT(S.SerieId) AS TotalSeries,
         MIN(EL.Date) AS FirstDateInPeriod
-    FROM {_connection.Schema}.ExerciseLogs EL
-    INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
-    INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+    FROM ExerciseLogs EL
+    INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+    INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
     WHERE EL.UserId = @UserId
     GROUP BY E.MuscleGroup, EXTRACT(YEAR FROM EL.Date)
     )
@@ -94,7 +96,7 @@ public class ExerciseLogRepository
     ORDER BY MuscleGroup ASC;
     """;
 
-    using var values = await connection.QueryMultipleAsync(query, new { UserId = userId });
+    using var values = await connection.QueryMultipleAsync(_schema.AddSchemaToQuery(query), new { UserId = userId });
 
     return new SeriesPerMuscle
     {
@@ -126,27 +128,27 @@ public class ExerciseLogRepository
     var query = $"""
     -- DaysTrainedThisWeek
     SELECT COUNT(DISTINCT Date)
-    FROM {_connection.Schema}.ExerciseLogs
+    FROM ExerciseLogs
     WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
     AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
     AND UserId = @UserId;
 
     -- DaysTrainedThisMonth
     SELECT COUNT(DISTINCT Date)
-    FROM {_connection.Schema}.ExerciseLogs
+    FROM ExerciseLogs
     WHERE Date >= '{currentYear}-{currentMonth}-1'
     AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
     AND UserId = @UserId;
 
     -- DaysTrainedThisYear
     SELECT COUNT(DISTINCT Date)
-    FROM {_connection.Schema}.ExerciseLogs
+    FROM ExerciseLogs
     WHERE Date >= '{currentYear}-1-1'
     AND Date <='{currentYear}-12-31'
     AND UserId = @UserId;
     """;
 
-    using var values = await connection.QueryMultipleAsync(query, new { UserId = userId });
+    using var values = await connection.QueryMultipleAsync(_schema.AddSchemaToQuery(query), new { UserId = userId });
 
     return new DaysTrained
     {
@@ -161,13 +163,13 @@ public class ExerciseLogRepository
     using var connection = _connection.Create();
 
     var date = await connection.QueryFirstOrDefaultAsync<DateTime?>(
-      $"SELECT MAX(Date) FROM {_connection.Schema}.ExerciseLogs WHERE UserId = @UserId AND Date <> '{DateTime.Now:yyyy-MM-dd}'",
+      _schema.AddSchemaToQuery($"SELECT MAX(Date) FROM ExerciseLogs WHERE UserId = @UserId AND Date <> '{DateTime.Now:yyyy-MM-dd}'"),
       new { UserId = userId });
 
     return date;
   }
 
-  public async Task<ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId, bool includeExtraData = false)
+  public async Task<Models.ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId, bool includeExtraData = false)
   {
     var exerciseLog = (await GetExerciseLogsAsync(0, 1000, qb => qb.AndExerciseLogId(exerciseLogId))).FirstOrDefault();
 
@@ -184,7 +186,8 @@ public class ExerciseLogRepository
           .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
           .AndUserIds([exerciseLog.User!.UserId!.Value])
           .AndDate(exerciseLog.ExerciseLogDate, "<");
-      };
+      }
+      ;
 
       var recentLogs = await GetExerciseLogsAsync(0, 5, queryBuilderFunc);
       exerciseLog = exerciseLog with { RecentLogs = recentLogs };
@@ -208,9 +211,9 @@ public class ExerciseLogRepository
     var query =
       $"""
       SELECT DISTINCT {column}
-      FROM {_connection.Schema}.ExerciseLogs EL
-      INNER JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      INNER JOIN {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
+      FROM ExerciseLogs EL
+      INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
       WHERE EL.UserId = @UserId
       {(exerciseId is not null ? "AND E.ExerciseId = @ExerciseId" : "")}
       {(type is not null ? "AND E.Type = @Type" : "")}
@@ -219,13 +222,13 @@ public class ExerciseLogRepository
       """;
 
     var values = await connection.QueryAsync<T>(
-        query,
+        _schema.AddSchemaToQuery(query),
         new { UserId = userId, Type = type, WeightInKg = weightInKg, ExerciseId = exerciseId });
 
     return values;
   }
 
-  public async Task<IEnumerable<ExerciseLog>> GetExerciseLogsAsync(
+  public async Task<IEnumerable<Models.ExerciseLog>> GetExerciseLogsAsync(
       int page,
       int size,
       Func<GetExerciseLogsQueryBuilder, GetExerciseLogsQueryBuilder> queryBuilderFunc)
@@ -256,10 +259,10 @@ public class ExerciseLogRepository
         ,U.UserFirebaseUuid
         ,U.Email
         ,U.Name
-      FROM {_connection.Schema}.ExerciseLogs EL
-      INNER JOIN  {_connection.Schema}.Exercises E ON EL.ExerciseId = E.ExerciseId
-      INNER JOIN  {_connection.Schema}.Users U ON EL.UserId = U.UserId
-      LEFT JOIN {_connection.Schema}.Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      FROM ExerciseLogs EL
+      INNER JOIN  Exercises E ON EL.ExerciseId = E.ExerciseId
+      INNER JOIN  Users U ON EL.UserId = U.UserId
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
       {orderBy}
@@ -267,28 +270,28 @@ public class ExerciseLogRepository
       """;
 
     var exerciseLogs = await connection.QueryAsync<
-        ExerciseLog,
+        Models.ExerciseLog,
         Exercise,
         User,
-        ExerciseLog
+        Models.ExerciseLog
     >(
-        query,
+        _schema.AddSchemaToQuery(query),
         (log, exercise, user) => (log with { Exercise = exercise, User = user }),
         param: new DynamicParameters(queryParams),
         splitOn: "ExerciseId,UserId"
     );
 
-    var series = await connection.QueryAsync<Serie>(
-      $"""
+    var series = await connection.QueryAsync<Models.Serie>(
+      _schema.AddSchemaToQuery($"""
       SELECT
          S.SerieId
         ,S.ExerciseLogId
         ,S.Reps
         ,S.WeightInKg
         ,(S.WeightInKg * (36.0 / (37.0 - s.Reps))) AS Brzycki
-      FROM  {_connection.Schema}.Series S
+      FROM Series S
       WHERE ExerciseLogId = ANY(@ExerciseLogIds)
-      """,
+      """),
         new { ExerciseLogIds = exerciseLogs.Select(x => x.ExerciseLogId).ToList() }
     );
 
@@ -302,7 +305,7 @@ public class ExerciseLogRepository
     return exerciseLogs;
   }
 
-  public async Task<int> CreateExerciseLogAsync(ExerciseLog exerciseLog, int triggeringUserId)
+  public async Task<int> CreateExerciseLogAsync(Models.ExerciseLog exerciseLog, int triggeringUserId)
   {
     using var connection = _connection.Create();
 
@@ -345,7 +348,7 @@ public class ExerciseLogRepository
     return exerciseLogId;
   }
 
-  public async Task UpdateExerciseLogAsync(ExerciseLog exerciseLog, int triggeringUserId)
+  public async Task UpdateExerciseLogAsync(Models.ExerciseLog exerciseLog, int triggeringUserId)
   {
     using var connection = _connection.Create();
 

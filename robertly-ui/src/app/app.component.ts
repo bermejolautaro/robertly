@@ -2,7 +2,7 @@ import { Component, OnInit, TemplateRef, inject } from '@angular/core';
 import { Router, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { take } from 'rxjs';
+import { firstValueFrom, take } from 'rxjs';
 import { Paths } from 'src/main';
 
 import { DOCUMENT } from '@angular/common';
@@ -24,6 +24,7 @@ import { FooterComponent } from '@components/footer/footer.component';
 import { AuthService } from '@services/auth.service';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { Auth } from '@angular/fire/auth';
+import { UsersService } from '@services/users.service';
 
 @Component({
   selector: 'app-root',
@@ -44,6 +45,8 @@ export class AppComponent implements OnInit {
   public readonly toastService = inject(ToastService);
   public readonly authApiService = inject(AuthApiService);
   public readonly authService = inject(AuthService);
+
+  private readonly usersService = inject(UsersService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly document = inject(DOCUMENT);
@@ -91,6 +94,9 @@ export class AppComponent implements OnInit {
   public async ngOnInit(): Promise<void> {
     await this.auth.authStateReady();
     await this.authApiService.tryRefreshToken();
+    const currentUser = this.auth.currentUser;
+    const userFromDb = await firstValueFrom(this.usersService.getUserByFirebaseUuid(currentUser?.uid ?? ''))
+    this.authService.user.set(userFromDb);
     await this.exerciseApiService.fetchExercises();
   }
 
