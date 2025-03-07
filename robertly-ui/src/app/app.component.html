@@ -68,15 +68,13 @@
   }
 </div>
 
-@if (hasAppLoaded) {
+@if (!isLoading()) {
   @if (currentRoute()?.url !== '/' + Paths.SIGN_IN) {
     <app-header (menuSidebarClicked)="openSidebar(content)"> </app-header>
   }
 
   <div class="main">
-    @if (!isLoading()) {
-      <router-outlet></router-outlet>
-    }
+    <router-outlet></router-outlet>
   </div>
 
   @if (currentRoute()?.url !== '/' + Paths.SIGN_IN) {
@@ -89,11 +87,8 @@
       <div class="progress">
         <div
           class="progress-bar"
-          [style.width.%]="preloaderProgress"
+          [style.width.%]="preloaderProgress()"
         ></div>
-      </div>
-      <div class="preloader-message">
-        {{ preloaderMessage }}
       </div>
     </div>
   </div>

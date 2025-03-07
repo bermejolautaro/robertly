@@ -23,8 +23,6 @@ import { HeaderComponent } from '@components/header/header.component';
 import { FooterComponent } from '@components/footer/footer.component';
 import { AuthService } from '@services/auth.service';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
-import { Auth } from '@angular/fire/auth';
-import { UsersService } from '@services/users.service';
 
 @Component({
   selector: 'app-root',
@@ -56,10 +54,7 @@ export class AppComponent implements OnInit {
   public readonly Paths = Paths;
   public readonly currentRoute = toSignal(this.router.events.pipe(filter(x => x instanceof NavigationEnd)));
   public readonly isLoading = signal(false);
-
-  public hasAppLoaded: boolean = true;
-  public preloaderMessage: string = 'Searching for updates...';
-  public preloaderProgress: number = 10;
+  public readonly preloaderProgress = signal(25);
 
   public constructor() {
     this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
@@ -95,7 +90,10 @@ export class AppComponent implements OnInit {
   public async ngOnInit(): Promise<void> {
     this.isLoading.set(true);
     await this.authApiService.tryRefreshToken();
+    this.preloaderProgress.set(75);
     await this.exerciseApiService.fetchExercises();
+    this.preloaderProgress.set(100);
+    await new Promise(resolve => setTimeout(resolve, 500));
     this.isLoading.set(false);
   }
 
