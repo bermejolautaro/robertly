@@ -3,7 +3,7 @@ import { NavigationEnd, Router, RouterLinkWithHref, RouterOutlet } from '@angula
 import { SwUpdate } from '@angular/service-worker';
 
 import { filter, take } from 'rxjs';
-import { Paths } from 'src/main';
+import { AUTH_CHECKS_ENABLED, Paths } from 'src/main';
 
 import { DOCUMENT } from '@angular/common';
 
@@ -50,6 +50,7 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly offcanvasService = inject(NgbOffcanvas);
   private readonly modalService = inject(NgbModal);
+  private readonly authChecksEnabled = inject(AUTH_CHECKS_ENABLED);
 
   public readonly Paths = Paths;
   public readonly currentRoute = toSignal(this.router.events.pipe(filter(x => x instanceof NavigationEnd)));
@@ -89,7 +90,9 @@ export class AppComponent implements OnInit {
 
   public async ngOnInit(): Promise<void> {
     this.isLoading.set(true);
-    await this.authApiService.tryRefreshToken();
+    if (this.authChecksEnabled) {
+      await this.authApiService.tryRefreshToken();
+    }
     this.preloaderProgress.set(75);
     await this.exerciseApiService.fetchExercises();
     this.preloaderProgress.set(100);

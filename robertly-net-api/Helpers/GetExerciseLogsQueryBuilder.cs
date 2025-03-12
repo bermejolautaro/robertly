@@ -2,14 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using robertly.Models;
 
 namespace robertly.Helpers;
-
-public enum Direction
-{
-  Asc,
-  Desc
-}
 
 public class GetExerciseLogsQueryBuilder
 {

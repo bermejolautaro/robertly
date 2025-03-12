@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using robertly;
+using robertly.DataModels;
 using robertly.Helpers;
 using robertly.Models;
 using robertly.Repositories;
@@ -18,6 +19,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.Configure<GoogleCredentialOptions>(builder.Configuration.GetSection(GoogleCredentialOptions.GoogleCredential));
+builder.Services.Configure<ConfigurationOptions>(builder.Configuration);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -48,23 +50,6 @@ builder.Services.AddSingleton(serviceProvider =>
   });
 });
 
-builder.Services.AddSingleton(serviceProvider =>
-{
-  var googleCredentialOptions = (serviceProvider.GetService<IOptions<GoogleCredentialOptions>>()?.Value) ?? throw new Exception("Missing google credentials");
-
-  return new FirebaseClient(
-    googleCredentialOptions.DatabaseUrl, new()
-    {
-      AuthTokenAsyncFactory = async () =>
-        {
-          var credential = GetGoogleCredential(googleCredentialOptions);
-          var c = credential as ITokenAccess;
-          return await c.GetAccessTokenForRequestAsync();
-        },
-      AsAccessToken = true
-    });
-});
-
 builder.Services.AddScoped(serviceProvider =>
 {
   var googleCredentialOptions = (serviceProvider.GetService<IOptions<GoogleCredentialOptions>>()?.Value) ?? throw new Exception("Missing google credentials");
@@ -82,11 +67,11 @@ builder.Services.AddScoped(serviceProvider =>
 builder.Services.AddSingleton<ConnectionHelper>();
 builder.Services.AddSingleton<SchemaHelper>();
 builder.Services.AddSingleton<AppLogsRepository>();
+builder.Services.AddSingleton<MigrationHelper>();
+builder.Services.AddSingleton<GenericRepository>();
 builder.Services.AddScoped<ExerciseLogRepository>();
-builder.Services.AddScoped<ExerciseRepository>();
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<UserHelper>();
-builder.Services.AddScoped<GenericRepository>();
 
 builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.AddLogging(logBuilder => logBuilder.AddApplicationInsights());
@@ -101,6 +86,9 @@ var app = builder.Build();
 
 var schema = app.Services.GetRequiredService<SchemaHelper>();
 await schema.LoadTableNamesAsync();
+
+var migrations = app.Services.GetRequiredService<MigrationHelper>();
+await migrations.ApplyMigrations();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();

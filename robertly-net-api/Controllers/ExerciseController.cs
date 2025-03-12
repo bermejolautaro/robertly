@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
+using robertly.Helpers;
 using robertly.Models;
 using robertly.Repositories;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace robertly.Controllers
@@ -11,57 +15,83 @@ namespace robertly.Controllers
   [Route("api/exercises")]
   public class ExercisesController : ControllerBase
   {
-    private readonly ExerciseRepository _exerciseRepository;
+    private readonly GenericRepository _genericRepository;
+    private readonly UserHelper _userHelper;
 
-    public ExercisesController(ExerciseRepository exerciseRepository) =>
-      (_exerciseRepository) = (exerciseRepository);
+    public ExercisesController(GenericRepository genericRepository, UserHelper userHelper) =>
+      (_genericRepository, _userHelper) = (genericRepository, userHelper);
 
     [HttpGet]
-    public async Task<ActionResult<GetExercisesResponse>> Get()
+    public async Task<Ok<GetExercisesResponse>> Get()
     {
-      var exercises = await _exerciseRepository.GetExercisesAsync(0, 1000);
-      return Ok(new GetExercisesResponse() { Data = exercises });
+      var exercises = await _genericRepository.GetAll<DataModels.Exercise>();
+      return TypedResults.Ok(new GetExercisesResponse() { Data = exercises.Select(x => x.Map<Models.Exercise>()) });
     }
 
     [HttpPost]
-    public async Task<ActionResult<int>> Post([FromBody] Exercise exercise)
+    public async Task<Results<UnauthorizedHttpResult, Ok>> Post([FromBody] Exercise exercise)
     {
-      await _exerciseRepository.CreateExerciseAsync(exercise);
+      var user = await _userHelper.GetUser(Request);
 
-      return Ok();
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      await _genericRepository.CreateAsync<DataModels.Exercise>(exercise.Map<DataModels.Exercise>());
+
+      return TypedResults.Ok();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Put([FromRoute] int id, [FromBody] Exercise request)
+    public async Task<Results<UnauthorizedHttpResult, BadRequest, BadRequest<string>, Ok>> Put([FromRoute] int id, [FromBody] Exercise request)
     {
+      var user = await _userHelper.GetUser(Request);
 
-      var exerciseDb = await _exerciseRepository.GetExerciseByIdAsync(id);
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      if (request.ExerciseId is null)
+      {
+        return TypedResults.BadRequest();
+      }
+
+      var exerciseDb = await _genericRepository.GetByIdAsync<DataModels.Exercise>(request.ExerciseId.Value);
 
       if (exerciseDb is null)
       {
-        return BadRequest($"Exercise with id '{id}' does not exist.");
+        return TypedResults.BadRequest($"Exercise with id '{id}' does not exist.");
       }
 
       request = request with { ExerciseId = exerciseDb.ExerciseId };
 
-      await _exerciseRepository.UpdateExerciseAsync(request);
+      await _genericRepository.UpdateAsync<DataModels.Exercise>(request.Map<DataModels.Exercise>());
 
-      return Ok();
+      return TypedResults.Ok();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete([FromRoute] int id)
+    public async Task<Results<UnauthorizedHttpResult, BadRequest<string>, Ok>> Delete([FromRoute] int id)
     {
-      var exerciseDb = await _exerciseRepository.GetExerciseByIdAsync(id);
+      var user = await _userHelper.GetUser(Request);
+
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      var exerciseDb = await _genericRepository.GetByIdAsync<DataModels.Exercise>(id);
 
       if (exerciseDb is null)
       {
-        return BadRequest($"Log with id '{id}' does not exist.");
+        return TypedResults.BadRequest($"Log with id '{id}' does not exist.");
       }
 
-      await _exerciseRepository.DeleteExerciseLogAsync(id);
+      await _genericRepository.DeleteAsync<DataModels.Exercise>(id);
 
-      return Ok();
+      return TypedResults.Ok();
     }
   }
 }

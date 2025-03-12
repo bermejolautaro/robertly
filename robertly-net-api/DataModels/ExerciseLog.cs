@@ -2,7 +2,7 @@ using System;
 
 namespace robertly.DataModels;
 
-public record ExerciseLog
+public record ExerciseLog : IDataModel
 {
   public int? ExerciseLogId { get; init; }
   public int UserId { get; init; }

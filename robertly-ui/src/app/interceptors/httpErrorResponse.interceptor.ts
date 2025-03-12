@@ -3,11 +3,12 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthApiService } from '@services/auth-api.service';
 import { catchError, from, of, switchMap, throwError } from 'rxjs';
-import { Paths } from 'src/main';
+import { AUTH_CHECKS_ENABLED, Paths } from 'src/main';
 
 export const httpErrorResponseInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const authApiService = inject(AuthApiService);
+  const authChecksEnabled = inject(AUTH_CHECKS_ENABLED);
   const idToken = authApiService.idToken();
 
   if (idToken) {
@@ -19,7 +20,7 @@ export const httpErrorResponseInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(e => {
       if (e instanceof HttpErrorResponse) {
-        if (e.status === HttpStatusCode.Unauthorized) {
+        if (e.status === HttpStatusCode.Unauthorized && authChecksEnabled) {
           return from(authApiService.tryRefreshToken()).pipe(
             switchMap(isRefreshSuccessful => {
               const path = isRefreshSuccessful ? Paths.HOME : Paths.SIGN_IN;

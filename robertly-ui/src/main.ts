@@ -80,13 +80,17 @@ const routes = [
     pathMatch: 'full',
     redirectTo: Paths.HOME,
   } as const,
+  {
+    path: '**',
+    redirectTo: 'home'
+  }
 ] satisfies Routes;
 
 export type RoutePath = (typeof routes)[number]['path'];
 
 export const API_URL = new InjectionToken<string>('API_URL');
-
 export const DAY_JS = new InjectionToken<typeof dayjs>('DAY_JS');
+export const AUTH_CHECKS_ENABLED = new InjectionToken<boolean>('AUTH_CHECKS_ENABLED');
 
 if (isDevMode()) {
   setLogLevel(LogLevel.VERBOSE);
@@ -113,6 +117,7 @@ bootstrapApplication(AppComponent, {
     ),
     provideAuth(() => getAuth()),
     { provide: API_URL, useValue: environment.apiUrl },
+    { provide: AUTH_CHECKS_ENABLED, useValue: environment.authChecksEnabled },
     {
       provide: DAY_JS,
       useFactory: () => {

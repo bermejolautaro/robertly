@@ -1,6 +1,6 @@
 namespace robertly.DataModels;
 
-public record Serie
+public record Serie : IDataModel
 {
   public int? SerieId { get; init; }
   public int ExerciseLogId { get; init; }

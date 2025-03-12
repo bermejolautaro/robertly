@@ -28,11 +28,12 @@ export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
 
+  private readonly endpoint = `${this.apiUrl}/exercise-logs`;
   private readonly recentlyUpdatedCache = signal<ExerciseLogDto[]>([]);
   public readonly recentlyUpdated = this.recentlyUpdatedCache.asReadonly();
 
   public getExerciseLogById(exerciseLogId: number): Observable<ExerciseLogDto> {
-    return this.http.get<ExerciseLogDto>(`${this.apiUrl}/logs/${exerciseLogId}`);
+    return this.http.get<ExerciseLogDto>(`${this.endpoint}/${exerciseLogId}`);
   }
 
   public getExerciseLogs(
@@ -61,27 +62,27 @@ export class ExerciseLogApiService {
     }
 
     return this.http
-      .get<ExercisesLogsDto>(`${this.apiUrl}/logs?page=${page}&count=10`, { params: queryParams })
+      .get<ExercisesLogsDto>(`${this.endpoint}?page=${page}&count=10`, { params: queryParams })
       .pipe(map(x => x.data));
   }
 
   public getSeriesPerMuscle(): Observable<SeriesPerMuscle> {
-    return this.http.get<SeriesPerMuscle>(`${this.apiUrl}/logs/series-per-muscle?serviceWorkerCache=true`);
+    return this.http.get<SeriesPerMuscle>(`${this.endpoint}/series-per-muscle?serviceWorkerCache=true`);
   }
 
   public getDaysTrained(): Observable<Stats> {
-    return this.http.get<Stats>(`${this.apiUrl}/logs/days-trained?serviceWorkerCache=true`);
+    return this.http.get<Stats>(`${this.endpoint}/days-trained?serviceWorkerCache=true`);
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {
-    return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/recently-updated`).pipe(
+    return this.http.get<ExercisesLogsDto>(`${this.endpoint}/recently-updated`).pipe(
       map(x => x.data),
       tap(x => this.recentlyUpdatedCache.set(x))
     );
   }
 
   public getExerciseLogsLatestWorkout(): Observable<ExerciseLogDto[]> {
-    return this.http.get<ExercisesLogsDto>(`${this.apiUrl}/logs/latest-workout`).pipe(map(x => x.data));
+    return this.http.get<ExercisesLogsDto>(`${this.endpoint}/latest-workout`).pipe(map(x => x.data));
   }
 
   public getFilters(
@@ -108,18 +109,18 @@ export class ExerciseLogApiService {
       queryParams = queryParams.append('weightInKg', weightInKg);
     }
 
-    return this.http.get<Filter>(`${this.apiUrl}/logs/filters`, { params: queryParams });
+    return this.http.get<Filter>(`${this.endpoint}/filters`, { params: queryParams });
   }
 
   public createExerciseLog(request: CreateExerciseLogRequest): Observable<number> {
-    return this.http.post<number>(`${this.apiUrl}/logs`, request);
+    return this.http.post<number>(`${this.endpoint}`, request);
   }
 
   public updateExerciseLog(request: UpdateExerciseLogRequest): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/logs/${request.id}`, request);
+    return this.http.put<void>(`${this.endpoint}/${request.id}`, request);
   }
 
   public deleteExerciseLog(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/logs/${id}`);
+    return this.http.delete<void>(`${this.endpoint}/${id}`);
   }
 }

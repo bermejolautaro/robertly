@@ -27,16 +27,6 @@
     }
 
     @if (!!authService.user()) {
-      <button
-        (click)="signOut(); offcanvas.dismiss()"
-        class="btn btn-link"
-        style="cursor: pointer"
-      >
-        Sign Out
-      </button>
-    }
-
-    @if (!!authService.user()) {
       <a
         [routerLink]="Paths.EXERCISES"
         (click)="offcanvas.dismiss()"
@@ -48,6 +38,17 @@
         >Food Tracker</a
       >
     }
+
+    @if (!!authService.user()) {
+      <button
+        (click)="signOut(); offcanvas.dismiss()"
+        class="btn btn-link"
+        style="cursor: pointer"
+      >
+        Sign Out
+      </button>
+    }
+
   </div>
 </ng-template>
 
