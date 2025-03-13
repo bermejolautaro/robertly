@@ -56,7 +56,6 @@ public class MigrationHelper
     catch (Exception e)
     {
       _logger.LogError(e, "Error applying migrations");
-      throw;
     }
   }
 }

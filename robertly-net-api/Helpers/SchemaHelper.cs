@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using robertly.Models;
 
@@ -14,25 +15,33 @@ public class SchemaHelper
     private readonly string _schema;
     private readonly HashSet<string> _tables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
     private readonly ConnectionHelper _connection;
+    private readonly ILogger<SchemaHelper> _logger;
 
-    public SchemaHelper(IOptions<ConfigurationOptions> config, ConnectionHelper connection) =>
-        (_schema, _connection) = (config.Value.DatabaseEnvironment ?? throw new ArgumentException($"{nameof(ConfigurationOptions.DatabaseEnvironment)} is not set"), connection);
+    public SchemaHelper(IOptions<ConfigurationOptions> config, ConnectionHelper connection, ILogger<SchemaHelper> logger) =>
+        (_schema, _connection, _logger) = (config.Value.DatabaseEnvironment ?? throw new ArgumentException($"{nameof(ConfigurationOptions.DatabaseEnvironment)} is not set"), connection, logger);
 
     public async Task LoadTableNamesAsync()
     {
-        var connection = _connection.Create();
+        try
+        {
+            var connection = _connection.Create();
 
-        var query =
-          $"""
-          SELECT TABLE_NAME
-          FROM INFORMATION_SCHEMA.TABLES
-          WHERE TABLE_SCHEMA = @Schema
-          AND TABLE_TYPE = 'BASE TABLE';
-          """;
+            var query =
+                $"""
+                SELECT TABLE_NAME
+                FROM INFORMATION_SCHEMA.TABLES
+                WHERE TABLE_SCHEMA = @Schema
+                AND TABLE_TYPE = 'BASE TABLE';
+                """;
 
-        var tables = await connection.QueryAsync<string>(query, new { Schema = _schema });
-        _tables.Clear();
-        _tables.UnionWith(tables);
+            var tables = await connection.QueryAsync<string>(query, new { Schema = _schema });
+            _tables.Clear();
+            _tables.UnionWith(tables);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error loading table names");
+        }
     }
 
     public string AddSchemaToQuery(string query)
