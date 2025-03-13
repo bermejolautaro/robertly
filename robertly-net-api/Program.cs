@@ -5,6 +5,7 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -89,6 +90,7 @@ await schema.LoadTableNamesAsync();
 
 var migrations = app.Services.GetRequiredService<MigrationHelper>();
 await migrations.ApplyMigrations();
+
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
