@@ -22,7 +22,7 @@ public class UserHelper
 
   public async Task<User?> GetUser(HttpRequest request)
   {
-    if (_testUserFirebaseUuid is not null) {
+    if (!string.IsNullOrEmpty(_testUserFirebaseUuid)) {
       return await _userRepository.GetUserByFirebaseUuidAsync(_testUserFirebaseUuid);
     }
 
