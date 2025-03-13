@@ -15,7 +15,7 @@ namespace robertly.Helpers;
 
 public class MigrationHelper
 {
-  private readonly string _migrationsFolder = "./wwwroot/Scripts";
+  private readonly string _migrationsFolder = "./Scripts";
   private readonly SchemaHelper _schema;
   private readonly ConnectionHelper _connection;
   private readonly GenericRepository _genericRepository;
