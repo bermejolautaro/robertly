@@ -27,7 +27,7 @@ jobs:
       - name: App Settings Variable Substitution
         uses: microsoft/variable-substitution@v1
         with:
-          files: "./robertly-net-api//appsettings.json"
+          files: "./robertly-net-api/api/appsettings.json"
         env:
           ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
           GoogleCredential.ClientEmail: ${{ secrets.GOOGLE_CREDENTIAL_CLIENT_EMAIL }}
