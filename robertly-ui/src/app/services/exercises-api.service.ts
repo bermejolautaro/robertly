@@ -16,7 +16,7 @@ export type CreateExerciseRequest = {
 };
 
 export type UpdateExerciseRequest = {
-  id: number;
+  exerciseId: number;
   name: string;
   muscleGroup: string;
   type: string;
@@ -63,7 +63,7 @@ export class ExerciseApiService {
   }
 
   public updateExercise(request: UpdateExerciseRequest): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/exercises/${request.id}`, request);
+    return this.http.put<void>(`${this.apiUrl}/exercises/${request.exerciseId}`, request);
   }
 
   public deleteExercise(id: number): Observable<void> {

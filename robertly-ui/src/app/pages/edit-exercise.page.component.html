@@ -1,0 +1,110 @@
+<div class="header-footer-padding">
+  <div class="container">
+    <div class="pb-3">
+      <h4 class="title">{{ mode() === 'edit' ? 'Edit' : 'Create' }} Exercise</h4>
+      <!-- <span class="subtitle">Record your workout details and progress</span> -->
+    </div>
+
+    <div>
+      <form>
+        <!-- #region INPUT NAME -->
+        <div class="mb-3">
+          <input
+            type="text"
+            class="form-control"
+            placeholder="Name"
+            [formControl]="exerciseForm.controls.name"
+          />
+        </div>
+        <!-- #region INPUT MUSCLE GROUP -->
+        <div class="mb-3">
+          <app-typeahead
+            placeholder="Muscle Group"
+            [control]="exerciseForm.controls.muscleGroup"
+            [items]="exerciseApiService.muscleGroups()"
+            [itemSelector]="titleCaseSelector"
+          ></app-typeahead>
+        </div>
+        <!-- #endregion -->
+
+        <!-- #region INPUT TYPE -->
+        <div class="mb-3">
+          <app-typeahead
+            placeholder="Type"
+            [control]="exerciseForm.controls.type"
+            [items]="exerciseApiService.types()"
+            [itemSelector]="titleCaseSelector"
+          ></app-typeahead>
+        </div>
+        <!-- #endregion -->
+
+        @if (hasUnsavedChanges()) {
+          <div class="mb-2 px-2">
+            <i
+              class="fa fa-exclamation-circle"
+              aria-hidden="true"
+            ></i>
+
+            You have unsaved changes
+          </div>
+        }
+      </form>
+    </div>
+
+    <div class="row g-2 mb-3">
+      <div class="col">
+        <button
+          type="button"
+          class="btn btn-secondary w-100"
+          (click)="cancel()"
+        >
+          Cancel
+        </button>
+      </div>
+
+      <div class="col">
+        <button
+          type="button"
+          class="btn w-100 d-flex justify-content-center align-items-center"
+          [class.btn-primary]="exerciseForm.valid"
+          [class.btn-secondary]="exerciseForm.invalid"
+          [disabled]="exerciseForm.invalid || isSaveLoading()"
+          (click)="save()"
+        >
+          @if (!isSaveLoading()) {
+            <i
+              class="fa fa-save px-2"
+              aria-hidden="true"
+            ></i>
+          } @else {
+            <span
+              class="spinner-border spinner-border-sm mx-2"
+              aria-hidden="true"
+            ></span>
+            <span
+              class="visually-hidden"
+              role="status"
+              >Loading...</span
+            >
+          }
+
+          Save
+        </button>
+      </div>
+    </div>
+
+    @if (mode() === 'edit') {
+      <button
+        type="button"
+        class="btn btn-danger w-100 delete-button"
+        (click)="openDeleteModal()"
+      >
+        <i
+          class="fa fa-trash px-2"
+          aria-hidden="true"
+        ></i>
+        <span>Delete</span>
+      </button>
+    }
+  </div>
+</div>

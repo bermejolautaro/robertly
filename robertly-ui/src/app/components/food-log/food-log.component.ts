@@ -20,7 +20,7 @@ export class FoodLogComponent {
     const foodLog = this.foodLog();
 
     if (foodLog) {
-      this.router.navigate([Paths.EXERCISE_LOGS, Paths.EXERCISE_LOGS_EDIT, foodLog.foodLogId]);
+      this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, foodLog.foodLogId]);
     }
   }
 }

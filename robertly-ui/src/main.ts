@@ -1,6 +1,6 @@
 import { provideServiceWorker } from '@angular/service-worker';
 import { InjectionToken, isDevMode, provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { Routes, provideRouter } from '@angular/router';
+import { Routes, provideRouter, withDebugTracing, withRouterConfig } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
@@ -19,11 +19,12 @@ import 'dayjs/locale/es-mx';
 import { LogLevel, setLogLevel } from '@angular/fire';
 
 export const Paths = {
+  EDIT: 'edit',
+  CREATE: 'create',
+  ID: 'id',
   HOME: 'home',
   EXERCISE_LOGS: 'exercise-logs',
-  EXERCISE_LOGS_EDIT: 'edit',
-  EXERCISE_LOGS_CREATE: 'create',
-  EXERCISE_LOGS_ID_PARAM: 'id',
+  FOOD_LOGS: 'food-logs',
   STATS: 'stats',
   EXERCISES: 'exercises',
   SIGN_IN: 'signin',
@@ -33,6 +34,18 @@ export const Paths = {
 } as const;
 
 const routes = [
+  {
+    path: Paths.EXERCISES,
+    loadComponent: () => import('@pages/exercises.page.component').then(x => x.ExercisesPageComponent),
+  } as const,
+  {
+    path: `${Paths.EXERCISES}/${Paths.EDIT}/:${Paths.ID}`,
+    loadComponent: () => import('@pages/edit-exercise.page.component').then(x => x.EditExercisePageComponent),
+  } as const,
+  {
+    path: `${Paths.EXERCISES}/${Paths.CREATE}`,
+    loadComponent: () => import('@pages/edit-exercise.page.component').then(x => x.EditExercisePageComponent),
+  } as const,
   {
     path: Paths.EXERCISES,
     loadComponent: () => import('@pages/exercises.page.component').then(x => x.ExercisesPageComponent),
@@ -56,12 +69,12 @@ const routes = [
     loadComponent: () => import('@pages/exercise-logs.page.component').then(x => x.ExerciseLogsPageComponent),
   } as const,
   {
-    path: `${Paths.EXERCISE_LOGS}/${Paths.EXERCISE_LOGS_EDIT}/:${Paths.EXERCISE_LOGS_ID_PARAM}`,
+    path: `${Paths.EXERCISE_LOGS}/${Paths.EDIT}/:${Paths.ID}`,
     pathMatch: 'full',
     loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
   } as const,
   {
-    path: `${Paths.EXERCISE_LOGS}/${Paths.EXERCISE_LOGS_CREATE}`,
+    path: `${Paths.EXERCISE_LOGS}/${Paths.CREATE}`,
     pathMatch: 'full',
     loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
   } as const,
@@ -82,8 +95,8 @@ const routes = [
   } as const,
   {
     path: '**',
-    redirectTo: 'home'
-  }
+    redirectTo: 'home',
+  },
 ] satisfies Routes;
 
 export type RoutePath = (typeof routes)[number]['path'];

@@ -25,7 +25,7 @@ export class ExerciseLogComponent {
     const exerciseLog = this.exerciseLog();
 
     if (exerciseLog) {
-      this.router.navigate([Paths.EXERCISE_LOGS, Paths.EXERCISE_LOGS_EDIT, exerciseLog.id]);
+      this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLog.id]);
     }
   }
 }

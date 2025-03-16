@@ -67,8 +67,9 @@
           }
 
           <!-- #region SERIES -->
+          @let series = formGroup().controls.series;
           <div class="mb-3">
-            @for (serieControl of formGroup().controls.series.controls; track $index) {
+            @for (serieControl of series.controls; track $index) {
               <div class="pb-1">
                 <form class="row g-2">
                   <div class="col-6">
@@ -92,7 +93,7 @@
             }
           </div>
 
-          @if (!formGroup().controls.series.pristine) {
+          @if (!series.pristine) {
             @for (error of formGroup().errors?.['series'] | keyvalue; track $index) {
               <div class="d-block invalid-feedback">{{ error.value }}</div>
             }
@@ -143,12 +144,13 @@
         </div>
       </div>
 
+      @let original = originalValue.value();
       @if (mode() === 'edit') {
-        @if (originalValue.value()) {
+        @if (original) {
           <div class="card mb-3">
             <div class="card-body">
               <div class="card-title">Previous entries</div>
-              @for (log of originalValue.value()!.recentLogs | slice: 0 : 3; track $index) {
+              @for (log of original.recentLogs | slice: 0 : 3; track $index) {
                 <app-exercise-log
                   class="w-100"
                   [exerciseLog]="log"
@@ -172,11 +174,11 @@
           </div>
         }
 
-        @if (originalValue.value()!) {
+        @if (original) {
           <div class="card mb-3">
             <div class="card-body">
               <div class="card-title">Possible 1RM (Brzycky Formula)</div>
-              @for (serie of originalValue.value()!.series; track $index) {
+              @for (serie of original.series; track $index) {
                 <span class="serie-label">Serie {{ $index + 1 }}</span>
                 <ul class="list-group list-group-horizontal pb-1">
                   <li class="list-group-item w-100">{{ serie.brzycki | number: '1.2-2' }}kg</li>
@@ -184,7 +186,7 @@
               }
               <span class="serie-label">Average</span>
               <ul class="list-group list-group-horizontal pb-1">
-                <li class="list-group-item w-100">{{ originalValue.value()!.brzyckiAverage | number: '1.2-2' }}kg</li>
+                <li class="list-group-item w-100">{{ original.brzyckiAverage | number: '1.2-2' }}kg</li>
               </ul>
             </div>
           </div>

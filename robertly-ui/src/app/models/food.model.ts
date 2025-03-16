@@ -5,7 +5,7 @@ export interface Food {
   name: string;
   calories: number;
   protein: number;
-  fat: number;
+  fat: number | null;
   unit: 'g' | 'ml';
   amount: 100;
 }
