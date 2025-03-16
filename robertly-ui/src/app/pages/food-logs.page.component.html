@@ -1,0 +1,18 @@
+<div class="header-footer-padding">
+  <div class="container">
+    @for (log of foodLogs.value(); track log.foodLogId) {
+      @if (!!log) {
+        <app-food-log [foodLog]="log"></app-food-log>
+      } @else {
+        <div class="log">
+          <div style="display: grid; grid-template-columns: auto auto">
+            <div class="d-flex flex-column placeholder-glow">
+              <div class="title"><span class="placeholder col-6"></span></div>
+              <div class="hint"><span class="placeholder col-12"></span></div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

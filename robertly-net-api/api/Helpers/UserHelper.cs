@@ -5,6 +5,7 @@ using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using robertly.DataModels;
 using robertly.Models;
 using robertly.Repositories;
 
@@ -20,7 +21,7 @@ public class UserHelper
   public UserHelper(UserRepository userRepository, AppLogsRepository appLogs, FirebaseApp firebaseApp, IOptions<ConfigurationOptions> config) =>
     (_userRepository, _appLogs, _firebaseApp, _testUserFirebaseUuid) = (userRepository, appLogs, firebaseApp, config.Value.TestUserFirebaseUuid);
 
-  public async Task<User?> GetUser(HttpRequest request)
+  public async Task<Models.User?> GetUser(HttpRequest request)
   {
     if (!string.IsNullOrEmpty(_testUserFirebaseUuid)) {
       return await _userRepository.GetUserByFirebaseUuidAsync(_testUserFirebaseUuid);

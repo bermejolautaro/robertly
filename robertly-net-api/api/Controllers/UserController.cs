@@ -1,6 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using robertly.DataModels;
 using robertly.Models;
 using robertly.Repositories;
+using System;
 using System.Threading.Tasks;
 
 namespace robertly.Controllers;
@@ -14,8 +18,14 @@ public class UserController
     public UserController(UserRepository userRepository) => (_userRepository) = (userRepository);
 
     [HttpGet("firebase-uuid/{firebaseUuid}")]
-    public async Task<User?> GetUserByFirebaseUuidAsync(string firebaseUuid)
+    public async Task<Results<Ok<Models.User>, BadRequest>> GetUserByFirebaseUuidAsync(string firebaseUuid)
     {
-        return await _userRepository.GetUserByFirebaseUuidAsync(firebaseUuid);
+        var user = await _userRepository.GetUserByFirebaseUuidAsync(firebaseUuid);
+
+        if (user is null) {
+            return TypedResults.BadRequest();
+        }
+
+        return TypedResults.Ok(user);
     }
 }

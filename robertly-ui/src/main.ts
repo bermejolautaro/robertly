@@ -20,10 +20,10 @@ import { LogLevel, setLogLevel } from '@angular/fire';
 
 export const Paths = {
   HOME: 'home',
-  LOGS: 'logs',
-  LOGS_EDIT: 'edit',
-  LOGS_CREATE: 'create',
-  LOGS_ID_PARAM: 'id',
+  EXERCISE_LOGS: 'exercise-logs',
+  EXERCISE_LOGS_EDIT: 'edit',
+  EXERCISE_LOGS_CREATE: 'create',
+  EXERCISE_LOGS_ID_PARAM: 'id',
   STATS: 'stats',
   EXERCISES: 'exercises',
   SIGN_IN: 'signin',
@@ -51,17 +51,17 @@ const routes = [
     loadComponent: () => import('@pages/home.page.component').then(x => x.HomePageComponent),
   } as const,
   {
-    path: Paths.LOGS,
+    path: Paths.EXERCISE_LOGS,
     pathMatch: 'full',
     loadComponent: () => import('@pages/exercise-logs.page.component').then(x => x.ExerciseLogsPageComponent),
   } as const,
   {
-    path: `${Paths.LOGS}/${Paths.LOGS_EDIT}/:${Paths.LOGS_ID_PARAM}`,
+    path: `${Paths.EXERCISE_LOGS}/${Paths.EXERCISE_LOGS_EDIT}/:${Paths.EXERCISE_LOGS_ID_PARAM}`,
     pathMatch: 'full',
     loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
   } as const,
   {
-    path: `${Paths.LOGS}/${Paths.LOGS_CREATE}`,
+    path: `${Paths.EXERCISE_LOGS}/${Paths.EXERCISE_LOGS_CREATE}`,
     pathMatch: 'full',
     loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
   } as const,
@@ -73,7 +73,7 @@ const routes = [
   {
     path: Paths.FOODS,
     pathMatch: 'full',
-    loadComponent: () => import('@pages/foods.page.component').then(x => x.FoodsPageComponent),
+    loadComponent: () => import('@pages/food-logs.page.component').then(x => x.FoodsPageComponent),
   } as const,
   {
     path: '',

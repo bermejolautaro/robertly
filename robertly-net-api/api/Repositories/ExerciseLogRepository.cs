@@ -272,7 +272,7 @@ public class ExerciseLogRepository
     var exerciseLogs = await connection.QueryAsync<
         Models.ExerciseLog,
         Models.Exercise,
-        User,
+        Models.User,
         Models.ExerciseLog
     >(
         _schema.AddSchemaToQuery(query),

@@ -71,10 +71,10 @@ export class EditExerciseLogPageComponent {
   public readonly isSaveLoading = signal(false);
   public readonly isLoading = linkedSignal(() => this.originalValue.isLoading());
   public readonly paramMap = toSignal(this.route.paramMap);
-  public readonly exerciseLogId = computed(() => this.paramMap()?.get(Paths.LOGS_ID_PARAM));
+  public readonly exerciseLogId = computed(() => this.paramMap()?.get(Paths.EXERCISE_LOGS_ID_PARAM));
 
   public readonly url = toSignal(this.route.url, { initialValue: [] });
-  public readonly mode = computed(() => (this.url().some(x => x.path === Paths.LOGS_CREATE) ? 'create' : 'edit'));
+  public readonly mode = computed(() => (this.url().some(x => x.path === Paths.EXERCISE_LOGS_CREATE) ? 'create' : 'edit'));
 
   public readonly formGroup = signal(createLogFormGroup());
   public readonly formGroupValue = toSignal(this.formGroup().valueChanges);
@@ -214,7 +214,7 @@ export class EditExerciseLogPageComponent {
           const exerciseLogId = await lastValueFrom(this.exerciseLogApiService.createExerciseLog(request));
           localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
           this.toastService.ok('Log created successfully!');
-          this.router.navigate([Paths.LOGS, Paths.LOGS_EDIT, exerciseLogId]);
+          this.router.navigate([Paths.EXERCISE_LOGS, Paths.EXERCISE_LOGS_EDIT, exerciseLogId]);
         } catch (e) {
           this.toastService.error(`${e}`);
         }

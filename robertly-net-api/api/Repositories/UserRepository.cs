@@ -1,5 +1,7 @@
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using robertly.DataModels;
 using robertly.Helpers;
 using robertly.Models;
 
@@ -11,7 +13,7 @@ public class UserRepository
 
   public UserRepository(ConnectionHelper connection) => (_connection) = (connection);
 
-  public async Task<User?> GetUserByFirebaseUuidAsync(string firebaseUuid)
+  public async Task<Models.User?> GetUserByFirebaseUuidAsync(string firebaseUuid)
   {
 
     using var connection = _connection.Create();
@@ -26,7 +28,7 @@ public class UserRepository
       WHERE UserFirebaseUuid = @FirebaseUuid
       """;
 
-    var user = await connection.QuerySingleOrDefaultAsync<User>(query, new
+    var user = await connection.QuerySingleOrDefaultAsync<DataModels.User>(query, new
     {
       FirebaseUuid = firebaseUuid
     });
@@ -47,14 +49,20 @@ public class UserRepository
       WHERE AU.OwnerUserId = @UserId
       """;
 
-    var assignedUsers = await connection.QueryAsync<User>(queryAssignedUsers, new { UserId = user?.UserId });
+    var assignedUsers = await connection.QueryAsync<DataModels.User>(queryAssignedUsers, new { UserId = user?.UserId });
 
-    user!.AssignedUsers = assignedUsers;
+    var userModel = user?.Map<Models.User>();
 
-    return user;
+    if (userModel is null) {
+      return null;
+    }
+
+    userModel.AssignedUsers = assignedUsers.Select(x => x.Map<Models.User>());
+
+    return userModel;
   }
 
-  public async Task<int> CreateUserAsync(User user)
+  public async Task<int> CreateUserAsync(Models.User user)
   {
 
     using var connection = _connection.Create();

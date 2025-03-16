@@ -1,8 +1,12 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { FoodLogComponent } from '@components/food-log/food-log.component';
 import { Food, FoodLog } from '@models/food.model';
 import { PadStartPipe } from '@pipes/pad-start.pipe';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
+import { FoodLogsApiService } from '@services/food-logs-api.service';
+import { FoodsApiService } from '@services/foods-api.service';
 
 const foods: Food[] = [
   {
@@ -44,37 +48,23 @@ const data: FoodLog[] = [
 ];
 
 @Component({
-  selector: 'app-foods-page',
-  templateUrl: './foods.page.component.html',
-  styles: `.log {
-    background-color: var(--light-bg);
-    color: var(--font-color);
-    margin-bottom: 8px;
-    border-radius: 5px;
-    padding: 0.2rem 0.6rem 0.2rem 0.6rem;
-
-    .title {
-      font-size: 15px;
-      font-weight: 600;
-    }
-
-    .hint {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-
-    .series {
-      display: grid;
-      font-size: 12px;
-      opacity: 0.8;
-    }
-  }
-  `,
+  selector: 'app-food-logs-page',
+  templateUrl: './food-logs.page.component.html',
+  styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TitleCasePipe, ParseToDatePipe, PadStartPipe],
+  imports: [FoodLogComponent],
 })
 export class FoodsPageComponent {
-  public readonly foodLog = signal(data[0]);
+  private readonly foodsApiService = inject(FoodsApiService);
+  private readonly foodLogsApiService = inject(FoodLogsApiService);
+
+  public readonly foodLogs = rxResource({
+    loader: () => this.foodLogsApiService.getFoodLogs(),
+  });
+
+  public readonly foods = rxResource({
+    loader: () => this.foodsApiService.getFoods(),
+  });
 
   public navigateToEditLog(): void {}
 }

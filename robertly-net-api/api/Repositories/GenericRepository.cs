@@ -44,7 +44,7 @@ public class GenericRepository
       $"""
       SELECT *
       FROM {tableName}
-      WHERE {GetTablePrimaryKey<T>()} = {GetTablePrimaryKey<T>()}
+      WHERE {GetTablePrimaryKey<T>()} = @{GetTablePrimaryKey<T>()}
       """;
 
     query = _schema.AddSchemaToQuery(query);

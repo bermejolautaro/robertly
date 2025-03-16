@@ -12,6 +12,19 @@ public class GetFoodLogsQueryBuilderTests
         var queryBuilder = new GetFoodLogsQueryBuilder();
         var (query, parameters) = queryBuilder.Build();
 
-        await Verify(query + "PUTO");
+        var paramsWithValues = parameters.ParameterNames.Select(x => $"{x} = {parameters.Get<object>(x)}");
+
+        var result =
+        $"""
+        Query:
+
+        {query}
+
+        Parameters:
+
+        {paramsWithValues.StringJoin("\n")}
+        """;
+
+        await Verify(result);
     }
 }

@@ -1,24 +1,31 @@
-﻿SELECT DISTINCT
-   FL.ExerciseLogId
-  ,FL.UserId AS ExerciseLogUserId
-  ,FL.ExerciseId AS ExerciseLogExerciseId
-  ,FL.Date AS ExerciseLogDate
-  ,FL.CreatedByUserId
+﻿Query:
+
+SELECT DISTINCT
+   FL.FoodLogId
+  ,FL.FoodId AS FoodLogFoodId
+  ,FL.UserId AS FoodLogUserId
+  ,FL.Date
   ,FL.CreatedAtUtc
-  ,FL.LastUpdatedByUserId
+  ,FL.CreatedByUserId
   ,FL.LastUpdatedAtUtc
-  ,F.ExerciseId
+  ,FL.LastUpdatedByUserId
+  ,F.FoodId
   ,F.Name
-  ,F.MuscleGroup
-  ,F.Type
+  ,F.Calories
+  ,F.Protein
+  ,F.Fat
+  ,F.Unit
+  ,F.Amount
   ,U.UserId
   ,U.UserFirebaseUuid
   ,U.Email
   ,U.Name
 FROM FoodLogs FL
-INNER JOIN Foods F ON EL.ExerciseId = E.ExerciseId
-INNER JOIN Users U ON EL.UserId = U.UserId
+INNER JOIN Foods F ON FL.FoodId = F.FoodId
+INNER JOIN Users U ON FL.UserId = U.UserId
 WHERE 1 = 1
-
 ORDER BY FL.Date DESC, FL.FoodLogId DESC
-OFFSET %offset% LIMIT %limit%;
+OFFSET 0 LIMIT 10;
+
+Parameters:
+

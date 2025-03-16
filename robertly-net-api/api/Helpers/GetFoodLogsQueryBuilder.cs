@@ -10,44 +10,47 @@ namespace robertly.Helpers;
 public class GetFoodLogsQueryBuilder
 {
   private int _index = 0;
-  private readonly StringBuilder _sb = new();
+  private readonly StringBuilder _filters = new();
   private readonly Dictionary<string, object> _params = [];
   private readonly List<string> orderBy = [];
 
   private readonly string _baseQuery =
-  """
-  SELECT DISTINCT
-     FL.ExerciseLogId
-    ,FL.UserId AS ExerciseLogUserId
-    ,FL.ExerciseId AS ExerciseLogExerciseId
-    ,FL.Date AS ExerciseLogDate
-    ,FL.CreatedByUserId
-    ,FL.CreatedAtUtc
-    ,FL.LastUpdatedByUserId
-    ,FL.LastUpdatedAtUtc
-    ,F.ExerciseId
-    ,F.Name
-    ,F.MuscleGroup
-    ,F.Type
-    ,U.UserId
-    ,U.UserFirebaseUuid
-    ,U.Email
-    ,U.Name
-  FROM FoodLogs FL
-  INNER JOIN Foods F ON EL.ExerciseId = E.ExerciseId
-  INNER JOIN Users U ON EL.UserId = U.UserId
-  WHERE 1 = 1
-  %filters%
-  %orderBy%
-  OFFSET %offset% LIMIT %limit%;
-  """;
+    """
+    SELECT DISTINCT
+       FL.FoodLogId
+      ,FL.FoodId AS FoodLogFoodId
+      ,FL.UserId AS FoodLogUserId
+      ,FL.Date
+      ,FL.CreatedAtUtc
+      ,FL.CreatedByUserId
+      ,FL.LastUpdatedAtUtc
+      ,FL.LastUpdatedByUserId
+      ,F.FoodId
+      ,F.Name
+      ,F.Calories
+      ,F.Protein
+      ,F.Fat
+      ,F.Unit
+      ,F.Amount
+      ,U.UserId
+      ,U.UserFirebaseUuid
+      ,U.Email
+      ,U.Name
+    FROM FoodLogs FL
+    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    INNER JOIN Users U ON FL.UserId = U.UserId
+    WHERE 1 = 1
+    %filters%
+    %orderBy%
+    OFFSET %offset% LIMIT %limit%;
+    """;
 
   public GetFoodLogsQueryBuilder() { }
 
   public GetFoodLogsQueryBuilder AndFoodLogId(int foodLogId)
   {
     var param = $"@FoodLogId_{UseIndex()}";
-    _sb.AppendLine($"AND FL.FoodlogId = {param}");
+    _filters.AppendLine($"AND FL.FoodlogId = {param}");
     _params.Add(param, foodLogId);
 
     return this;
@@ -56,10 +59,10 @@ public class GetFoodLogsQueryBuilder
   public GetFoodLogsQueryBuilder AndUserIds(List<int> userIds)
   {
     List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"UserId_{UseIndex()}", x)).ToList();
-    var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
-    _sb.AppendLine($"AND U.UserId IN ({@params})");
+    var parameters = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
+    _filters.AppendLine($"AND U.UserId IN ({parameters})");
 
-    foreach (var (param, value) in @paramsWithValue)
+    foreach (var (param, value) in paramsWithValue)
     {
       _params.Add(param, value);
     }
@@ -71,7 +74,7 @@ public class GetFoodLogsQueryBuilder
   {
     List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"LastUpdatedByUserId_{UseIndex()}", x)).ToList();
     var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
-    _sb.AppendLine($"AND FL.LastUpdatedByUserId IN ({@params})");
+    _filters.AppendLine($"AND FL.LastUpdatedByUserId IN ({@params})");
 
     foreach (var (param, value) in @paramsWithValue)
     {
@@ -85,7 +88,7 @@ public class GetFoodLogsQueryBuilder
   {
     List<(string Param, DateTime Value)> paramsWithValue = dates.Select(x => ($"Date_{UseIndex()}", x)).ToList();
     var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
-    _sb.AppendLine($"AND FL.Date IN ({@params})");
+    _filters.AppendLine($"AND FL.Date IN ({@params})");
 
     foreach (var (param, value) in @paramsWithValue)
     {
@@ -98,7 +101,7 @@ public class GetFoodLogsQueryBuilder
   public GetFoodLogsQueryBuilder AndDate(DateTime date, string comparisonOperator = "=")
   {
     var param = $"@Date_{UseIndex()}";
-    _sb.AppendLine($"AND FL.Date {comparisonOperator} {param}");
+    _filters.AppendLine($"AND FL.Date {comparisonOperator} {param}");
     _params.Add(param, date);
 
     return this;
@@ -119,15 +122,15 @@ public class GetFoodLogsQueryBuilder
   public (string query, DynamicParameters parameters) Build()
   {
     var query = _baseQuery
-      .Replace("%filters%", _sb.ToString())
-      .Replace("%orderBy%", BuildOrderBy());
+      .Replace("%filters%", _filters.ToString())
+      .Replace("%orderBy%", BuildOrderBy())
+      .Replace("%offset%", "0")
+      .Replace("%limit%", "10")
+      .Split('\n')
+      .Where(x => !String.IsNullOrWhiteSpace(x))
+      .StringJoin("");
 
     return (query, new DynamicParameters(_params));
-  }
-
-  public (string Query, IReadOnlyDictionary<string, object> Params) BuildFilters()
-  {
-    return (_sb.ToString(), _params.AsReadOnly());
   }
 
   public string BuildOrderBy()

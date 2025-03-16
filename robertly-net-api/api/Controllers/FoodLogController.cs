@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -16,69 +17,48 @@ namespace robertly.Controllers
   [Route("api/food-logs")]
   public class FoodLogController : ControllerBase
   {
+    private readonly ConnectionHelper _connection;
     private readonly GenericRepository _genericRepository;
     private readonly UserHelper _userHelper;
+    private readonly SchemaHelper _schema;
 
     public FoodLogController(
         GenericRepository genericRepository,
-        UserHelper userHelper) => (_genericRepository, _userHelper) = (genericRepository, userHelper);
+        ConnectionHelper connection,
+        SchemaHelper schema,
+        UserHelper userHelper) =>
+        (_genericRepository, _connection, _schema, _userHelper) =
+        (genericRepository, connection, schema, userHelper);
 
-public async Task<IEnumerable<Models.ExerciseLog>> GetFoodLogs(
-      int page,
-      int size,
-      GetFoodLogsQueryBuilder queryBuilderFunc)
-  {
-    // using var connection = _connection.Create();
-    // var queryBuilder = new GetExerciseLogsQueryBuilder("EL", "U", "E", "S");
-    // queryBuilder = queryBuilderFunc(queryBuilder);
+    [HttpGet]
+    public async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(int page, int size)
+    {
+      using var connection = _connection.Create();
+      var queryBuilder = new GetFoodLogsQueryBuilder();
 
-    // var (filters, queryParams) = queryBuilder.BuildFilters();
-    // var orderBy = queryBuilder.BuildOrderBy();
+      var (query, parameters) = queryBuilder.Build();
 
-    // var query =
-    //   $"""
+      var foodLogs = await connection.QueryAsync<
+          DataModels.FoodLog,
+          DataModels.Food,
+          DataModels.User,
+          Models.FoodLog
+      >(
+          query.ReplaceSchema(_schema),
+          (log, food, user) => (log.Map<Models.FoodLog>() with
+          {
+            Food = food.Map<Models.Food>(),
+            User = user.Map<Models.User>()
+          }),
+          param: parameters,
+          splitOn: "FoodId,UserId"
+      );
 
-    //   """;
-
-    // var exerciseLogs = await connection.QueryAsync<
-    //     Models.ExerciseLog,
-    //     Models.Exercise,
-    //     User,
-    //     Models.ExerciseLog
-    // >(
-    //     _schema.AddSchemaToQuery(query),
-    //     (log, exercise, user) => (log with { Exercise = exercise, User = user }),
-    //     param: new DynamicParameters(queryParams),
-    //     splitOn: "ExerciseId,UserId"
-    // );
-
-    // var series = await connection.QueryAsync<Models.Serie>(
-    //   _schema.AddSchemaToQuery($"""
-    //   SELECT
-    //      S.SerieId
-    //     ,S.ExerciseLogId
-    //     ,S.Reps
-    //     ,S.WeightInKg
-    //     ,(S.WeightInKg * (36.0 / (37.0 - s.Reps))) AS Brzycki
-    //   FROM Series S
-    //   WHERE ExerciseLogId = ANY(@ExerciseLogIds)
-    //   """),
-    //     new { ExerciseLogIds = exerciseLogs.Select(x => x.ExerciseLogId).ToList() }
-    // );
-
-    // exerciseLogs = exerciseLogs.Select(log =>
-    //     log with
-    //     {
-    //       Series = series.Where(x => x.ExerciseLogId == log.ExerciseLogId)
-    //     }
-    // );
-
-    // return exerciseLogs;
-    return [];
-  }
+      return foodLogs;
+    }
 
     [HttpPost]
-    public async Task<Results<UnauthorizedHttpResult, Ok>> Post([FromBody] Models.FoodLog foodLog)
+    public async Task<Results<UnauthorizedHttpResult, Ok, BadRequest>> Post([FromBody] Models.FoodLog foodLog)
     {
       var user = await _userHelper.GetUser(Request);
 
@@ -87,11 +67,18 @@ public async Task<IEnumerable<Models.ExerciseLog>> GetFoodLogs(
         return TypedResults.Unauthorized();
       }
 
+      if (foodLog?.Food is null)
+      {
+        return TypedResults.BadRequest();
+      }
+
       var foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
       {
-        CreatedByUserId = user.UserId.Value,
+        FoodId = foodLog.Food.FoodId,
+        UserId = user.UserId.Value,
+        CreatedByUserId = user.UserId,
         CreatedAtUtc = DateTime.UtcNow,
-        LastUpdatedByUserId = user.UserId.Value,
+        LastUpdatedByUserId = user.UserId,
         LastUpdatedAtUtc = DateTime.UtcNow
       };
 

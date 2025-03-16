@@ -5,8 +5,8 @@ namespace robertly.Models;
 public record FoodLog
 {
   public int? FoodLogId { get; init; }
-  public int? FoodId { get; init; }
-  public int? UserId { get; init; }
+  public Food? Food { get; init; }
+  public User? User { get; init; }
   public DateTime? Date { get; init; }
   public DateTime? CreatedAtUtc { get; init; }
   public int? CreatedByUserId { get; init; }

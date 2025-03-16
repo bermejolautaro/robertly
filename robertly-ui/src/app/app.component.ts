@@ -101,7 +101,7 @@ export class AppComponent implements OnInit {
   }
 
   public navigateToCreateLog(): void {
-    this.router.navigate([Paths.LOGS, Paths.LOGS_CREATE]);
+    this.router.navigate([Paths.EXERCISE_LOGS, Paths.EXERCISE_LOGS_CREATE]);
   }
 
   public async signOut(): Promise<void> {

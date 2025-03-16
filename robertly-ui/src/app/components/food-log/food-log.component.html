@@ -1,0 +1,38 @@
+@let log = foodLog();
+
+@if (!!log) {
+  <div
+  class="log"
+  (click)="navigateToEditLog()"
+>
+  <div style="display: grid; grid-template-columns: auto auto">
+    <div class="d-flex flex-column align-self-center">
+      <div class="title">{{ log.food.name | titlecase }}</div>
+      <div class="hint">{{ log.date | parseToDate }}</div>
+      <div class="hint">{{ log.user.name }}</div>
+    </div>
+    <div class="series">
+      <div class="serie">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: right">
+          <span>calories:</span><span> {{ log.food.calories | padStart: 2 }}cal</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: right">
+          <span>protein:</span><span> {{ log.food.protein | padStart: 2 }}g</span>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: right">
+          <span>fat:</span><span> {{ log.food.fat | padStart: 2 }}g</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+} @else {
+  <div class="log">
+    <div style="display: grid; grid-template-columns: auto auto">
+      <div class="d-flex flex-column placeholder-glow">
+        <div class="title"><span class="placeholder col-6"></span></div>
+        <div class="hint"><span class="placeholder col-12"></span></div>
+      </div>
+    </div>
+  </div>
+}
