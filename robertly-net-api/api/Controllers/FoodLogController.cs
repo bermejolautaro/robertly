@@ -30,11 +30,25 @@ namespace robertly.Controllers
         (_genericRepository, _connection, _schema, _userHelper) =
         (genericRepository, connection, schema, userHelper);
 
+    [HttpGet("{foodLogId}")]
+    public async Task<Models.FoodLog?> GetFoodLogById(int foodLogId)
+    {
+      var queryBuilder = new GetFoodLogsQueryBuilder()
+          .AndFoodLogId(foodLogId);
+
+      var foodLogs = await GetFoodLogs(queryBuilder, 1, 1);
+      return foodLogs.FirstOrDefault();
+    }
+
     [HttpGet]
     public async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(int page, int size)
     {
+      return await GetFoodLogs(new GetFoodLogsQueryBuilder(), page, size);
+    }
+
+    private async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(GetFoodLogsQueryBuilder queryBuilder, int page, int size)
+    {
       using var connection = _connection.Create();
-      var queryBuilder = new GetFoodLogsQueryBuilder();
 
       var (query, parameters) = queryBuilder.Build();
 
@@ -56,7 +70,6 @@ namespace robertly.Controllers
 
       return foodLogs;
     }
-
     [HttpPost]
     public async Task<Results<UnauthorizedHttpResult, Ok, BadRequest>> Post([FromBody] Models.FoodLog foodLog)
     {

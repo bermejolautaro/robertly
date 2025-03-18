@@ -1,40 +1,53 @@
 <div class="header-footer-padding">
   <div class="container">
     <div class="pb-3">
-      <h4 class="title">{{ mode() === 'edit' ? 'Edit' : 'Create' }} Exercise</h4>
-      <!-- <span class="subtitle">Record your workout details and progress</span> -->
+      <h4 class="title">{{ mode() === 'edit' ? 'Edit' : 'Create' }} Food Log</h4>
+      <span class="subtitle">Track your daily meals and your calorie intake</span>
     </div>
 
     <div>
       <form>
-        <!-- #region INPUT NAME -->
-        <div class="mb-3">
+        <!-- #region INPUT DATE -->
+        <div class="mb-2">
           <input
-            type="text"
+            type="date"
+            placeholder="DD-MM-YYYY"
             class="form-control"
-            placeholder="Name"
-            [formControl]="exerciseForm.controls.name"
+            [formControl]="foodLogForm.controls.date"
           />
         </div>
-        <!-- #region INPUT MUSCLE GROUP -->
+        <!-- #endregion -->
+
+        <!-- #region TYPEAHEAD USER -->
         <div class="mb-3">
           <app-typeahead
-            placeholder="Muscle Group"
-            [control]="exerciseForm.controls.muscleGroup"
-            [items]="exerciseApiService.muscleGroups()"
-            [itemSelector]="titleCaseSelector"
+            placeholder="User"
+            [control]="foodLogForm.controls.user"
+            [items]="users()"
+            [itemSelector]="userSelector"
           ></app-typeahead>
         </div>
         <!-- #endregion -->
 
-        <!-- #region INPUT TYPE -->
+        <!-- #region TYPEAHEAD FOOD -->
         <div class="mb-3">
           <app-typeahead
-            placeholder="Type"
-            [control]="exerciseForm.controls.type"
-            [items]="exerciseApiService.types()"
-            [itemSelector]="titleCaseSelector"
+            placeholder="Food"
+            [control]="foodLogForm.controls.food"
+            [items]="foods.value()"
+            [itemSelector]="foodSelector"
           ></app-typeahead>
+        </div>
+        <!-- #endregion -->
+
+        <!-- #region INPUT DATE -->
+        <div class="mb-2">
+          <input
+            type="text"
+            [placeholder]="amountPlaceholder()"
+            class="form-control"
+            [formControl]="foodLogForm.controls.amount"
+          />
         </div>
         <!-- #endregion -->
       </form>
@@ -55,9 +68,9 @@
         <button
           type="button"
           class="btn w-100 d-flex justify-content-center align-items-center"
-          [class.btn-primary]="exerciseForm.valid"
-          [class.btn-secondary]="exerciseForm.invalid"
-          [disabled]="exerciseForm.invalid || isSaveLoading()"
+          [class.btn-primary]="foodLogForm.valid"
+          [class.btn-secondary]="foodLogForm.invalid"
+          [disabled]="foodLogForm.invalid || isSaveLoading()"
           (click)="save()"
         >
           @if (!isSaveLoading()) {

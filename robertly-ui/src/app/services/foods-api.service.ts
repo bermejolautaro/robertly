@@ -12,6 +12,10 @@ export class FoodsApiService {
   private readonly apiUrl = inject(API_URL);
   private readonly endpoint = `${this.apiUrl}/foods`;
 
+  public getFoodById(foodId: number): Observable<Food> {
+    return this.http.get<Food>(`${this.endpoint}/${foodId}`);
+  }
+
   public getFoods(): Observable<Food[]> {
     return this.http.get<Food[]>(`${this.endpoint}`)
   }

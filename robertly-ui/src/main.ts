@@ -1,6 +1,6 @@
 import { provideServiceWorker } from '@angular/service-worker';
 import { InjectionToken, isDevMode, provideExperimentalZonelessChangeDetection } from '@angular/core';
-import { Routes, provideRouter, withDebugTracing, withRouterConfig } from '@angular/router';
+import { Routes, provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
@@ -84,9 +84,34 @@ const routes = [
     loadComponent: () => import('@pages/developer.page.component').then(x => x.DeveloperPageComponent),
   } as const,
   {
-    path: Paths.FOODS,
+    path: Paths.FOOD_LOGS,
     pathMatch: 'full',
     loadComponent: () => import('@pages/food-logs.page.component').then(x => x.FoodsPageComponent),
+  } as const,
+  {
+    path: `${Paths.FOOD_LOGS}/${Paths.EDIT}/:${Paths.ID}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/edit-food-log.page.component').then(x => x.EditFoodLogPageComponent),
+  } as const,
+  {
+    path: `${Paths.FOOD_LOGS}/${Paths.CREATE}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/edit-food-log.page.component').then(x => x.EditFoodLogPageComponent),
+  } as const,
+  {
+    path: Paths.FOODS,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/foods.page.component').then(x => x.FoodsPageComponent),
+  } as const,
+  {
+    path: `${Paths.FOODS}/${Paths.EDIT}/:${Paths.ID}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/edit-food.page.component').then(x => x.EditFoodPageComponent),
+  } as const,
+  {
+    path: `${Paths.FOODS}/${Paths.CREATE}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/edit-food.page.component').then(x => x.EditFoodPageComponent),
   } as const,
   {
     path: '',
@@ -116,7 +141,7 @@ bootstrapApplication(AppComponent, {
     provideExperimentalZonelessChangeDetection(),
     provideAnimationsAsync(),
     provideHttpClient(withInterceptors([httpErrorResponseInterceptor])),
-    provideRouter(routes),
+    provideRouter(routes, withComponentInputBinding()),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
     provideFirebaseApp(() =>
       initializeApp({

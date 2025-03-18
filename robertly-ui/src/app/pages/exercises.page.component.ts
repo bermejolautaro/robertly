@@ -23,7 +23,7 @@ export class ExercisesPageComponent implements OnInit {
     await this.exerciseApiService.fetchExercises();
   }
 
-  public navigateToExercise(exerciseId: number | undefined): void {
+  public navigateToExercise(exerciseId: number | null): void {
     if (exerciseId) {
       this.router.navigate([Paths.EXERCISES, Paths.EDIT, exerciseId]);
     }

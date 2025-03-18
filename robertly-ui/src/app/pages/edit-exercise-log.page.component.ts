@@ -79,10 +79,10 @@ export class EditExerciseLogPageComponent {
   public readonly formGroup = signal(createLogFormGroup());
   public readonly formGroupValue = toSignal(this.formGroup().valueChanges);
 
-  public readonly userSelector = (x: string | User | null) => (typeof x === 'string' ? '' : x?.name ?? '');
+  public readonly userSelector = (x: string | User | null) => (typeof x === 'string' ? '' : (x?.name ?? ''));
 
   public readonly exerciseSelector = (x: string | Exercise | null) =>
-    typeof x === 'string' ? '' : this.titleCasePipe.transform(x?.name) ?? '';
+    typeof x === 'string' ? '' : (this.titleCasePipe.transform(x?.name) ?? '');
 
   public readonly users = computed(() => {
     const user = this.authService.user()!;
@@ -166,12 +166,12 @@ export class EditExerciseLogPageComponent {
     const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
     const instance: ConfirmModalComponent = modalRef.componentInstance;
 
-    instance.title.set('Delete Record');
-    instance.subtitle.set('<strong>Are you sure you want to delete this record?</strong>');
-    instance.body.set(
-      'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>'
-    );
-    instance.okType.set('danger');
+    instance.configurate({
+      title: 'Delete Record',
+      subtitle: '<strong>Are you sure you want to delete this record?</strong>',
+      body: 'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>',
+      okType: 'danger',
+    });
 
     modalRef.closed.pipe(take(1)).subscribe(async () => {
       const log = this.originalValue.value();
@@ -280,7 +280,7 @@ function toUpdateExerciseLogRequest(
     exerciseLog: {
       exerciseLogUsername: user?.name,
       exerciseLogUserId: user.userId,
-      exerciseLogExerciseId: exercise.exerciseId,
+      exerciseLogExerciseId: exercise.exerciseId ?? undefined,
       exerciseLogDate: date.format('YYYY-MM-DD'),
       series: toSeries(formGroup.value.series),
     },

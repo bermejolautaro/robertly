@@ -21,6 +21,7 @@ public class GetFoodLogsQueryBuilder
       ,FL.FoodId AS FoodLogFoodId
       ,FL.UserId AS FoodLogUserId
       ,FL.Date
+      ,FL.Amount
       ,FL.CreatedAtUtc
       ,FL.CreatedByUserId
       ,FL.LastUpdatedAtUtc

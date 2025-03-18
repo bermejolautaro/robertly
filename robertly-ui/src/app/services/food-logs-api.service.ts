@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from 'src/main';
-import { FoodLog } from '@models/food.model';
+import { FoodLog } from '@models/food-log.model';
 
 @Injectable({
   providedIn: 'root',
@@ -11,6 +11,10 @@ export class FoodLogsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
   private readonly endpoint = `${this.apiUrl}/food-logs`;
+
+  public getFoodLogById(foodLogId: number): Observable<FoodLog> {
+    return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`)
+  }
 
   public getFoodLogs(): Observable<FoodLog[]> {
     return this.http.get<FoodLog[]>(`${this.endpoint}`)
@@ -21,7 +25,7 @@ export class FoodLogsApiService {
   }
 
   public updateFoodLog(request: FoodLog): Observable<void> {
-    return this.http.put<void>(`${this.endpoint}/${request.foodId}`, request);
+    return this.http.put<void>(`${this.endpoint}/${request.foodLogId}`, request);
   }
 
   public deleteFoodLog(id: number): Observable<void> {

@@ -1,0 +1,38 @@
+:host {
+  --bs-body-bg: var(--light-bg);
+  --bs-body-color: var(--font-color);
+  --bs-tertiary-bg: var(--primary);
+  --bs-border-width: 1px;
+  --bs-border-color: rgba(255, 255, 255, 0.15);
+}
+
+.card {
+  --bs-card-spacer-y: 0.5rem;
+  --bs-card-spacer-x: 0.5rem;
+}
+
+.title {
+  margin: 0;
+}
+
+.subtitle {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.card {
+  background-color: var(--bg);
+  border: 1px solid rgb(255 255 255 / 10%);
+}
+
+.serie-label {
+  font-size: 12px;
+  color: rgb(255 255 255 / 75%);
+  padding: 0 0.5rem;
+}
+
+.delete-button {
+  background-color: rgb(48, 27, 35);
+  --bs-btn-border-color: #6e363b;
+  color: rgb(250, 137, 137);
+}

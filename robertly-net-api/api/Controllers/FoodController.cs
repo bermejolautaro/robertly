@@ -31,6 +31,18 @@ public class FoodController : ControllerBase
     return TypedResults.Ok(foods.Select(x => x.Map<Models.Food>()));
   }
 
+  [HttpGet("{foodId}")]
+  public async Task<Results<BadRequest, Ok<Models.Food>>> GetFoodById(int foodId)
+  {
+    var food = await _genericRepository.GetByIdAsync<DataModels.Food>(foodId);
+
+    if (food is null) {
+      return TypedResults.BadRequest();
+    }
+
+    return TypedResults.Ok(food.Map<Models.Food>());
+  }
+
   [HttpPost]
   public async Task<Results<UnauthorizedHttpResult, Ok>> Post([FromBody] Models.Food food)
   {

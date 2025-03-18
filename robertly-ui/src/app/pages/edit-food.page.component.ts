@@ -1,25 +1,26 @@
 import { TitleCasePipe, Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, input } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, OnInit, input } from '@angular/core';
+import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { TypeaheadComponent } from '@components/typeahead.component';
+import { Food } from '@models/food.model';
 import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
-import { CreateExerciseRequest, ExerciseApiService, UpdateExerciseRequest } from '@services/exercises-api.service';
+import { FoodsApiService } from '@services/foods-api.service';
 import { ToastService } from '@services/toast.service';
-import { take, lastValueFrom } from 'rxjs';
+import { take, lastValueFrom, of } from 'rxjs';
 import { Paths } from 'src/main';
 
 @Component({
-  selector: 'edit-exercise-page',
-  templateUrl: './edit-exercise.page.component.html',
-  styleUrl: './edit-exercise.page.component.scss',
+  selector: 'edit-food-page',
+  templateUrl: './edit-food.page.component.html',
+  styleUrl: './edit-food.page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, FormsModule, NgbTypeaheadModule, TypeaheadComponent],
 })
-export class EditExercisePageComponent {
+export class EditFoodPageComponent {
   private readonly location = inject(Location);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
@@ -27,38 +28,52 @@ export class EditExercisePageComponent {
   private readonly route = inject(ActivatedRoute);
   private readonly modalService = inject(NgbModal);
 
-  public readonly exerciseApiService = inject(ExerciseApiService);
+  public readonly foodsApiService = inject(FoodsApiService);
 
-  public readonly exerciseIdFromRoute = input<number | undefined>(undefined, { alias: 'id' });
+  public readonly foodIdFromRoute = input<number | undefined>(undefined, { alias: 'id' });
 
   private readonly url = toSignal(this.route.url, { initialValue: [] });
   public readonly mode = computed(() => {
     return this.url().some(x => x.path === Paths.CREATE) ? 'create' : 'edit';
   });
 
-  public readonly exercise = computed(() => {
-    return this.exerciseApiService.exercises().find(x => x.exerciseId === this.exerciseIdFromRoute());
+  public readonly food = rxResource({
+    loader: () => {
+      const foodId = this.foodIdFromRoute();
+
+      if (foodId) {
+        return this.foodsApiService.getFoodById(foodId);
+      }
+
+      return of(null);
+    },
   });
 
   public readonly isSaveLoading = signal(false);
   public readonly titleCaseSelector = (x: string | null) => (!!x ? this.titleCasePipe.transform(x) : '');
 
-  public readonly exerciseForm = new FormGroup({
+  public readonly foodForm = new FormGroup({
     name: new FormControl('', [Validators.required]),
-    muscleGroup: new FormControl('', [Validators.required]),
-    type: new FormControl('', [Validators.required]),
+    calories: new FormControl<number | null>(null, [Validators.required]),
+    protein: new FormControl<number | null>(null, [Validators.required]),
+    fat: new FormControl<number | null>(null),
+    unit: new FormControl('', [Validators.required]),
+    amount: new FormControl<number | null>(null, [Validators.required]),
   });
 
   public constructor() {
     effect(() => {
       // When exercise change then update form
-      const exercise = this.exercise();
+      const food = this.food.value();
 
-      if (exercise) {
-        this.exerciseForm.patchValue({
-          name: exercise.name,
-          muscleGroup: exercise.muscleGroup,
-          type: exercise.type,
+      if (food) {
+        this.foodForm.patchValue({
+          name: food.name,
+          calories: food.calories,
+          protein: food.protein,
+          fat: food.fat,
+          unit: food.unit,
+          amount: food.amount,
         });
       }
     });
@@ -76,11 +91,11 @@ export class EditExercisePageComponent {
     });
 
     modalRef.closed.pipe(take(1)).subscribe(async () => {
-      const exercise = this.exercise();
+      const food = this.food.value();
 
-      if (exercise?.exerciseId) {
+      if (food?.foodId) {
         try {
-          await lastValueFrom(this.exerciseApiService.deleteExercise(exercise.exerciseId));
+          await lastValueFrom(this.foodsApiService.deleteFood(food.foodId));
           this.router.navigate([Paths.EXERCISES]);
         } catch (e) {
           const error = e as HttpErrorResponse;
@@ -91,33 +106,35 @@ export class EditExercisePageComponent {
   }
 
   public async save(): Promise<void> {
+    if (this.foodForm.invalid) {
+      return;
+    }
+
     this.isSaveLoading.set(true);
-    this.exerciseForm.disable();
+    this.foodForm.disable();
+
+    const food: Food = {
+      foodId: this.food.value()?.foodId ?? null,
+      name: this.foodForm.value.name!,
+      calories: this.foodForm.value.calories!,
+      protein: this.foodForm.value.protein!,
+      fat: this.foodForm.value.fat!,
+      unit: this.foodForm.value.unit!.toLowerCase() as 'g' | 'ml',
+      amount: this.foodForm.value.amount!,
+    };
 
     try {
       if (this.mode() === 'create') {
-        const request: CreateExerciseRequest = {
-          name: this.exerciseForm.value.name!.toLowerCase(),
-          muscleGroup: this.exerciseForm.value.muscleGroup!.toLowerCase(),
-          type: this.exerciseForm.value.type!.toLowerCase(),
-        };
-
-        await lastValueFrom(this.exerciseApiService.createExercise(request));
+        await lastValueFrom(this.foodsApiService.createFood(food));
       } else {
-        const request: UpdateExerciseRequest = {
-          exerciseId: this.exercise()!.exerciseId!,
-          name: this.exerciseForm.value.name!.toLowerCase(),
-          muscleGroup: this.exerciseForm.value.muscleGroup!.toLowerCase(),
-          type: this.exerciseForm.value.type!.toLowerCase(),
-        };
-        await lastValueFrom(this.exerciseApiService.updateExercise(request));
+        await lastValueFrom(this.foodsApiService.updateFood(food));
       }
     } catch (error) {
       this.toastService.error('An error occurred while saving the exercise.');
     } finally {
       this.isSaveLoading.set(false);
-      this.exerciseForm.enable();
-      this.router.navigate([Paths.EXERCISES]);
+      this.foodForm.enable();
+      this.router.navigate([Paths.FOODS]);
     }
   }
 
