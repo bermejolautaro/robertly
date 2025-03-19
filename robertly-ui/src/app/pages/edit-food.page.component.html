@@ -24,6 +24,7 @@
           placeholder="Calories"
           [(ngModel)]="foodFormSignal.calories"
           [disabled]="!foodFormEnabled()"
+          onlyNumbers
         />
       </div>
       <!-- #endregion -->
@@ -36,6 +37,7 @@
           placeholder="Protein"
           [(ngModel)]="foodFormSignal.protein"
           [disabled]="!foodFormEnabled()"
+          onlyNumbers
         />
       </div>
       <!-- #endregion -->
@@ -48,6 +50,7 @@
           placeholder="Fat"
           [(ngModel)]="foodFormSignal.fat"
           [disabled]="!foodFormEnabled()"
+          onlyNumbers
         />
       </div>
       <!-- #endregion -->
@@ -71,6 +74,7 @@
           placeholder="Amount Per Unit"
           [(ngModel)]="foodFormSignal.amount"
           [disabled]="!foodFormEnabled()"
+          onlyNumbers
         />
       </div>
       <!-- #endregion -->

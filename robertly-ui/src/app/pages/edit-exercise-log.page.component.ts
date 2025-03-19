@@ -18,7 +18,6 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TypeaheadComponent } from '@components/typeahead.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Paths } from 'src/main';
-import { createLogFormSignal } from '@models/create-or-update-log';
 import {
   CreateExerciseLogRequest,
   ExerciseLogApiService,
@@ -38,6 +37,8 @@ import { User } from '@models/user.model';
 
 import * as R from 'remeda';
 import { HttpErrorResponse } from '@angular/common/http';
+import { OnlyNumbersDirective } from '../directives/only-numbers.directive';
+import { parseNumber } from '@validators/parse-number';
 
 @Component({
   selector: 'edit-exercise-log-page',
@@ -52,6 +53,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     ExerciseLogComponent,
     DecimalPipe,
     SlicePipe,
+    OnlyNumbersDirective,
   ],
 })
 export class EditExerciseLogPageComponent {
@@ -76,7 +78,38 @@ export class EditExerciseLogPageComponent {
   public readonly url = toSignal(this.route.url, { initialValue: [] });
   public readonly mode = computed(() => (this.url().some(x => x.path === Paths.CREATE) ? 'create' : 'edit'));
 
-  public readonly formSignal = createLogFormSignal();
+  public readonly formSignal = {
+    user: signal<User | null>(null),
+    exercise: signal<Exercise | null>(null),
+    date: signal(''),
+    series: signal([
+      signal({
+        serieId: null as number | null,
+        reps: signal<string | null>(null),
+        weightInKg: signal<string | null>(null),
+      }),
+      signal({
+        serieId: null as number | null,
+        reps: signal<string | null>(null),
+        weightInKg: signal<string | null>(null),
+      }),
+      signal({
+        serieId: null as number | null,
+        reps: signal<string | null>(null),
+        weightInKg: signal<string | null>(null),
+      }),
+      signal({
+        serieId: null as number | null,
+        reps: signal<string | null>(null),
+        weightInKg: signal<string | null>(null),
+      }),
+      signal({
+        serieId: null as number | null,
+        reps: signal<string | null>(null),
+        weightInKg: signal<string | null>(null),
+      }),
+    ]),
+  };
   public readonly formValid = computed(() => {
     return true;
   });
@@ -88,7 +121,7 @@ export class EditExerciseLogPageComponent {
     series: this.formSignal.series(),
   }));
 
-  public readonly formEnabled = signal(false);
+  public readonly formEnabled = signal(true);
 
   public readonly userSelector = (x: User | null) => x?.name ?? '';
 
@@ -139,8 +172,8 @@ export class EditExerciseLogPageComponent {
         for (let i = 0; i < x.length; i++) {
           x[i]?.set({
             serieId: exerciseLog.series[i]?.serieId ?? null,
-            reps: signal(exerciseLog.series[i]?.reps ?? null),
-            weightInKg: signal(exerciseLog.series[i]?.weightInKg ?? null),
+            reps: signal(exerciseLog.series[i]?.reps?.toString() ?? null),
+            weightInKg: signal(exerciseLog.series[i]?.weightInKg?.toString() ?? null),
           });
         }
         return x;
@@ -148,24 +181,21 @@ export class EditExerciseLogPageComponent {
     }
   });
 
-  public hasUnsavedChanges = signal(false);
-
-  readonly #onFormValueOrOriginalValueChangeThenUpdateHasUnsavedChanges = effect(() => {
+  public readonly hasUnsavedChanges = computed(() => {
     const formValue = this.formValue();
+    const mode = this.mode();
 
-    if (!formValue.user) {
-      this.hasUnsavedChanges.set(false);
-      return;
+    if (mode === 'create' || !formValue.user) {
+      return false;
     }
 
     const originalValue = this.originalValue.value();
-    const mode = this.mode();
 
     const originalSeries =
       originalValue?.series.map(x => ({
-        reps: x.reps,
-        weightInKg: x.weightInKg,
         serieId: x.serieId,
+        weightInKg: x.weightInKg?.toString() ?? null,
+        reps: x.reps?.toString() ?? null,
       })) ?? [];
 
     const updatedSeries = formValue.series
@@ -183,7 +213,7 @@ export class EditExerciseLogPageComponent {
       originalValue?.user.userId !== formValue.user.userId ||
       this.dayjs(originalValue?.date).unix() !== this.dayjs(formValue.date).unix();
 
-    this.hasUnsavedChanges.set(result);
+    return result;
   });
 
   public openDeleteModal(): void {
@@ -226,20 +256,22 @@ export class EditExerciseLogPageComponent {
     }
 
     if (this.formValid() && typeof exercise !== 'string' && !!exercise && typeof user !== 'string' && !!user) {
-      this.formEnabled.set(true);
+      this.formEnabled.set(false);
 
       if (mode === 'create') {
-        const series: Serie[] = this.formSignal.series().map(x => {
-          const serie = x();
+        const series: Serie[] = this.formSignal.series().map(serieSignal => {
+          const serie = serieSignal();
 
           return {
             exerciseLogId: this.exerciseLogId(),
             serieId: serie.serieId,
-            reps: serie.reps(),
-            weightInKg: serie.weightInKg(),
+            reps: parseNumber(serie.reps()),
+            weightInKg: parseNumber(serie.weightInKg()),
             brzycki: 0,
           };
         });
+
+        const seriesToCreate = series.filter(x => !!x.reps || !!x.weightInKg);
 
         const seriesIdsToDelete = series
           .filter(x => !x.reps || !x.weightInKg)
@@ -253,7 +285,7 @@ export class EditExerciseLogPageComponent {
             exerciseLogUserId: user.userId,
             exerciseLogExerciseId: exercise.exerciseId ?? undefined,
             exerciseLogDate: date.format('YYYY-MM-DD'),
-            series: series,
+            series: seriesToCreate,
           },
         };
         try {
@@ -267,17 +299,19 @@ export class EditExerciseLogPageComponent {
       }
 
       if (mode === 'edit') {
-        const series: Serie[] = this.formSignal.series().map(x => {
-          const serie = x();
+        const series: Serie[] = this.formSignal.series().map(serieSignal => {
+          const serie = serieSignal();
 
           return {
             exerciseLogId: this.exerciseLogId(),
             serieId: serie.serieId,
-            reps: serie.reps(),
-            weightInKg: serie.weightInKg(),
+            reps: Number(serie.reps()),
+            weightInKg: Number(serie.weightInKg()),
             brzycki: 0,
           };
         });
+
+        const seriesToEdit = series.filter(x => !!x.reps || !!x.weightInKg);
 
         const seriesIdsToDelete = series
           .filter(x => !x.reps || !x.weightInKg)
@@ -292,7 +326,7 @@ export class EditExerciseLogPageComponent {
             exerciseLogUserId: user.userId,
             exerciseLogExerciseId: exercise.exerciseId ?? undefined,
             exerciseLogDate: date.format('YYYY-MM-DD'),
-            series: series,
+            series: seriesToEdit,
           },
         };
 
@@ -308,7 +342,7 @@ export class EditExerciseLogPageComponent {
     }
 
     this.isSaveLoading.set(false);
-    this.formEnabled.set(false);
+    this.formEnabled.set(true);
   }
 
   public cancel(): void {

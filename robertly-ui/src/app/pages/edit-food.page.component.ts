@@ -2,23 +2,25 @@ import { TitleCasePipe, Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, input } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { TypeaheadComponent } from '@components/typeahead.component';
 import { Food } from '@models/food.model';
-import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { FoodsApiService } from '@services/foods-api.service';
 import { ToastService } from '@services/toast.service';
+import { parseNumber } from '@validators/parse-number';
 import { take, lastValueFrom, of } from 'rxjs';
 import { Paths } from 'src/main';
+import { OnlyNumbersDirective } from '../directives/only-numbers.directive';
 
 @Component({
   selector: 'edit-food-page',
   templateUrl: './edit-food.page.component.html',
   styleUrl: './edit-food.page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, NgbTypeaheadModule, TypeaheadComponent],
+  imports: [FormsModule, TypeaheadComponent, OnlyNumbersDirective],
 })
 export class EditFoodPageComponent {
   private readonly location = inject(Location);
@@ -69,12 +71,7 @@ export class EditFoodPageComponent {
     }
 
     const fat = this.foodFormSignal.fat();
-
-    if (fat !== '' && !/$[\d+]^/.test(fat ?? '')) {
-      return null;
-    }
-
-    const parsedFat = !fat ? null : Number(fat);
+    const parsedFat = parseNumber(fat);
 
     const calories = this.foodFormSignal.calories();
     const parsedCalories = !!calories ? Number(calories) : null!;

@@ -1,39 +1,30 @@
 import { TitleCasePipe, Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import {
-  Component,
-  ChangeDetectionStrategy,
-  computed,
-  inject,
-  signal,
-  effect,
-  OnInit,
-  input,
-  untracked,
-} from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, input, untracked } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { TypeaheadComponent } from '@components/typeahead.component';
 import { FoodLog } from '@models/food-log.model';
 import { Food } from '@models/food.model';
 import { User } from '@models/user.model';
-import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '@services/auth.service';
 import { parseDate } from '@services/dayjs.service';
 import { FoodLogsApiService } from '@services/food-logs-api.service';
 import { FoodsApiService } from '@services/foods-api.service';
 import { ToastService } from '@services/toast.service';
-import { take, lastValueFrom, of, map, startWith } from 'rxjs';
+import { take, lastValueFrom, of } from 'rxjs';
 import { DAY_JS, Paths } from 'src/main';
+import { OnlyNumbersDirective } from '../directives/only-numbers.directive';
 
 @Component({
   selector: 'edit-food-log-page',
   templateUrl: './edit-food-log.page.component.html',
   styleUrl: './edit-food-log.page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, FormsModule, NgbTypeaheadModule, TypeaheadComponent],
+  imports: [FormsModule, TypeaheadComponent, OnlyNumbersDirective],
 })
 export class EditFoodLogPageComponent {
   private readonly location = inject(Location);
@@ -83,13 +74,6 @@ export class EditFoodLogPageComponent {
       return !!foodLogId ? this.foodLogsApiService.getFoodLogById(foodLogId) : of(null);
     },
   });
-
-  // public readonly foodLogForm = new FormGroup({
-  //   user: new FormControl<User | null>(null),
-  //   food: new FormControl<Food | null>(null),
-  //   date: new FormControl('', Validators.required),
-  //   amount: new FormControl<number | null>(null, Validators.required),
-  // });
 
   public readonly foodLogForm = {
     user: signal<User | null>(null),

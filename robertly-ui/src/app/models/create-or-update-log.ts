@@ -29,18 +29,3 @@ export function createLogFormGroup(): CreateOrUpdateLogFormGroup {
     [createOrUpdateLogFormValidator]
   );
 }
-
-export function createLogFormSignal() {
-  return {
-    user: signal<User | null>(null),
-    exercise: signal<Exercise | null>(null),
-    date: signal(''),
-    series: signal([
-      signal({ serieId: null as number | null, reps: signal<number | null>(null), weightInKg: signal<number | null>(null) }),
-      signal({ serieId: null as number | null, reps: signal<number | null>(null), weightInKg: signal<number | null>(null) }),
-      signal({ serieId: null as number | null, reps: signal<number | null>(null), weightInKg: signal<number | null>(null) }),
-      signal({ serieId: null as number | null, reps: signal<number | null>(null), weightInKg: signal<number | null>(null) }),
-      signal({ serieId: null as number | null, reps: signal<number | null>(null), weightInKg: signal<number | null>(null) }),
-    ]),
-  };
-}

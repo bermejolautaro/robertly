@@ -70,20 +70,22 @@
               <div class="row g-2">
                 <div class="col-6">
                   <input
-                    type="number"
+                    type="text"
                     class="form-control"
                     placeholder="Reps"
                     [(ngModel)]="serie().reps"
                     [disabled]="!formEnabled()"
+                    onlyNumbers
                   />
                 </div>
                 <div class="col-6">
                   <input
-                    type="number"
+                    type="text"
                     class="form-control"
                     placeholder="Weight (Kg)"
                     [(ngModel)]="serie().weightInKg"
                     [disabled]="!formEnabled()"
+                    onlyNumbers
                   />
                 </div>
               </div>

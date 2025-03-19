@@ -39,13 +39,14 @@
       </div>
       <!-- #endregion -->
 
-      <!-- #region INPUT DATE -->
+      <!-- #region INPUT AMOUNT -->
       <div class="mb-2">
         <input
           type="text"
           [placeholder]="amountPlaceholder()"
           class="form-control"
           [(ngModel)]="foodLogForm.amount"
+          onlyNumbers
         />
       </div>
       <!-- #endregion -->
