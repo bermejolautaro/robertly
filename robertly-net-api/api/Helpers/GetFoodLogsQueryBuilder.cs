@@ -129,7 +129,7 @@ public class GetFoodLogsQueryBuilder
       .Replace("%limit%", "10")
       .Split(Environment.NewLine)
       .Where(x => !String.IsNullOrWhiteSpace(x))
-      .StringJoin("");
+      .StringJoin(Environment.NewLine);
 
     return (query, new DynamicParameters(_params));
   }
