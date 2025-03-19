@@ -22,7 +22,7 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
   public onInput(event: Event): void {
     const inputValue = (event.target as HTMLInputElement).value;
 
-    let sanitizedValue = inputValue.replace(/[^0-9.]/g, '');
+    let sanitizedValue = inputValue.replace(',', '.').replace(/[^0-9.]/g, '');
 
     const parts = sanitizedValue.split('.');
     if (parts.length > 2) {
@@ -49,16 +49,14 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
       return;
     }
 
-    if (!/[\d.]/.test(event.key) || (event.key === '.' && inputElement.value.includes('.'))) {
+    if (!/[\d.,]/.test(event.key)) {
       event.preventDefault();
     }
   }
 
   public writeValue(value: unknown): void {
-    if (typeof value === 'string' || typeof value === 'number') {
-      this.value.set(`${value}`);
-      this.element.nativeElement.value = this.value();
-    }
+    this.value.set(value as any);
+    this.element.nativeElement.value = this.value();
   }
 
   public registerOnChange(fn: unknown): void {

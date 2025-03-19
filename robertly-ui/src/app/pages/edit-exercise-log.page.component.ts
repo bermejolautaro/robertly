@@ -271,7 +271,7 @@ export class EditExerciseLogPageComponent {
           };
         });
 
-        const seriesToCreate = series.filter(x => !!x.reps || !!x.weightInKg);
+        const seriesToCreate = series.filter(x => !!x.reps && !!x.weightInKg);
 
         const seriesIdsToDelete = series
           .filter(x => !x.reps || !x.weightInKg)
@@ -311,7 +311,7 @@ export class EditExerciseLogPageComponent {
           };
         });
 
-        const seriesToEdit = series.filter(x => !!x.reps || !!x.weightInKg);
+        const seriesToEdit = series.filter(x => !!x.reps && !!x.weightInKg);
 
         const seriesIdsToDelete = series
           .filter(x => !x.reps || !x.weightInKg)
