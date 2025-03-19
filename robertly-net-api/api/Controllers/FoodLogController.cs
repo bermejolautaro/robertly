@@ -17,18 +17,20 @@ namespace robertly.Controllers
   [Route("api/food-logs")]
   public class FoodLogController : ControllerBase
   {
-    private readonly ConnectionHelper _connection;
+    private readonly AppLogsRepository _appLogsRepository;
     private readonly GenericRepository _genericRepository;
-    private readonly UserHelper _userHelper;
+    private readonly ConnectionHelper _connection;
     private readonly SchemaHelper _schema;
+    private readonly UserHelper _userHelper;
 
     public FoodLogController(
+        AppLogsRepository appLogsRepository,
         GenericRepository genericRepository,
         ConnectionHelper connection,
         SchemaHelper schema,
         UserHelper userHelper) =>
-        (_genericRepository, _connection, _schema, _userHelper) =
-        (genericRepository, connection, schema, userHelper);
+        (_appLogsRepository, _genericRepository, _connection, _schema, _userHelper) =
+        (appLogsRepository, genericRepository, connection, schema, userHelper);
 
     [HttpGet("{foodLogId}")]
     public async Task<Models.FoodLog?> GetFoodLogById(int foodLogId)
@@ -51,24 +53,34 @@ namespace robertly.Controllers
       using var connection = _connection.Create();
 
       var (query, parameters) = queryBuilder.Build();
+      query = query.ReplaceSchema(_schema);
 
-      var foodLogs = await connection.QueryAsync<
-          DataModels.FoodLog,
-          DataModels.Food,
-          DataModels.User,
-          Models.FoodLog
-      >(
-          query.ReplaceSchema(_schema),
-          (log, food, user) => (log.Map<Models.FoodLog>() with
-          {
-            Food = food.Map<Models.Food>(),
-            User = user.Map<Models.User>()
-          }),
-          param: parameters,
-          splitOn: "FoodId,UserId"
-      );
+      try
+      {
+        var foodLogs = await connection.QueryAsync<
+            DataModels.FoodLog,
+            DataModels.Food,
+            DataModels.User,
+            Models.FoodLog
+        >(
+            query,
+            (log, food, user) => (log.Map<Models.FoodLog>() with
+            {
+              Food = food.Map<Models.Food>(),
+              User = user.Map<Models.User>()
+            }),
+            param: parameters,
+            splitOn: "FoodId,UserId"
+        );
 
-      return foodLogs;
+        return foodLogs;
+      }
+      catch (Exception e)
+      {
+        await _appLogsRepository.LogError(query, e);
+      }
+
+      return [];
     }
     [HttpPost]
     public async Task<Results<UnauthorizedHttpResult, Ok, BadRequest>> Post([FromBody] Models.FoodLog foodLog)

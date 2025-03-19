@@ -135,7 +135,7 @@ export class EditFoodLogPageComponent {
       if (foodLog?.foodLogId) {
         try {
           await lastValueFrom(this.foodLogsApiService.deleteFoodLog(foodLog.foodLogId));
-          this.router.navigate([Paths.EXERCISES]);
+          this.router.navigate([Paths.FOOD_LOGS]);
         } catch (e) {
           const error = e as HttpErrorResponse;
           this.toastService.error(`${error.message}`);
