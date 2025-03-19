@@ -36,8 +36,22 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
   }
 
   @HostListener('blur')
-  onBlur(): void {
+  public onBlur(): void {
     this._onTouched();
+  }
+
+  @HostListener('keypress', ['$event'])
+  public onKeyPress(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
+    const inputElement = event.target as HTMLInputElement;
+
+    if (allowedKeys.includes(event.key)) {
+      return;
+    }
+
+    if (!/[\d.]/.test(event.key) || (event.key === '.' && inputElement.value.includes('.'))) {
+      event.preventDefault();
+    }
   }
 
   public writeValue(value: unknown): void {
