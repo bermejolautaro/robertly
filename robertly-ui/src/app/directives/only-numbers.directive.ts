@@ -1,4 +1,4 @@
-import { Directive, ElementRef, forwardRef, HostListener, inject, signal } from '@angular/core';
+import { Directive, ElementRef, forwardRef, HostListener, inject, input, signal } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Directive({
@@ -12,6 +12,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
   ],
 })
 export class OnlyNumbersDirective implements ControlValueAccessor {
+  public readonly allowDecimals = input(true);
   private readonly element = inject(ElementRef);
   private _onChange: (value: unknown) => void = () => {};
   private _onTouched: () => void = () => {};
@@ -20,19 +21,31 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
 
   @HostListener('input', ['$event'])
   public onInput(event: Event): void {
-    const inputValue = (event.target as HTMLInputElement).value;
+    let inputValue = (event.target as HTMLInputElement).value;
 
-    let sanitizedValue = inputValue.replace(',', '.').replace(/[^0-9.]/g, '');
+    inputValue = inputValue.replace(',', '.').replace(/[^0-9.]/g, '');
 
-    const parts = sanitizedValue.split('.');
-    if (parts.length > 2) {
-      sanitizedValue = parts[0] + '.' + parts.slice(1).join('');
+    if (this.allowDecimals()) {
+      inputValue = inputValue.replace(/[^0-9.]/g, '');
+
+      const parts = inputValue.split('.');
+      if (parts.length > 2) {
+        inputValue = parts[0] + '.' + parts.slice(1).join('');
+      }
+    } else {
+      inputValue = inputValue.replace(/\D/g, '');
     }
 
-    this.element.nativeElement.value = sanitizedValue;
-    this.value.set(sanitizedValue);
+    if (inputValue.startsWith('.') || inputValue === '0') {
+      inputValue = '';
+    } else if (inputValue.startsWith('0') && inputValue[1] !== '.') {
+      inputValue = inputValue.replace(/^0+/, ''); // Remove leading zeros
+    }
 
-    this._onChange(sanitizedValue);
+    this.element.nativeElement.value = inputValue;
+    this.value.set(inputValue);
+
+    this._onChange(inputValue);
   }
 
   @HostListener('blur')
@@ -43,7 +56,6 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
   @HostListener('keypress', ['$event'])
   public onKeyPress(event: KeyboardEvent): void {
     const allowedKeys = ['Backspace', 'ArrowLeft', 'ArrowRight', 'Tab', 'Delete'];
-    const inputElement = event.target as HTMLInputElement;
 
     if (allowedKeys.includes(event.key)) {
       return;
