@@ -14,7 +14,7 @@ public class GenericRepository
 
   public GenericRepository(ConnectionHelper connection, SchemaHelper schema) => (_connection, _schema) = (connection, schema);
 
-  public async Task<IEnumerable<T>> GetAll<T>(string tableName = "") where T : IDataModel
+  public async Task<IEnumerable<T>> GetAllAsync<T>(string tableName = "") where T : IDataModel
   {
     using var connection = _connection.Create();
 

@@ -22,6 +22,9 @@
           <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: right">
             <span>Fat:</span><span>{{ !!log.food.fat ? (log.food.fat | padStart: 2) + 'g' : '-' }}</span>
           </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; text-align: right">
+            <span>Amount:</span><span>{{ log.amount + log.food.unit }}</span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,8 +1,8 @@
 import { TitleCasePipe, Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, OnInit, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, input } from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
-import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { TypeaheadComponent } from '@components/typeahead.component';
@@ -18,7 +18,7 @@ import { Paths } from 'src/main';
   templateUrl: './edit-food.page.component.html',
   styleUrl: './edit-food.page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, FormsModule, NgbTypeaheadModule, TypeaheadComponent],
+  imports: [FormsModule, NgbTypeaheadModule, TypeaheadComponent],
 })
 export class EditFoodPageComponent {
   private readonly location = inject(Location);
@@ -52,29 +52,92 @@ export class EditFoodPageComponent {
   public readonly isSaveLoading = signal(false);
   public readonly titleCaseSelector = (x: string | null) => (!!x ? this.titleCasePipe.transform(x) : '');
 
-  public readonly foodForm = new FormGroup({
-    name: new FormControl('', [Validators.required]),
-    calories: new FormControl<number | null>(null, [Validators.required]),
-    protein: new FormControl<number | null>(null, [Validators.required]),
-    fat: new FormControl<number | null>(null),
-    unit: new FormControl('', [Validators.required]),
-    amount: new FormControl<number | null>(null, [Validators.required]),
+  public readonly foodFormSignal = {
+    name: signal<string | null>(null),
+    calories: signal<string | null>(null),
+    protein: signal<string | null>(null),
+    fat: signal<string | null>(null),
+    unit: signal<string | null>(null),
+    amount: signal<string | null>(null),
+  };
+
+  public readonly foodFormValue = computed(() => {
+    const name = this.foodFormSignal.name();
+
+    if (!name) {
+      return null;
+    }
+
+    const fat = this.foodFormSignal.fat();
+
+    if (fat !== '' && !/$[\d+]^/.test(fat ?? '')) {
+      return null;
+    }
+
+    const parsedFat = !fat ? null : Number(fat);
+
+    const calories = this.foodFormSignal.calories();
+    const parsedCalories = !!calories ? Number(calories) : null!;
+
+    if (!parsedCalories) {
+      return null;
+    }
+
+    const protein = this.foodFormSignal.protein();
+    const parsedProtein = !!protein ? Number(protein) : null!;
+
+    if (!parsedProtein) {
+      return null;
+    }
+
+    const unit = this.foodFormSignal.unit();
+
+    if (!unit) {
+      return null;
+    }
+
+    const amount = this.foodFormSignal.amount();
+    const parsedAmount = !!amount ? Number(amount) : null;
+
+    if (!parsedAmount) {
+      return null;
+    }
+
+    return {
+      name: name,
+      calories: parsedCalories,
+      protein: parsedProtein,
+      fat: parsedFat,
+      unit: unit,
+      amount: parsedAmount,
+    };
+  });
+
+  public readonly foodFormEnabled = signal(true);
+
+  public readonly foodFormValid = computed(() => {
+    const foodFormValue = this.foodFormValue();
+
+    if (!foodFormValue) {
+      return false;
+    }
+
+    const { name, calories, protein, unit, fat, amount } = foodFormValue;
+
+    return true;
   });
 
   public constructor() {
     effect(() => {
-      // When exercise change then update form
       const food = this.food.value();
 
       if (food) {
-        this.foodForm.patchValue({
-          name: food.name,
-          calories: food.calories,
-          protein: food.protein,
-          fat: food.fat,
-          unit: food.unit,
-          amount: food.amount,
-        });
+        this.foodFormSignal.name.set(food.name);
+        this.foodFormSignal.calories.set(food.calories.toString());
+        this.foodFormSignal.protein.set(food.protein.toString());
+        this.foodFormSignal.fat.set(food.fat?.toString() ?? '');
+        this.foodFormSignal.unit.set(food.unit);
+        this.foodFormSignal.amount.set(food.amount.toString());
       }
     });
   }
@@ -96,7 +159,7 @@ export class EditFoodPageComponent {
       if (food?.foodId) {
         try {
           await lastValueFrom(this.foodsApiService.deleteFood(food.foodId));
-          this.router.navigate([Paths.EXERCISES]);
+          this.router.navigate([Paths.FOODS]);
         } catch (e) {
           const error = e as HttpErrorResponse;
           this.toastService.error(`${error.message}`);
@@ -106,21 +169,23 @@ export class EditFoodPageComponent {
   }
 
   public async save(): Promise<void> {
-    if (this.foodForm.invalid) {
+    const formValue = this.foodFormValue();
+
+    if (!formValue || !this.foodFormValid()) {
       return;
     }
 
     this.isSaveLoading.set(true);
-    this.foodForm.disable();
+    this.foodFormEnabled.set(false);
 
     const food: Food = {
       foodId: this.food.value()?.foodId ?? null,
-      name: this.foodForm.value.name!,
-      calories: this.foodForm.value.calories!,
-      protein: this.foodForm.value.protein!,
-      fat: this.foodForm.value.fat!,
-      unit: this.foodForm.value.unit!.toLowerCase() as 'g' | 'ml',
-      amount: this.foodForm.value.amount!,
+      name: formValue.name,
+      calories: formValue.calories,
+      protein: formValue.protein,
+      fat: formValue.fat,
+      unit: formValue.unit.toLowerCase() as 'g' | 'ml',
+      amount: formValue.amount,
     };
 
     try {
@@ -130,10 +195,10 @@ export class EditFoodPageComponent {
         await lastValueFrom(this.foodsApiService.updateFood(food));
       }
     } catch (error) {
-      this.toastService.error('An error occurred while saving the exercise.');
+      this.toastService.error('An error occurred while saving this food.');
     } finally {
       this.isSaveLoading.set(false);
-      this.foodForm.enable();
+      this.foodFormEnabled.set(true);
       this.router.navigate([Paths.FOODS]);
     }
   }

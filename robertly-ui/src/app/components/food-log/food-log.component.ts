@@ -20,7 +20,7 @@ export class FoodLogComponent {
     const foodLog = this.foodLog();
 
     if (!foodLog?.food.calories) {
-      return null;
+      return 0;
     }
 
     return (foodLog.food.calories * foodLog.amount) / foodLog.food.amount;
@@ -30,7 +30,7 @@ export class FoodLogComponent {
     const foodLog = this.foodLog();
 
     if (!foodLog?.food.protein) {
-      return null;
+      return 0;
     }
 
     return (foodLog.food.protein * foodLog.amount) / foodLog.food.amount;
@@ -40,7 +40,7 @@ export class FoodLogComponent {
     const foodLog = this.foodLog();
 
     if (foodLog) {
-      this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, foodLog.foodLogId]);
+      this.router.navigate([Paths.FOOD_LOGS, Paths.EDIT, foodLog.foodLogId]);
     }
   }
 }

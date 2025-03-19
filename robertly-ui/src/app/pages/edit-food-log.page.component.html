@@ -6,51 +6,49 @@
     </div>
 
     <div>
-      <form>
-        <!-- #region INPUT DATE -->
-        <div class="mb-2">
-          <input
-            type="date"
-            placeholder="DD-MM-YYYY"
-            class="form-control"
-            [formControl]="foodLogForm.controls.date"
-          />
-        </div>
-        <!-- #endregion -->
+      <!-- #region INPUT DATE -->
+      <div class="mb-2">
+        <input
+          type="date"
+          placeholder="DD-MM-YYYY"
+          class="form-control"
+          [(ngModel)]="foodLogForm.date"
+        />
+      </div>
+      <!-- #endregion -->
 
-        <!-- #region TYPEAHEAD USER -->
-        <div class="mb-3">
-          <app-typeahead
-            placeholder="User"
-            [control]="foodLogForm.controls.user"
-            [items]="users()"
-            [itemSelector]="userSelector"
-          ></app-typeahead>
-        </div>
-        <!-- #endregion -->
+      <!-- #region TYPEAHEAD USER -->
+      <div class="mb-3">
+        <app-typeahead
+          placeholder="User"
+          [(value)]="foodLogForm.user"
+          [items]="users()"
+          [itemSelector]="userSelector"
+        ></app-typeahead>
+      </div>
+      <!-- #endregion -->
 
-        <!-- #region TYPEAHEAD FOOD -->
-        <div class="mb-3">
-          <app-typeahead
-            placeholder="Food"
-            [control]="foodLogForm.controls.food"
-            [items]="foods.value()"
-            [itemSelector]="foodSelector"
-          ></app-typeahead>
-        </div>
-        <!-- #endregion -->
+      <!-- #region TYPEAHEAD FOOD -->
+      <div class="mb-3">
+        <app-typeahead
+          placeholder="Food"
+          [(value)]="foodLogForm.food"
+          [items]="foods.value()"
+          [itemSelector]="foodSelector"
+        ></app-typeahead>
+      </div>
+      <!-- #endregion -->
 
-        <!-- #region INPUT DATE -->
-        <div class="mb-2">
-          <input
-            type="text"
-            [placeholder]="amountPlaceholder()"
-            class="form-control"
-            [formControl]="foodLogForm.controls.amount"
-          />
-        </div>
-        <!-- #endregion -->
-      </form>
+      <!-- #region INPUT DATE -->
+      <div class="mb-2">
+        <input
+          type="text"
+          [placeholder]="amountPlaceholder()"
+          class="form-control"
+          [(ngModel)]="foodLogForm.amount"
+        />
+      </div>
+      <!-- #endregion -->
     </div>
 
     <div class="row g-2 mb-3">
@@ -68,9 +66,9 @@
         <button
           type="button"
           class="btn w-100 d-flex justify-content-center align-items-center"
-          [class.btn-primary]="foodLogForm.valid"
-          [class.btn-secondary]="foodLogForm.invalid"
-          [disabled]="foodLogForm.invalid || isSaveLoading()"
+          [class.btn-primary]="foodLogFormValid()"
+          [class.btn-secondary]="!foodLogFormValid()"
+          [disabled]="!foodLogFormValid() || isSaveLoading()"
           (click)="save()"
         >
           @if (!isSaveLoading()) {

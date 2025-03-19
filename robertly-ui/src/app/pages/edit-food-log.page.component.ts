@@ -84,21 +84,33 @@ export class EditFoodLogPageComponent {
     },
   });
 
-  public readonly foodLogForm = new FormGroup({
-    user: new FormControl<string | User | null>(null),
-    food: new FormControl<Food | null>(null),
-    date: new FormControl('', Validators.required),
-    amount: new FormControl<number | null>(null, Validators.required),
+  // public readonly foodLogForm = new FormGroup({
+  //   user: new FormControl<User | null>(null),
+  //   food: new FormControl<Food | null>(null),
+  //   date: new FormControl('', Validators.required),
+  //   amount: new FormControl<number | null>(null, Validators.required),
+  // });
+
+  public readonly foodLogForm = {
+    user: signal<User | null>(null),
+    food: signal<Food | null>(null),
+    date: signal<string | null>(null),
+    amount: signal<string | null>(null),
+  };
+
+  public readonly foodLogFormValue = computed(() => {
+    return this.foodLogForm;
   });
 
-  public readonly amountPlaceholder = toSignal(
-    this.foodLogForm.controls.food.valueChanges.pipe(
-      startWith(null),
-      map((food: Food | null) => {
-        return !!food ? `Amount (${food.unit})` : 'Amount';
-      })
-    )
-  );
+  public readonly foodLogFormValid = computed(() => true);
+
+  public readonly foodLogFormEnabled = signal(true);
+
+  public readonly amountPlaceholder = computed(() => {
+    const food = this.foodLogForm.food();
+
+    return !!food ? `Amount (${food.unit})` : 'Amount';
+  });
 
   public constructor() {
     effect(() => {
@@ -109,19 +121,15 @@ export class EditFoodLogPageComponent {
       if (mode === 'create') {
         const todayDate = this.dayjs().format('YYYY-MM-DD');
 
-        this.foodLogForm.patchValue({
-          date: todayDate,
-          user: user?.name ?? '',
-        });
+        this.foodLogForm.date.set(todayDate);
+        this.foodLogForm.user.set(user);
       }
 
       if (mode === 'edit' && !!foodLog) {
-        this.foodLogForm.reset();
-        this.foodLogForm.patchValue({
-          date: parseDate(foodLog.date).format('YYYY-MM-DD'),
-          food: foodLog.food,
-          user: foodLog.user,
-        });
+        this.foodLogForm.date.set(parseDate(this.dayjs, foodLog.date).format('YYYY-MM-DD'));
+        this.foodLogForm.food.set(foodLog.food);
+        this.foodLogForm.user.set(foodLog.user);
+        this.foodLogForm.amount.set(foodLog.amount.toString());
       }
     });
   }
@@ -153,27 +161,27 @@ export class EditFoodLogPageComponent {
   }
 
   public async save(): Promise<void> {
-    if (this.foodLogForm.invalid) {
+    if (!this.foodLogFormValid()) {
       return;
     }
 
     const foodLog = this.originalValue.value();
-    const user = this.foodLogForm.value.user;
-    const food = this.foodLogForm.value.food;
+    const user = this.foodLogForm.user();
+    const food = this.foodLogForm.food();
 
-    if (this.foodLogForm.invalid || typeof food === 'string' || !food || typeof user === 'string' || !user) {
+    if (!this.foodLogFormValid() || typeof food === 'string' || !food || typeof user === 'string' || !user) {
       return;
     }
 
     this.isSaveLoading.set(true);
-    this.foodLogForm.disable();
+    this.foodLogFormEnabled.set(false);
 
     const foodLogRequest: FoodLog = {
       foodLogId: foodLog?.foodLogId ?? null,
-      date: this.foodLogForm.value.date!,
+      date: this.foodLogForm.date()!,
       user: user,
       food: food,
-      amount: this.foodLogForm.value.amount!,
+      amount: Number(this.foodLogForm.amount())!,
     };
 
     try {
@@ -186,8 +194,8 @@ export class EditFoodLogPageComponent {
       this.toastService.error('An error occurred while saving the log.');
     } finally {
       this.isSaveLoading.set(false);
-      this.foodLogForm.enable();
-      this.router.navigate([Paths.FOODS]);
+      this.foodLogFormEnabled.set(true);
+      this.router.navigate([Paths.FOOD_LOGS]);
     }
   }
 

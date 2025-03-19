@@ -30,7 +30,7 @@ public class MigrationHelper
     {
       using var connection = _connection.Create();
 
-      var appliedMigrations = await _genericRepository.GetAll<DataModels.Migration>();
+      var appliedMigrations = await _genericRepository.GetAllAsync<DataModels.Migration>();
 
       var scripts = Directory.GetFiles(_migrationsFolder, "*.sql")
         .OrderBy(Path.GetFileName)

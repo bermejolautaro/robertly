@@ -275,11 +275,16 @@ public class ExerciseLogController : ControllerBase
 
     foreach (var serie in request.ExerciseLog.Series)
     {
+      if (serie.Reps is null || serie.WeightInKg is null)
+      {
+        continue;
+      }
+
       var serieToCreate = new DataModels.Serie
       {
         ExerciseLogId = exerciseLogIdCreated,
-        Reps = serie.Reps,
-        WeightInKg = serie.WeightInKg,
+        Reps = serie.Reps.Value,
+        WeightInKg = serie.WeightInKg.Value,
       };
 
       await _genericRepository.CreateAsync(serieToCreate);
@@ -340,15 +345,25 @@ public class ExerciseLogController : ControllerBase
 
     await _genericRepository.UpdateAsync(exerciseLogFromDb);
 
+    foreach (var serieId in request.SeriesIdsToDelete)
+    {
+      await _genericRepository.DeleteAsync<DataModels.Serie>(serieId);
+    }
+
     foreach (var serie in request.ExerciseLog.Series)
     {
+      if (serie.Reps is null || serie.WeightInKg is null)
+      {
+        continue;
+      }
+
       if (serie.SerieId is null)
       {
         var serieToCreate = new DataModels.Serie
         {
           ExerciseLogId = exerciseLogId,
-          Reps = serie.Reps,
-          WeightInKg = serie.WeightInKg,
+          Reps = serie.Reps.Value,
+          WeightInKg = serie.WeightInKg.Value,
         };
 
         await _genericRepository.CreateAsync(serieToCreate);
@@ -363,8 +378,8 @@ public class ExerciseLogController : ControllerBase
           serieFromDb = serieFromDb with
           {
             ExerciseLogId = exerciseLogId,
-            Reps = serie.Reps,
-            WeightInKg = serie.WeightInKg
+            Reps = serie.Reps.Value,
+            WeightInKg = serie.WeightInKg.Value
           };
 
           await _genericRepository.UpdateAsync<DataModels.Serie>(serieFromDb);
@@ -440,7 +455,7 @@ public class ExerciseLogController : ControllerBase
             : null
         : null,
       TotalReps = getTotalReps(log),
-      Tonnage = log.Series!.Aggregate(0, (acc, curr) => acc + curr.Reps * (int)curr.WeightInKg),
+      Tonnage = log.Series!.Aggregate(0, (acc, curr) => acc + (curr?.Reps ?? 0) * (int)(curr?.WeightInKg ?? 0)),
       Average = getTotalReps(log) is not null && seriesCount != 0 ? getTotalReps(log) / seriesCount : null,
       BrzyckiAverage = seriesCount != 0 ? log.Series!.Sum(x => x.Brzycki) / seriesCount : 0,
       RecentLogs = MapToExerciseLogDto(log.RecentLogs ?? [])

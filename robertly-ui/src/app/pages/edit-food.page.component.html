@@ -2,75 +2,78 @@
   <div class="container">
     <div class="pb-3">
       <h4 class="title">{{ mode() === 'edit' ? 'Edit' : 'Create' }} Food</h4>
-      <!-- <span class="subtitle">Record your workout details and progress</span> -->
     </div>
 
     <div>
-      <form>
-        <!-- #region INPUT NAME -->
-        <div class="mb-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Name"
-            [formControl]="foodForm.controls.name"
-          />
-        </div>
+      <!-- #region INPUT NAME -->
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Name"
+          [(ngModel)]="foodFormSignal.name"
+          [disabled]="!foodFormEnabled()"
+        />
+      </div>
 
-        <!-- #region INPUT CALORIES -->
-        <div class="mb-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Calories"
-            [formControl]="foodForm.controls.calories"
-          />
-        </div>
-        <!-- #endregion -->
+      <!-- #region INPUT CALORIES -->
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Calories"
+          [(ngModel)]="foodFormSignal.calories"
+          [disabled]="!foodFormEnabled()"
+        />
+      </div>
+      <!-- #endregion -->
 
-        <!-- #region INPUT PROTEIN -->
-        <div class="mb-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Protein"
-            [formControl]="foodForm.controls.protein"
-          />
-        </div>
-        <!-- #endregion -->
+      <!-- #region INPUT PROTEIN -->
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Protein"
+          [(ngModel)]="foodFormSignal.protein"
+          [disabled]="!foodFormEnabled()"
+        />
+      </div>
+      <!-- #endregion -->
 
-        <!-- #region INPUT FAT -->
-        <div class="mb-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Fat"
-            [formControl]="foodForm.controls.fat"
-          />
-        </div>
-        <!-- #endregion -->
+      <!-- #region INPUT FAT -->
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Fat"
+          [(ngModel)]="foodFormSignal.fat"
+          [disabled]="!foodFormEnabled()"
+        />
+      </div>
+      <!-- #endregion -->
 
-        <!-- #region TYPEAHEAD UNIT -->
-        <div class="mb-3">
-          <app-typeahead
-            placeholder="Unit"
-            [control]="foodForm.controls.unit"
-            [items]="['g', 'ml']"
-          ></app-typeahead>
-        </div>
-        <!-- #endregion -->
+      <!-- #region TYPEAHEAD UNIT -->
+      <div class="mb-3">
+        <app-typeahead
+          placeholder="Unit"
+          [(value)]="foodFormSignal.unit"
+          [items]="['g', 'ml']"
+          [disabled]="!foodFormEnabled()"
+        ></app-typeahead>
+      </div>
+      <!-- #endregion -->
 
-        <!-- #region INPUT AMOUNT -->
-        <div class="mb-3">
-          <input
-            type="text"
-            class="form-control"
-            placeholder="Amount Per Unit"
-            [formControl]="foodForm.controls.amount"
-          />
-        </div>
-        <!-- #endregion -->
-      </form>
+      <!-- #region INPUT AMOUNT -->
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Amount Per Unit"
+          [(ngModel)]="foodFormSignal.amount"
+          [disabled]="!foodFormEnabled()"
+        />
+      </div>
+      <!-- #endregion -->
     </div>
 
     <div class="row g-2 mb-3">
@@ -88,9 +91,9 @@
         <button
           type="button"
           class="btn w-100 d-flex justify-content-center align-items-center"
-          [class.btn-primary]="foodForm.valid"
-          [class.btn-secondary]="foodForm.invalid"
-          [disabled]="foodForm.invalid || isSaveLoading()"
+          [class.btn-primary]="foodFormValid()"
+          [class.btn-secondary]="!foodFormValid()"
+          [disabled]="!foodFormValid() || isSaveLoading()"
           (click)="save()"
         >
           @if (!isSaveLoading()) {

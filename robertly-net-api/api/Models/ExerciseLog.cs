@@ -7,14 +7,15 @@ public record Serie()
 {
   public int? SerieId { get; init; }
   public int? ExerciseLogId { get; init; }
-  public required int Reps { get; init; }
-  public required decimal WeightInKg { get; init; }
+  public int? Reps { get; init; }
+  public decimal? WeightInKg { get; init; }
   public decimal? Brzycki { get; init; }
 }
 
 public record ExerciseLogRequest
 {
   public ExerciseLog? ExerciseLog { get; set; }
+  public IEnumerable<int> SeriesIdsToDelete { get; set; } = [];
 }
 
 public record ExerciseLog

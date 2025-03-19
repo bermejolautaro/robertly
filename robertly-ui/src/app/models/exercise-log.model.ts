@@ -2,10 +2,10 @@ import { Exercise } from "./exercise.model";
 import { User } from "./user.model";
 
 export interface Serie {
-  serieId?: number;
-  exerciseLogId: number;
-  reps: number;
-  weightInKg: number;
+  serieId: number | null;
+  exerciseLogId: number | null;
+  reps: number | null;
+  weightInKg: number | null;
   brzycki: number | null;
 }
 

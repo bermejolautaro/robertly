@@ -24,7 +24,7 @@ namespace robertly.Controllers
     [HttpGet]
     public async Task<Ok<GetExercisesResponse>> Get()
     {
-      var exercises = await _genericRepository.GetAll<DataModels.Exercise>();
+      var exercises = await _genericRepository.GetAllAsync<DataModels.Exercise>();
       return TypedResults.Ok(new GetExercisesResponse() { Data = exercises.Select(x => x.Map<Models.Exercise>()) });
     }
 

@@ -27,7 +27,7 @@ public class FoodController : ControllerBase
   [HttpGet]
   public async Task<Ok<IEnumerable<Models.Food>>> Get()
   {
-    var foods = await _genericRepository.GetAll<DataModels.Food>();
+    var foods = await _genericRepository.GetAllAsync<DataModels.Food>();
     return TypedResults.Ok(foods.Select(x => x.Map<Models.Food>()));
   }
 

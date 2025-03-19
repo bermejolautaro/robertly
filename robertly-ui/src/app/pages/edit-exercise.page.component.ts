@@ -51,7 +51,6 @@ export class EditExercisePageComponent {
 
   public constructor() {
     effect(() => {
-      // When exercise change then update form
       const exercise = this.exercise();
 
       if (exercise) {

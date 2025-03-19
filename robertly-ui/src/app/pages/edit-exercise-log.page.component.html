@@ -7,99 +7,91 @@
       </div>
 
       <div>
-        <form>
+        <input
+          type="text"
+          autofocus="autofocus"
+          style="display: none"
+        />
+
+        <!-- #region INPUT DATE -->
+        <div class="mb-2">
           <input
-            type="text"
-            autofocus="autofocus"
-            style="display: none"
+            type="date"
+            placeholder="DD-MM-YYYY"
+            class="form-control"
+            [(ngModel)]="formSignal.date"
+            [disabled]="!formEnabled()"
           />
+        </div>
+        <!-- #endregion -->
 
-          <!-- #region INPUT DATE -->
-          <div class="mb-2">
-            <input
-              type="date"
-              placeholder="DD-MM-YYYY"
-              class="form-control"
-              [formControl]="formGroup().controls.date"
-            />
-          </div>
-          <!-- #endregion -->
+        <!-- #region TYPEAHEAD USER -->
+        <div class="col-12 mb-2">
+          <app-typeahead
+            placeholder="User"
+            [(value)]="formSignal.user"
+            [items]="users()"
+            [itemSelector]="userSelector"
+            [disabled]="!formEnabled()"
+          ></app-typeahead>
+        </div>
+        <!-- #endregion -->
 
-          <!-- #region TYPEAHEAD USER -->
-          <div class="col-12 mb-2">
+        <!-- #region TYPEAHEAD EXERCISE -->
+        <div class="mb-3">
+          <div class="input-group">
             <app-typeahead
-              placeholder="User"
-              [control]="formGroup().controls.user"
-              [items]="users()"
-              [itemSelector]="userSelector"
+              placeholder="Exercise"
+              [(value)]="formSignal.exercise"
+              [items]="exerciseApiService.exercises()"
+              [itemSelector]="exerciseSelector"
+              [disabled]="!formEnabled()"
             ></app-typeahead>
           </div>
-          <!-- #endregion -->
+        </div>
+        <!-- #endregion -->
 
-          <!-- #region TYPEAHEAD EXERCISE -->
-          <div class="mb-3">
-            <div class="input-group">
-              <app-typeahead
-                placeholder="Exercise"
-                [control]="formGroup().controls.exercise"
-                [items]="exerciseApiService.exercises()"
-                [itemSelector]="exerciseSelector"
-              ></app-typeahead>
-            </div>
+        @if (hasUnsavedChanges()) {
+          <div class="mb-2 px-2">
+            <i
+              class="fa fa-exclamation-circle"
+              aria-hidden="true"
+            ></i>
 
-            @if (!formGroup().controls.exercise.pristine) {
-              @for (error of formGroup().errors?.['exercise'] | keyvalue; track $index) {
-                <div class="d-block invalid-feedback">{{ error.value }}</div>
-              }
-            }
+            You have unsaved changes
           </div>
-          <!-- #endregion -->
+        }
 
-          @if (hasUnsavedChanges()) {
-            <div class="mb-2 px-2">
-              <i
-                class="fa fa-exclamation-circle"
-                aria-hidden="true"
-              ></i>
-
-              You have unsaved changes
-            </div>
-          }
-
-          <!-- #region SERIES -->
-          @let series = formGroup().controls.series;
-          <div class="mb-3">
-            @for (serieControl of series.controls; track $index) {
-              <div class="pb-1">
-                <form class="row g-2">
-                  <div class="col-6">
-                    <input
-                      type="number"
-                      class="form-control"
-                      placeholder="Reps"
-                      [formControl]="serieControl.controls.reps"
-                    />
-                  </div>
-                  <div class="col-6">
-                    <input
-                      type="number"
-                      class="form-control"
-                      placeholder="Weight (Kg)"
-                      [formControl]="serieControl.controls.weightInKg"
-                    />
-                  </div>
-                </form>
+        <!-- #region SERIES -->
+        @let series = formSignal.series();
+        <div class="mb-3">
+          @for (serie of series; track $index) {
+            <div class="pb-1">
+              <div class="row g-2">
+                <div class="col-6">
+                  <input
+                    type="number"
+                    class="form-control"
+                    placeholder="Reps"
+                    [(ngModel)]="serie().reps"
+                    [disabled]="!formEnabled()"
+                  />
+                </div>
+                <div class="col-6">
+                  <input
+                    type="number"
+                    class="form-control"
+                    placeholder="Weight (Kg)"
+                    [(ngModel)]="serie().weightInKg"
+                    [disabled]="!formEnabled()"
+                  />
+                </div>
               </div>
-            }
-          </div>
-
-          @if (!series.pristine) {
-            @for (error of formGroup().errors?.['series'] | keyvalue; track $index) {
-              <div class="d-block invalid-feedback">{{ error.value }}</div>
-            }
+            </div>
           }
-          <!-- #endregion -->
-        </form>
+        </div>
+
+        <!-- #endregion -->
       </div>
 
       <div class="row g-2 mb-5">
@@ -117,9 +109,9 @@
           <button
             type="button"
             class="btn w-100 d-flex justify-content-center align-items-center"
-            [class.btn-primary]="formGroup().valid"
-            [class.btn-secondary]="formGroup().invalid"
-            [disabled]="formGroup().invalid || isSaveLoading()"
+            [class.btn-primary]="formValid()"
+            [class.btn-secondary]="!formValid() || !hasUnsavedChanges()"
+            [disabled]="!formValid() || isSaveLoading() || !hasUnsavedChanges()"
             (click)="save()"
           >
             @if (!isSaveLoading()) {

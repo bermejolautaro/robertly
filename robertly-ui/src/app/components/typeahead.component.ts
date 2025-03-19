@@ -27,9 +27,9 @@ import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, mer
       [popupClass]="'typeahead'"
       [resultFormatter]="itemSelector()"
       [inputFormatter]="itemSelector()"
-      (focus)="focus$.next(control().value)"
-      (click)="click$.next(control().value)"
-      [disabled]="control().disabled"
+      (focus)="focus$.next(control()?.value ?? null)"
+      (click)="click$.next(control()?.value ?? null)"
+      [disabled]="disabled() || control()?.disabled"
     />
     <button
       class="btn btn-outline-secondary"
@@ -51,17 +51,20 @@ import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, mer
 export class TypeaheadComponent<T> implements OnInit {
   private readonly typeaheadInputHtml = viewChild.required<ElementRef<HTMLInputElement>>('typeaheadInput');
   private readonly typeaheadInstance = viewChild.required<NgbTypeahead>('typeaheadInstance');
+  public readonly disabled = input(false);
   public readonly items = input.required<T[]>();
-  public readonly control = model.required<FormControl<T | null>>();
+  public readonly control = model<FormControl<T | null>>();
+  public readonly value = model<T | null>();
   public readonly itemSelector = input<(item: T | null) => string>(x => `${x ?? ''}`);
   public readonly placeholder = input<string>('Placeholder');
 
   readonly #updateNativeElementOnFormChange = effect(() => {
     const control = this.control();
+    const value = this.value();
     const inputHtml = this.typeaheadInputHtml();
 
     if (inputHtml) {
-      inputHtml.nativeElement.value = this.itemSelector()(control.value!);
+      inputHtml.nativeElement.value = this.itemSelector()(control?.value ?? value ?? null);
     }
   });
 
@@ -84,9 +87,11 @@ export class TypeaheadComponent<T> implements OnInit {
     const inputHtml = this.typeaheadInputHtml();
 
     this.control.update(x => {
-      x.reset();
+      x?.reset();
       return x;
     });
+
+    this.value.set(null);
 
     if (inputHtml) {
       inputHtml.nativeElement.value = '';
@@ -95,9 +100,11 @@ export class TypeaheadComponent<T> implements OnInit {
 
   public onSelectItem(evnt: NgbTypeaheadSelectItemEvent<T>) {
     this.control.update(x => {
-      x.patchValue(evnt.item);
+      x?.patchValue(evnt.item);
       return x;
     });
+
+    this.value.set(evnt.item);
   }
 }
 

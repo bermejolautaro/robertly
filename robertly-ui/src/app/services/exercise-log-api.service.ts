@@ -14,11 +14,13 @@ type ExercisesLogsDto = {
 
 export type CreateExerciseLogRequest = {
   exerciseLog: ExerciseLog;
+  seriesIdsToDelete: number[];
 };
 
 export type UpdateExerciseLogRequest = {
   id: number;
   exerciseLog: ExerciseLog;
+  seriesIdsToDelete: number[];
 };
 
 @Injectable({
