@@ -127,7 +127,7 @@ public class GetFoodLogsQueryBuilder
       .Replace("%orderBy%", BuildOrderBy())
       .Replace("%offset%", "0")
       .Replace("%limit%", "10")
-      .Split('\n')
+      .Split(Environment.NewLine)
       .Where(x => !String.IsNullOrWhiteSpace(x))
       .StringJoin("");
 
