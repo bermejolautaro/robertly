@@ -3,7 +3,7 @@ export function parseNumber(value: string | null | undefined): number | null {
     return null;
   }
 
-  if (!/$[0-9.+]^/.test(value)) {
+  if (!/^[0-9.]+$/.test(value)) {
     return null;
   }
 

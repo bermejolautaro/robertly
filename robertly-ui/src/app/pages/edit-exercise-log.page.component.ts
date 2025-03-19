@@ -111,15 +111,48 @@ export class EditExerciseLogPageComponent {
     ]),
   };
   public readonly formValid = computed(() => {
+    const formValue = this.formValue();
+
+    if (!formValue) {
+      return false;
+    }
+
     return true;
   });
 
-  public readonly formValue = computed(() => ({
-    user: this.formSignal.user(),
-    exercise: this.formSignal.exercise(),
-    date: this.formSignal.date(),
-    series: this.formSignal.series(),
-  }));
+  public readonly formValue = computed(() => {
+    const exercise = this.formSignal.exercise();
+
+    if (!exercise) {
+      return null;
+    }
+
+    const user = this.formSignal.user();
+
+    if (!user) {
+      return null;
+    }
+
+    const series = this.formSignal
+      .series()
+      .map(serie => serie())
+      .map(x => ({
+        serieId: x.serieId,
+        reps: x.reps(),
+        weightInKg: x.weightInKg(),
+      }));
+
+    if (series.some(x => (!x.reps && x.weightInKg) || (x.reps && !x.weightInKg))) {
+      return null;
+    }
+
+    return {
+      user: user,
+      exercise: exercise,
+      date: this.formSignal.date(),
+      series: series,
+    };
+  });
 
   public readonly formEnabled = signal(true);
 
@@ -185,7 +218,11 @@ export class EditExerciseLogPageComponent {
     const formValue = this.formValue();
     const mode = this.mode();
 
-    if (mode === 'create' || !formValue.user) {
+    if (mode === 'create') {
+      return false;
+    }
+
+    if (!formValue) {
       return false;
     }
 
@@ -198,14 +235,7 @@ export class EditExerciseLogPageComponent {
         reps: x.reps?.toString() ?? null,
       })) ?? [];
 
-    const updatedSeries = formValue.series
-      .map(serie => serie())
-      .filter(x => !!x.reps() || !!x.weightInKg())
-      .map(x => ({
-        serieId: x.serieId,
-        reps: x.reps(),
-        weightInKg: x.weightInKg(),
-      }));
+    const updatedSeries = formValue.series.filter(x => !!x.reps || !!x.weightInKg);
 
     const result =
       (mode === 'edit' && !R.isDeepEqual(originalSeries, updatedSeries)) ||
@@ -255,7 +285,7 @@ export class EditExerciseLogPageComponent {
       throw new Error('User cannot be null');
     }
 
-    if (this.formValid() && typeof exercise !== 'string' && !!exercise && typeof user !== 'string' && !!user) {
+    if (this.formValid()) {
       this.formEnabled.set(false);
 
       if (mode === 'create') {
@@ -283,7 +313,7 @@ export class EditExerciseLogPageComponent {
           exerciseLog: {
             exerciseLogUsername: user?.name,
             exerciseLogUserId: user.userId,
-            exerciseLogExerciseId: exercise.exerciseId ?? undefined,
+            exerciseLogExerciseId: exercise?.exerciseId ?? undefined,
             exerciseLogDate: date.format('YYYY-MM-DD'),
             series: seriesToCreate,
           },
@@ -324,7 +354,7 @@ export class EditExerciseLogPageComponent {
           exerciseLog: {
             exerciseLogUsername: user?.name,
             exerciseLogUserId: user.userId,
-            exerciseLogExerciseId: exercise.exerciseId ?? undefined,
+            exerciseLogExerciseId: exercise?.exerciseId ?? undefined,
             exerciseLogDate: date.format('YYYY-MM-DD'),
             series: seriesToEdit,
           },
@@ -348,18 +378,4 @@ export class EditExerciseLogPageComponent {
   public cancel(): void {
     this.location.back();
   }
-}
-
-function toSerie(x: CreateOrUpdateSerieFormGroupValue): Serie {
-  return {
-    exerciseLogId: x.exerciseLogId!,
-    serieId: x.serieId!,
-    reps: +x.reps!,
-    weightInKg: +x.weightInKg!.toFixed(1),
-    brzycki: null,
-  };
-}
-
-function toSeries(series: CreateOrUpdateSerieFormGroupValue[] | undefined): Serie[] {
-  return (series ?? []).filter(x => !!x.reps && !!x.weightInKg).map(toSerie);
 }
