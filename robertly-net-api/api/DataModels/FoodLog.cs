@@ -7,7 +7,7 @@ public record FoodLog : IDataModel
   public int? FoodLogId { get; init; }
   public int? FoodId { get; init; }
   public int? UserId { get; init; }
-  public int? Amount { get; init; }
+  public decimal? Amount { get; init; }
   public DateTime? Date { get; init; }
   public DateTime? CreatedAtUtc { get; init; }
   public int? CreatedByUserId { get; init; }

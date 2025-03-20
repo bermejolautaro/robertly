@@ -7,7 +7,7 @@ public record FoodLog
   public int? FoodLogId { get; init; }
   public Food? Food { get; init; }
   public User? User { get; init; }
-  public int? Amount { get; init; }
+  public decimal? Amount { get; init; }
   public DateTime? Date { get; init; }
   public DateTime? CreatedAtUtc { get; init; }
   public int? CreatedByUserId { get; init; }
