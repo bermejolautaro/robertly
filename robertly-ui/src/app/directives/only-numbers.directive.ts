@@ -36,10 +36,16 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
       inputValue = inputValue.replace(/\D/g, '');
     }
 
-    if (inputValue.startsWith('.') || inputValue === '0') {
+    if (inputValue.startsWith('.')) {
       inputValue = '';
-    } else if (inputValue.startsWith('0') && inputValue[1] !== '.') {
-      inputValue = inputValue.replace(/^0+/, ''); // Remove leading zeros
+    } else if (inputValue.startsWith('0')) {
+      if (inputValue[1]) {
+        if (inputValue[1] === '0') {
+          inputValue = inputValue.replace(/^0+/, '0');
+        } else {
+          inputValue = inputValue.replace(/^0+/, '');
+        }
+      }
     }
 
     this.element.nativeElement.value = inputValue;

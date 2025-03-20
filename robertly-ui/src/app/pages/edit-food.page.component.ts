@@ -76,14 +76,14 @@ export class EditFoodPageComponent {
     const calories = this.foodFormSignal.calories();
     const parsedCalories = !!calories ? Number(calories) : null!;
 
-    if (!parsedCalories) {
+    if (parsedCalories === null || parsedCalories === undefined) {
       return null;
     }
 
     const protein = this.foodFormSignal.protein();
     const parsedProtein = !!protein ? Number(protein) : null!;
 
-    if (!parsedProtein) {
+    if (parsedProtein === null || parsedProtein === undefined) {
       return null;
     }
 
