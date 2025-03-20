@@ -137,6 +137,8 @@ namespace robertly.Controllers
       var foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
       {
         FoodLogId = foodLogDb.FoodLogId,
+        FoodId = foodLogDb.FoodId,
+        UserId = foodLogDb.UserId,
         CreatedAtUtc = foodLogDb.CreatedAtUtc,
         CreatedByUserId = foodLogDb.CreatedByUserId,
         LastUpdatedAtUtc = DateTime.UtcNow,
