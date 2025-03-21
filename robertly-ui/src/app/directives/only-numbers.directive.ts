@@ -42,7 +42,7 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
       if (inputValue[1]) {
         if (inputValue[1] === '0') {
           inputValue = inputValue.replace(/^0+/, '0');
-        } else {
+        } else if (inputValue[1] !== '.') {
           inputValue = inputValue.replace(/^0+/, '');
         }
       }
