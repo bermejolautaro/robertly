@@ -14,7 +14,7 @@ public record Serie()
 
 public record ExerciseLogRequest
 {
-  public ExerciseLog? ExerciseLog { get; set; }
+  public Models.ExerciseLog? ExerciseLog { get; set; }
   public IEnumerable<int> SeriesIdsToDelete { get; set; } = [];
 }
 
@@ -31,7 +31,7 @@ public record ExerciseLog
   public DateTime LastUpdatedAtUtc { get; set; }
 
   // Joining with Exercises
-  public Exercise? Exercise { get; init; }
+  public Models.Exercise? Exercise { get; init; }
 
   // Joining with Users
   public User? User { get; init; }
@@ -39,7 +39,7 @@ public record ExerciseLog
   // Joining with Series
   public IEnumerable<Serie>? Series { get; init; }
 
-  public IEnumerable<ExerciseLog>? RecentLogs { get; init; }
+  public IEnumerable<Models.ExerciseLog>? RecentLogs { get; init; }
 }
 
 // TODO: Highlighted should be refactor to be more abstract
@@ -47,7 +47,7 @@ public record ExerciseLogDto
 {
   public required int Id { get; init; }
   public required User User { get; init; }
-  public required Exercise Exercise { get; init; }
+  public required Models.Exercise Exercise { get; init; }
   public required DateTime Date { get; init; }
   public required IEnumerable<Serie> Series { get; init; }
   public required string? Highlighted { get; init; }

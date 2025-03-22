@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { API_URL } from 'src/main';
 import { FoodLog } from '@models/food-log.model';
+import { Macros } from '@models/macros';
 
 @Injectable({
   providedIn: 'root',
@@ -13,11 +14,15 @@ export class FoodLogsApiService {
   private readonly endpoint = `${this.apiUrl}/food-logs`;
 
   public getFoodLogById(foodLogId: number): Observable<FoodLog> {
-    return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`)
+    return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`);
   }
 
   public getFoodLogs(): Observable<FoodLog[]> {
-    return this.http.get<FoodLog[]>(`${this.endpoint}`)
+    return this.http.get<FoodLog[]>(`${this.endpoint}`);
+  }
+
+  public getMacros(timezoneId: string): Observable<Macros> {
+    return this.http.get<Macros>(`${this.endpoint}/macros`, { params: { timezoneId } });
   }
 
   public createFoodLog(request: FoodLog): Observable<void> {

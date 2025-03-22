@@ -112,7 +112,7 @@ export class EditExercisePageComponent {
         await lastValueFrom(this.exerciseApiService.updateExercise(request));
       }
     } catch (error) {
-      this.toastService.error('An error occurred while saving the exercise.');
+      this.toastService.error('An error ocurred while saving the exercise.');
     } finally {
       this.isSaveLoading.set(false);
       this.exerciseForm.enable();

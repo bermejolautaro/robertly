@@ -4,8 +4,10 @@ import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
+import { ProgressBarComponent } from '@components/progress-bar.component';
 import { RingComponent } from '@components/ring.component';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
+import { FoodLogsApiService } from '@services/food-logs-api.service';
 import { Paths } from 'src/main';
 
 @Component({
@@ -66,11 +68,12 @@ import { Paths } from 'src/main';
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ExerciseLogComponent, RingComponent, SlicePipe],
+  imports: [FormsModule, ExerciseLogComponent, RingComponent, ProgressBarComponent, SlicePipe],
 })
 export class HomePageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
+  private readonly foodLogsApiService = inject(FoodLogsApiService);
   private readonly router = inject(Router);
 
   public readonly Paths = Paths;
@@ -91,10 +94,10 @@ export class HomePageComponent implements OnInit {
     () =>
       this.recentlyUpdatedLogsResource.isLoading() &&
       this.latestWorkoutLogsResource.isLoading() &&
-      this.stats.isLoading()
+      this.exerciseLogStats.isLoading()
   );
 
-  public readonly stats = rxResource({
+  public readonly exerciseLogStats = rxResource({
     loader: () => {
       return this.exerciseLogApiService.getDaysTrained();
     },
@@ -109,6 +112,12 @@ export class HomePageComponent implements OnInit {
   public readonly latestWorkoutLogsResource = rxResource({
     loader: () => {
       return this.exerciseLogApiService.getExerciseLogsLatestWorkout();
+    },
+  });
+
+  public readonly macros = rxResource({
+    loader: () => {
+      return this.foodLogsApiService.getMacros(Intl.DateTimeFormat().resolvedOptions().timeZone);
     },
   });
 

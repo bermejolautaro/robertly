@@ -85,7 +85,7 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpGet("series-per-muscle")]
-  public async Task<Results<Ok<SeriesPerMuscle>, UnauthorizedHttpResult>> GetSeriesPerMuscle()
+  public async Task<Results<Ok<Models.SeriesPerMuscle>, UnauthorizedHttpResult>> GetSeriesPerMuscle()
   {
     var user = await _userHelper.GetUser(Request);
 
@@ -100,7 +100,7 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpGet("days-trained")]
-  public async Task<Results<Ok<DaysTrained>, UnauthorizedHttpResult>> GetStats()
+  public async Task<Results<Ok<Models.DaysTrained>, UnauthorizedHttpResult>> GetStats()
   {
     var user = await _userHelper.GetUser(Request);
 
@@ -424,9 +424,9 @@ public class ExerciseLogController : ControllerBase
     return exerciseLogs.Select(MapToExerciseLogDto);
   }
 
-  private static ExerciseLogDto MapToExerciseLogDto(ExerciseLog log)
+  private static ExerciseLogDto MapToExerciseLogDto(Models.ExerciseLog log)
   {
-    static int? getTotalReps(ExerciseLog log)
+    static int? getTotalReps(Models.ExerciseLog log)
     {
       return log.Series!.All(x => x.WeightInKg == log.Series!.FirstOrDefault()?.WeightInKg)
         ? log.Series!.Sum(x => x.Reps)

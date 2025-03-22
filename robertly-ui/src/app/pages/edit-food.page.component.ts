@@ -192,7 +192,7 @@ export class EditFoodPageComponent {
         await lastValueFrom(this.foodsApiService.updateFood(food));
       }
     } catch (error) {
-      this.toastService.error('An error occurred while saving this food.');
+      this.toastService.error('An error ocurred while saving this food.');
     } finally {
       this.isSaveLoading.set(false);
       this.foodFormEnabled.set(true);

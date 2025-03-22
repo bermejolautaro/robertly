@@ -29,7 +29,7 @@ namespace robertly.Controllers
     }
 
     [HttpPost]
-    public async Task<Results<UnauthorizedHttpResult, Ok>> Post([FromBody] Exercise exercise)
+    public async Task<Results<UnauthorizedHttpResult, Ok>> Post([FromBody] Models.Exercise exercise)
     {
       var user = await _userHelper.GetUser(Request);
 
@@ -44,7 +44,7 @@ namespace robertly.Controllers
     }
 
     [HttpPut("{id}")]
-    public async Task<Results<UnauthorizedHttpResult, BadRequest, BadRequest<string>, Ok>> Put([FromRoute] int id, [FromBody] Exercise request)
+    public async Task<Results<UnauthorizedHttpResult, BadRequest, BadRequest<string>, Ok>> Put([FromRoute] int id, [FromBody] Models.Exercise request)
     {
       var user = await _userHelper.GetUser(Request);
 

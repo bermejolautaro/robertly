@@ -175,7 +175,7 @@ export class EditFoodLogPageComponent {
         await lastValueFrom(this.foodLogsApiService.updateFoodLog(foodLogRequest));
       }
     } catch (error) {
-      this.toastService.error('An error occurred while saving the log.');
+      this.toastService.error('An error ocurred while saving the log.');
     } finally {
       this.isSaveLoading.set(false);
       this.foodLogFormEnabled.set(true);

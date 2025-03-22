@@ -12,5 +12,5 @@ public record Exercise
 
 public record GetExercisesResponse
 {
-    public IEnumerable<Exercise> Data { get; init;} = [];
+    public IEnumerable<Models.Exercise> Data { get; init;} = [];
 };

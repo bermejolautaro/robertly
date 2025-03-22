@@ -25,7 +25,7 @@ public class ExerciseLogRepository
 
   public ExerciseLogRepository(ConnectionHelper connection, SchemaHelper schema) => (_connection, _schema) = (connection, schema);
 
-  public async Task<SeriesPerMuscle> GetSeriesPerMuscle(int userId)
+  public async Task<Models.SeriesPerMuscle> GetSeriesPerMuscle(int userId)
   {
     using var connection = _connection.Create();
 
@@ -98,7 +98,7 @@ public class ExerciseLogRepository
 
     using var values = await connection.QueryMultipleAsync(_schema.AddSchemaToQuery(query), new { UserId = userId });
 
-    return new SeriesPerMuscle
+    return new Models.SeriesPerMuscle
     {
       SeriesPerMuscleWeekly = values.Read<SeriesPerMuscleRow>(),
       SeriesPerMuscleMonthly = values.Read<SeriesPerMuscleRow>(),
@@ -106,7 +106,7 @@ public class ExerciseLogRepository
     };
   }
 
-  public async Task<DaysTrained> GetDaysTrained(int userId)
+  public async Task<Models.DaysTrained> GetDaysTrained(int userId)
   {
     using var connection = _connection.Create();
 
@@ -144,13 +144,13 @@ public class ExerciseLogRepository
     SELECT COUNT(DISTINCT Date)
     FROM ExerciseLogs
     WHERE Date >= '{currentYear}-1-1'
-    AND Date <='{currentYear}-12-31'
+    AND Date <= '{currentYear}-12-31'
     AND UserId = @UserId;
     """;
 
     using var values = await connection.QueryMultipleAsync(_schema.AddSchemaToQuery(query), new { UserId = userId });
 
-    return new DaysTrained
+    return new Models.DaysTrained
     {
       DaysTrainedThisWeek = values.ReadFirst<int>(),
       DaysTrainedThisMonth = values.ReadFirst<int>(),

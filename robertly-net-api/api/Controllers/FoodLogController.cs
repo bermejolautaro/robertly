@@ -7,6 +7,7 @@ using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using robertly.DataQueries;
 using robertly.Helpers;
 using robertly.Models;
 using robertly.Repositories;
@@ -32,6 +33,12 @@ namespace robertly.Controllers
         (_appLogsRepository, _genericRepository, _connection, _schema, _userHelper) =
         (appLogsRepository, genericRepository, connection, schema, userHelper);
 
+    [HttpGet]
+    public async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(int page, int size)
+    {
+      return await GetFoodLogs(new GetFoodLogsQueryBuilder(), page, size);
+    }
+
     [HttpGet("{foodLogId}")]
     public async Task<Models.FoodLog?> GetFoodLogById(int foodLogId)
     {
@@ -42,46 +49,102 @@ namespace robertly.Controllers
       return foodLogs.FirstOrDefault();
     }
 
-    [HttpGet]
-    public async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(int page, int size)
+    [HttpGet("macros")]
+    public async Task<Results<Ok<Macros>, UnauthorizedHttpResult>> GetMacros(string timezoneId)
     {
-      return await GetFoodLogs(new GetFoodLogsQueryBuilder(), page, size);
-    }
+      var user = await _userHelper.GetUser(Request);
 
-    private async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(GetFoodLogsQueryBuilder queryBuilder, int page, int size)
-    {
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
       using var connection = _connection.Create();
 
-      var (query, parameters) = queryBuilder.Build();
-      query = query.ReplaceSchema(_schema);
+      var today = DateTime.UtcNow;
+      var timezone = TimeZoneInfo.FindSystemTimeZoneById(timezoneId);
+      var todayInTimezone = TimeZoneInfo.ConvertTimeFromUtc(today, timezone);
 
-      try
+      var day = todayInTimezone.Day;
+
+      var currentYear = todayInTimezone.Year;
+      var currentMonth = todayInTimezone.Month;
+      var currentDay = todayInTimezone.Day;
+      var endOfMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+
+      var dayOfWeek = DateTime.Today.DayOfWeek;
+      var daysUntilStartOfWeek = dayOfWeek switch
       {
-        var foodLogs = await connection.QueryAsync<
-            DataModels.FoodLog,
-            DataModels.Food,
-            DataModels.User,
-            Models.FoodLog
-        >(
-            query,
-            (log, food, user) => (log.Map<Models.FoodLog>() with
-            {
-              Food = food.Map<Models.Food>(),
-              User = user.Map<Models.User>()
-            }),
-            param: parameters,
-            splitOn: "FoodId,UserId"
-        );
+        DayOfWeek.Sunday => 6,
+        _ => (int)dayOfWeek - 1
+      };
 
-        return foodLogs;
-      }
-      catch (Exception e)
+      var startOfWeek = DateTime.Today.AddDays(daysUntilStartOfWeek * -1);
+      var endOfWeek = startOfWeek.AddDays(6);
+
+      var query = $"""
+      -- MacrosInDate
+      SELECT
+        SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
+        SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      FROM FoodLogs FL
+      INNER JOIN Foods F ON FL.FoodId = F.FoodId
+      WHERE FL.Date = '{currentYear}-{currentMonth}-{currentDay}'
+      AND UserId = @UserId;
+
+      -- MacrosInWeek
+      SELECT
+        SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
+        SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      FROM FoodLogs FL
+      INNER JOIN Foods F ON FL.FoodId = F.FoodId
+      WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
+      AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
+      AND UserId = @UserId;
+
+      -- MacrosInMonth
+      SELECT
+        SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
+        SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      FROM FoodLogs FL
+      INNER JOIN Foods F ON FL.FoodId = F.FoodId
+      WHERE Date >= '{currentYear}-{currentMonth}-1'
+      AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
+      AND UserId = @UserId;
+
+      -- MacrosInYear
+      SELECT
+        SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
+        SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      FROM FoodLogs FL
+      INNER JOIN Foods F ON FL.FoodId = F.FoodId
+      WHERE Date >= '{currentYear}-1-1'
+      AND Date <= '{currentYear}-12-31'
+      AND UserId = @UserId;
+      """;
+
+      using var values = await connection.QueryMultipleAsync(
+          _schema.AddSchemaToQuery(query),
+          new { UserId = user.UserId });
+
+      var inDate = values.ReadFirst<DataQueries.Macro>();
+      var inWeek = values.ReadFirst<DataQueries.Macro>();
+      var inMonth = values.ReadFirst<DataQueries.Macro>();
+      var inYear = values.ReadFirst<DataQueries.Macro>();
+
+      return TypedResults.Ok(new Models.Macros
       {
-        await _appLogsRepository.LogError(query, e);
-      }
-
-      return [];
+        CaloriesInDate = inDate.Calories ?? 0,
+        ProteinInDate = inDate.Protein ?? 0,
+        CaloriesInWeek = inWeek.Calories ?? 0,
+        ProteinInWeek = inWeek.Protein ?? 0,
+        CaloriesInMonth = inMonth.Calories ?? 0,
+        ProteinInMonth = inMonth.Protein ?? 0,
+        CaloriesInYear = inYear.Calories ?? 0,
+        ProteinInYear = inYear.Protein ?? 0
+      });
     }
+
     [HttpPost]
     public async Task<Results<UnauthorizedHttpResult, Ok, BadRequest>> Post([FromBody] Models.FoodLog foodLog)
     {
@@ -170,6 +233,41 @@ namespace robertly.Controllers
       await _genericRepository.DeleteAsync<DataModels.FoodLog>(foodLogId);
 
       return TypedResults.Ok();
+    }
+
+    private async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(GetFoodLogsQueryBuilder queryBuilder, int page, int size)
+    {
+      using var connection = _connection.Create();
+
+      var (query, parameters) = queryBuilder.Build();
+      query = query.ReplaceSchema(_schema);
+
+      try
+      {
+        var foodLogs = await connection.QueryAsync<
+            DataModels.FoodLog,
+            DataModels.Food,
+            DataModels.User,
+            Models.FoodLog
+        >(
+            query,
+            (log, food, user) => (log.Map<Models.FoodLog>() with
+            {
+              Food = food.Map<Models.Food>(),
+              User = user.Map<Models.User>()
+            }),
+            param: parameters,
+            splitOn: "FoodId,UserId"
+        );
+
+        return foodLogs;
+      }
+      catch (Exception e)
+      {
+        await _appLogsRepository.LogError(query, e);
+      }
+
+      return [];
     }
   }
 }
