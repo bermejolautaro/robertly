@@ -1,113 +1,15 @@
 <div class="header-footer-padding">
   <div class="container">
+
     <div class="pb-4">
       <app-dropdown
-        [control]="selectedOptionControl()"
+        [control]="selectedOptionControl"
         [items]="options()"
         [showClear]="false"
+        [formatter]="formatter"
       ></app-dropdown>
     </div>
 
-    <div class="pb-4">
-      <button
-        [class.active]="period() === 'week'"
-        class="btn me-1 badge rounded-pill chip"
-        (click)="period.set('week')"
-      >
-        Week
-      </button>
-      <button
-        [class.active]="period() === 'month'"
-        class="btn me-1 badge rounded-pill chip"
-        (click)="period.set('month')"
-      >
-        Month
-      </button>
-      <button
-        [class.active]="period() === 'year'"
-        class="btn me-1 badge rounded-pill chip"
-        (click)="period.set('year')"
-      >
-        Year
-      </button>
-    </div>
-
-    @if (period() === 'week') {
-      @for (keyvalue of seriesPerWeek(); track $index) {
-        <div class="pb-4">
-          <div class="pb-2 text-end">{{ keyvalue[0] }}</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem 0.2rem">
-            @for (series of keyvalue[1]; track $index) {
-              @defer (on viewport) {
-                <div class="d-flex justify-content-center align-items-center flex-column">
-                  <app-ring
-                    [value]="series.totalSeries"
-                    [maxValue]="series.target * 1"
-                    size="s"
-                  ></app-ring>
-                  <div style="text-align: center; font-size: 12px">
-                    {{ series.muscleGroup | titlecase }}
-                  </div>
-                </div>
-              } @placeholder {
-                <div></div>
-              }
-            }
-          </div>
-        </div>
-      }
-    }
-
-    @if (period() === 'month') {
-      @for (keyvalue of seriesPerMonth(); track $index) {
-        <div class="pb-4">
-          <div class="pb-2 text-end">{{ keyvalue[0] }}</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem 0.2rem">
-            @for (series of keyvalue[1]; track $index) {
-              @defer (on viewport) {
-                <div class="d-flex justify-content-center align-items-center flex-column">
-                  <app-ring
-                    [value]="series.totalSeries"
-                    [maxValue]="series.target * 4"
-                    size="s"
-                  ></app-ring>
-                  <div style="text-align: center; font-size: 12px">
-                    {{ series.muscleGroup | titlecase }}
-                  </div>
-                </div>
-              } @placeholder {
-                <div></div>
-              }
-            }
-          </div>
-        </div>
-      }
-    }
-
-    @if (period() === 'year') {
-      @for (keyvalue of seriesPerYear(); track $index) {
-        <div class="pb-4">
-          <div class="pb-2 text-end">{{ keyvalue[0] }}</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem 0.2rem">
-            @for (series of keyvalue[1]; track $index) {
-              @defer (on viewport) {
-                <div class="d-flex justify-content-center align-items-center flex-column">
-                  <app-ring
-                    [value]="series.totalSeries"
-                    [maxValue]="series.target * 52"
-                    size="s"
-                  ></app-ring>
-                  <div style="text-align: center; font-size: 12px">
-                    {{ series.muscleGroup | titlecase }}
-                  </div>
-                </div>
-              } @placeholder {
-                <div></div>
-              }
-            }
-          </div>
-        </div>
-      }
-    }
+    <router-outlet></router-outlet>
   </div>
 </div>

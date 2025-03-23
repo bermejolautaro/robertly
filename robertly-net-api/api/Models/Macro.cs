@@ -1,6 +1,6 @@
 using System;
 
-namespace robertly.DataQueries;
+namespace robertly.Models;
 
 public record Macro
 {

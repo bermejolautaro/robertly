@@ -31,6 +31,8 @@ export const Paths = {
   SIGN_UP: 'signup',
   DEVELOPER: 'developer',
   FOODS: 'foods',
+  SERIES_PER_MUSCLE: 'series-per-muscle',
+  MACROS: 'macros'
 } as const;
 
 const routes = [
@@ -53,6 +55,18 @@ const routes = [
   {
     path: Paths.STATS,
     loadComponent: () => import('@pages/stats.page.component').then(x => x.StatsPageComponent),
+    loadChildren: () => {
+      return [
+        {
+          path: `${Paths.SERIES_PER_MUSCLE}`,
+          loadComponent: () => import('@pages/series-per-muscle.page.component').then(x => x.SeriesPerMusclePageComponent)
+        },
+        {
+          path: `${Paths.MACROS}`,
+          loadComponent: () => import('@pages/macros-daily.page.component').then(x => x.SeriesPerMusclePageComponent)
+        }
+      ]
+    }
   } as const,
   {
     path: Paths.SIGN_IN,

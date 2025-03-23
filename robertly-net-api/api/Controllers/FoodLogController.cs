@@ -145,6 +145,39 @@ namespace robertly.Controllers
       });
     }
 
+    [HttpGet("macros-daily")]
+    public async Task<Results<Ok<IEnumerable<Models.Macro>>, UnauthorizedHttpResult>> GetMacrosDaily()
+    {
+      var user = await _userHelper.GetUser(Request);
+
+      if (user?.UserId is null)
+      {
+        return TypedResults.Unauthorized();
+      }
+
+      using var connection = _connection.Create();
+
+      var query =
+        $"""
+        SELECT
+          Date,
+          SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
+          SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+        FROM FoodLogs FL
+        INNER JOIN Foods F ON FL.FoodId = F.FoodId
+        WHERE UserId = @UserId
+        GROUP BY Date
+        ORDER BY DATE DESC
+        OFFSET 0 LIMIT 10
+        """;
+
+      query = _schema.AddSchemaToQuery(query);
+
+      var values = await connection.QueryAsync<DataQueries.Macro>(query, new { UserId = user.UserId });
+
+      return TypedResults.Ok(values.Select(x => x.Map<Models.Macro>()));
+    }
+
     [HttpPost]
     public async Task<Results<UnauthorizedHttpResult, Ok, BadRequest>> Post([FromBody] Models.FoodLog foodLog)
     {

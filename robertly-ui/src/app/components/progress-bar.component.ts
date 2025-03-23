@@ -1,14 +1,15 @@
-// progress-bar.component.ts
 import { Component, computed, input } from '@angular/core';
+import { PadStartPipe } from '@pipes/pad-start.pipe';
 
 @Component({
   selector: 'app-progress-bar',
+  imports: [PadStartPipe],
   template: `
     <div class="progress-container">
       <div class="progress-header">
         <span class="label">{{ label() }}</span>
         <div class="value">
-          {{ current() }} / {{ goal() }} {{ unit() }}
+          {{ current() | padStart: 2 }} / {{ goal() }}
           @if (isExceeded()) {
             @if (isDangerousExcess()) {
               <svg
@@ -56,7 +57,7 @@ import { Component, computed, input } from '@angular/core';
             [style.width.%]="goalPercentage()"
           >
             @if (goalPercentage() > 5) {
-              <span class="percentage-text">{{ goalPercentage() }}%</span>
+              <span class="percentage-text">{{ goalPercentage() | padStart: 2 }}%</span>
             }
           </div>
 
@@ -238,7 +239,6 @@ export class ProgressBarComponent {
   public readonly current = input.required<number>();
   public readonly goal = input.required<number>();
   public readonly label = input<string>('Value');
-  public readonly unit = input<string>('');
 
   public readonly isExceeded = computed(() => this.current() > this.goal());
 
