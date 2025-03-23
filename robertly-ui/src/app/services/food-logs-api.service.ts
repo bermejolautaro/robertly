@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { API_URL } from 'src/main';
 import { FoodLog } from '@models/food-log.model';
 import { Macros } from '@models/macros';
-import { Macro } from '@models/Macro';
+import { Macro } from '@models/macro';
 
 @Injectable({
   providedIn: 'root',
