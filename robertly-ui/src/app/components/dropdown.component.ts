@@ -66,20 +66,26 @@ import { startWith } from 'rxjs';
     }
 
     .dropdown {
+      .active {
+        --bs-dropdown-link-active-bg: var(--primary);
+      }
+
       --bs-btn-color: var(--body-bg);
       --bs-btn-border-color: var(--bs-border-color);
       --bs-btn-hover-border-color: var(--bs-border-color);
+      --bs-dropdown-item-padding-y: 0.5rem;
 
-      & button.btn-outline-primary.show, & button.btn-outline-primary:hover {
+      & button.btn-outline-primary.show,
+      & button.btn-outline-primary:hover {
         background-color: transparent;
         --bs-btn-active-border-color: var(--bs-border-color);
       }
 
       &-label {
-        opacity: .6;
+        opacity: 0.6;
 
         &.active {
-          opacity: 1
+          opacity: 1;
         }
       }
     }

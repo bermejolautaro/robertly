@@ -1,111 +1,122 @@
-<div class="header-footer-padding">
-  <div class="container">
-    <div class="pb-3">
-      <h4 class="title">{{ mode() === 'edit' ? 'Edit' : 'Create' }} Food Log</h4>
-      <span class="subtitle">Track your daily meals and your calorie intake</span>
-    </div>
-
-    <div>
-      <!-- #region INPUT DATE -->
-      <div class="mb-2">
-        <input
-          type="date"
-          placeholder="DD-MM-YYYY"
-          class="form-control"
-          [(ngModel)]="foodLogForm.date"
-        />
+@if (!isLoading()) {
+  <div class="header-footer-padding">
+    <div class="container">
+      <div class="pb-3">
+        <h4 class="title">{{ mode() === 'edit' ? 'Edit' : 'Create' }} Food Log</h4>
+        <span class="subtitle">Track your daily meals and your calorie intake</span>
       </div>
-      <!-- #endregion -->
 
-      <!-- #region TYPEAHEAD USER -->
-      <div class="mb-3">
-        <app-typeahead
-          placeholder="User"
-          [(value)]="foodLogForm.user"
-          [items]="users()"
-          [itemSelector]="userSelector"
-        ></app-typeahead>
+      <div>
+        <!-- #region INPUT DATE -->
+        <div class="mb-2">
+          <input
+            type="date"
+            placeholder="DD-MM-YYYY"
+            class="form-control"
+            [(ngModel)]="foodLogForm.date"
+          />
+        </div>
+        <!-- #endregion -->
+
+        <!-- #region TYPEAHEAD USER -->
+        <div class="mb-3">
+          <app-typeahead
+            placeholder="User"
+            [(value)]="foodLogForm.user"
+            [items]="users()"
+            [itemSelector]="userSelector"
+          ></app-typeahead>
+        </div>
+        <!-- #endregion -->
+
+        <!-- #region TYPEAHEAD FOOD -->
+        <div class="mb-3">
+          <app-typeahead
+            placeholder="Food"
+            [(value)]="foodLogForm.food"
+            [items]="foods.value()"
+            [itemSelector]="foodSelector"
+          ></app-typeahead>
+        </div>
+        <!-- #endregion -->
+
+        <!-- #region INPUT AMOUNT -->
+        <div class="mb-2">
+          <input
+            type="text"
+            [placeholder]="amountPlaceholder()"
+            class="form-control"
+            [(ngModel)]="foodLogForm.amount"
+            onlyNumbers
+          />
+        </div>
+        <!-- #endregion -->
       </div>
-      <!-- #endregion -->
 
-      <!-- #region TYPEAHEAD FOOD -->
-      <div class="mb-3">
-        <app-typeahead
-          placeholder="Food"
-          [(value)]="foodLogForm.food"
-          [items]="foods.value()"
-          [itemSelector]="foodSelector"
-        ></app-typeahead>
+      <div class="row g-2 mb-3">
+        <div class="col">
+          <button
+            type="button"
+            class="btn btn-secondary w-100"
+            (click)="cancel()"
+          >
+            Cancel
+          </button>
+        </div>
+
+        <div class="col">
+          <button
+            type="button"
+            class="btn w-100 d-flex justify-content-center align-items-center"
+            [class.btn-primary]="foodLogFormValid()"
+            [class.btn-secondary]="!foodLogFormValid() || isSaveLoading()"
+            [disabled]="!foodLogFormValid() || isSaveLoading()"
+            (click)="save()"
+          >
+            @if (!isSaveLoading()) {
+              <i
+                class="fa fa-save px-2"
+                aria-hidden="true"
+              ></i>
+            } @else {
+              <span
+                class="spinner-border spinner-border-sm mx-2"
+                aria-hidden="true"
+              ></span>
+              <span
+                class="visually-hidden"
+                role="status"
+                >Loading...</span
+              >
+            }
+
+            Save
+          </button>
+        </div>
       </div>
-      <!-- #endregion -->
 
-      <!-- #region INPUT AMOUNT -->
-      <div class="mb-2">
-        <input
-          type="text"
-          [placeholder]="amountPlaceholder()"
-          class="form-control"
-          [(ngModel)]="foodLogForm.amount"
-          onlyNumbers
-        />
-      </div>
-      <!-- #endregion -->
-    </div>
-
-    <div class="row g-2 mb-3">
-      <div class="col">
+      @if (mode() === 'edit') {
         <button
           type="button"
-          class="btn btn-secondary w-100"
-          (click)="cancel()"
+          class="btn btn-danger w-100 delete-button"
+          (click)="openDeleteModal()"
         >
-          Cancel
+          <i
+            class="fa fa-trash px-2"
+            aria-hidden="true"
+          ></i>
+          <span>Delete</span>
         </button>
-      </div>
-
-      <div class="col">
-        <button
-          type="button"
-          class="btn w-100 d-flex justify-content-center align-items-center"
-          [class.btn-primary]="foodLogFormValid()"
-          [class.btn-secondary]="!foodLogFormValid()"
-          [disabled]="!foodLogFormValid() || isSaveLoading()"
-          (click)="save()"
-        >
-          @if (!isSaveLoading()) {
-            <i
-              class="fa fa-save px-2"
-              aria-hidden="true"
-            ></i>
-          } @else {
-            <span
-              class="spinner-border spinner-border-sm mx-2"
-              aria-hidden="true"
-            ></span>
-            <span
-              class="visually-hidden"
-              role="status"
-              >Loading...</span
-            >
-          }
-
-          Save
-        </button>
-      </div>
+      }
     </div>
-
-    @if (mode() === 'edit') {
-      <button
-        type="button"
-        class="btn btn-danger w-100 delete-button"
-        (click)="openDeleteModal()"
-      >
-        <i
-          class="fa fa-trash px-2"
-          aria-hidden="true"
-        ></i>
-        <span>Delete</span>
-      </button>
-    }
   </div>
-</div>
+} @else {
+  <div class="position-absolute top-50 start-50 translate-middle">
+    <div
+      class="robertly-spinner spinner-border text-primary"
+      role="status"
+    >
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+}

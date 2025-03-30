@@ -171,7 +171,8 @@ public class ExerciseLogRepository
 
   public async Task<Models.ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId, bool includeExtraData = false)
   {
-    var exerciseLog = (await GetExerciseLogsAsync(0, 1000, qb => qb.AndExerciseLogId(exerciseLogId))).FirstOrDefault();
+    var (exerciseLogs, totalCount) = await GetExerciseLogsAsync(0, 1000, qb => qb.AndExerciseLogId(exerciseLogId));
+    var exerciseLog = exerciseLogs.FirstOrDefault();
 
     if (exerciseLog is null)
     {
@@ -189,7 +190,7 @@ public class ExerciseLogRepository
       }
       ;
 
-      var recentLogs = await GetExerciseLogsAsync(0, 5, queryBuilderFunc);
+      var (recentLogs, recentLogsTotalCount) = await GetExerciseLogsAsync(0, 5, queryBuilderFunc);
       exerciseLog = exerciseLog with { RecentLogs = recentLogs };
     }
 
@@ -228,7 +229,7 @@ public class ExerciseLogRepository
     return values;
   }
 
-  public async Task<IEnumerable<Models.ExerciseLog>> GetExerciseLogsAsync(
+  public async Task<(IEnumerable<Models.ExerciseLog> ExerciseLogs, int TotalCount)> GetExerciseLogsAsync(
       int page,
       int size,
       Func<GetExerciseLogsQueryBuilder, GetExerciseLogsQueryBuilder> queryBuilderFunc)
@@ -260,14 +261,29 @@ public class ExerciseLogRepository
         ,U.Email
         ,U.Name
       FROM ExerciseLogs EL
-      INNER JOIN  Exercises E ON EL.ExerciseId = E.ExerciseId
-      INNER JOIN  Users U ON EL.UserId = U.UserId
+      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      INNER JOIN Users U ON EL.UserId = U.UserId
       LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
       WHERE 1 = 1
       {filters}
       {orderBy}
       OFFSET {page * size} LIMIT {size};
       """;
+
+    var queryCount =
+      $"""
+      SELECT COUNT(DISTINCT EL.ExerciseLogId)
+      FROM ExerciseLogs EL
+      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      INNER JOIN Users U ON EL.UserId = U.UserId
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+      WHERE 1 = 1
+      {filters}
+      """;
+
+    var totalCount = await connection.ExecuteScalarAsync<int>(
+      _schema.AddSchemaToQuery(queryCount),
+      new DynamicParameters(queryParams));
 
     var exerciseLogs = await connection.QueryAsync<
         Models.ExerciseLog,
@@ -302,7 +318,7 @@ public class ExerciseLogRepository
         }
     );
 
-    return exerciseLogs;
+    return (exerciseLogs, totalCount);
   }
 
   public async Task DeleteExerciseLogAsync(int exerciseLogId)

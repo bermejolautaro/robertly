@@ -74,7 +74,7 @@ public class ExerciseLogController : ControllerBase
         .AndDate(date.HasValue ? [DateTime.Now.Date, date.Value.Date] : [DateTime.Now.Date]);
     }
 
-    var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
+    var (exerciseLogs, totalCount) = await _exerciseLogRepository.GetExerciseLogsAsync(
         0,
         1000,
         queryBuilderFunc);
@@ -133,7 +133,7 @@ public class ExerciseLogController : ControllerBase
         .OrderByLastUpdatedAtUtc(Direction.Desc);
     }
 
-    var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
+    var (exerciseLogs, totalCount) = await _exerciseLogRepository.GetExerciseLogsAsync(
         0,
         10,
         queryBuilderFunc);
@@ -191,7 +191,7 @@ public class ExerciseLogController : ControllerBase
       return queryBuilder;
     }
 
-    var exerciseLogs = await _exerciseLogRepository.GetExerciseLogsAsync(
+    var (exerciseLogs, totalCount) = await _exerciseLogRepository.GetExerciseLogsAsync(
         pagination.Page ?? 0,
         pagination.Count ?? 1000,
         queryBuilderFunc
@@ -199,7 +199,7 @@ public class ExerciseLogController : ControllerBase
 
     var exerciseLogsDtos = MapToExerciseLogDto(exerciseLogs);
 
-    return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDtos });
+    return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDtos, PageCount = totalCount / (pagination.Count ?? 1) });
   }
 
   [HttpGet("{id}")]

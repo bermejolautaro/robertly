@@ -10,6 +10,7 @@ import { API_URL } from 'src/main';
 
 type ExercisesLogsDto = {
   data: ExerciseLogDto[];
+  pageCount: number;
 };
 
 export type CreateExerciseLogRequest = {
@@ -44,7 +45,7 @@ export class ExerciseLogApiService {
     exerciseType: string | null = null,
     exerciseId: number | null = null,
     weightInKg: number | null = null
-  ): Observable<ExerciseLogDto[]> {
+  ): Observable<ExercisesLogsDto> {
     let queryParams = new HttpParams();
 
     if (!!userId) {
@@ -63,9 +64,7 @@ export class ExerciseLogApiService {
       queryParams = queryParams.append('weightInKg', weightInKg);
     }
 
-    return this.http
-      .get<ExercisesLogsDto>(`${this.endpoint}?page=${page}&count=10`, { params: queryParams })
-      .pipe(map(x => x.data));
+    return this.http.get<ExercisesLogsDto>(`${this.endpoint}?page=${page}&count=10`, { params: queryParams });
   }
 
   public getSeriesPerMuscle(): Observable<SeriesPerMuscle> {

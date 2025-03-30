@@ -56,8 +56,10 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
             [class]="isLow() ? 'danger-color' : null"
             [style.width.%]="goalPercentage()"
           >
-            @if (goalPercentage() > 5) {
-              <span class="percentage-text">{{ goalPercentage() | padStart: 2 }}%</span>
+            @if (goalPercentage() > 10) {
+              <span class="percentage-text"
+                >{{ achievedPercentage() >= 100 ? 100 : (goalPercentage() | padStart: 2) }}%</span
+              >
             }
           </div>
 
@@ -66,7 +68,7 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
               class="excess-portion"
               [style.width.%]="excessPercentage()"
             >
-              @if (excessPercentage() > 5) {
+              @if (excessPercentage() > 10) {
                 <span class="percentage-text">{{ excessPercentage() }}%</span>
               }
             </div>
@@ -123,13 +125,12 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
       }
 
       .progress-bar-container {
-        height: 24px;
+        height: 18px;
         width: 100%;
         background-color: var(--light-bg);
         border-radius: 10px;
         overflow: hidden;
         position: relative;
-        border: 2px solid #505662;
       }
 
       .progress-bar-wrapper {

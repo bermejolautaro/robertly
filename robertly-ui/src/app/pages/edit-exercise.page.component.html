@@ -55,7 +55,7 @@
           type="button"
           class="btn w-100 d-flex justify-content-center align-items-center"
           [class.btn-primary]="exerciseForm.valid"
-          [class.btn-secondary]="exerciseForm.invalid"
+          [class.btn-secondary]="exerciseForm.invalid || isSaveLoading()"
           [disabled]="exerciseForm.invalid || isSaveLoading()"
           (click)="save()"
         >

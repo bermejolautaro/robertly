@@ -61,4 +61,5 @@ public record ExerciseLogDto
 public record ExerciseLogsDto
 {
   public required IEnumerable<ExerciseLogDto> Data { get; init; }
+  public int PageCount { get; set; }
 };

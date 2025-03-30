@@ -115,7 +115,7 @@
             type="button"
             class="btn w-100 d-flex justify-content-center align-items-center"
             [class.btn-primary]="formValid()"
-            [class.btn-secondary]="!formValid() || !hasUnsavedChanges()"
+            [class.btn-secondary]="!formValid() || !hasUnsavedChanges() || isSaveLoading()"
             [disabled]="!formValid() || isSaveLoading() || (mode() === 'edit' && !hasUnsavedChanges())"
             (click)="save()"
           >

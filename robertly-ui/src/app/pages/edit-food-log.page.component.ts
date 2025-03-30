@@ -1,6 +1,16 @@
 import { TitleCasePipe, Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, input, untracked } from '@angular/core';
+import {
+  Component,
+  ChangeDetectionStrategy,
+  computed,
+  inject,
+  signal,
+  effect,
+  input,
+  untracked,
+  linkedSignal,
+} from '@angular/core';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -41,6 +51,8 @@ export class EditFoodLogPageComponent {
   private readonly foodsApiService = inject(FoodsApiService);
 
   public readonly foodLogIdFromRoute = input<number | undefined>(undefined, { alias: 'id' });
+
+  public readonly isLoading = linkedSignal(() => this.originalValue.isLoading() && this.foods.isLoading());
 
   private readonly url = toSignal(this.route.url, { initialValue: [] });
   public readonly mode = computed(() => {
@@ -153,7 +165,7 @@ export class EditFoodLogPageComponent {
     const user = this.foodLogForm.user();
     const food = this.foodLogForm.food();
 
-    if (!this.foodLogFormValid() || typeof food === 'string' || !food || typeof user === 'string' || !user) {
+    if (!this.foodLogFormValid() || !food || !user) {
       return;
     }
 

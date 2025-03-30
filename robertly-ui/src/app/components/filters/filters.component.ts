@@ -59,30 +59,34 @@ export class FiltersComponent {
     },
   });
 
-  readonly #onFetchFilters = effect(() => {
-    const filters = this.filters.value();
-    const user = this.authService.user();
+  public constructor() {
+    // When filters or user load then set filter values
+    effect(() => {
+      const filters = this.filters.value();
+      const user = this.authService.user();
 
-    if (filters) {
-      this.users.set([user!, ...(user?.assignedUsers ?? [])]);
-      this.types.set(filters.types);
-      this.weights.set(filters.weights.map(x => `${x}`));
-      this.exercises.set(this.exerciseApiService.exercises().filter(x => filters.exercisesIds.includes(x.exerciseId!)));
-    }
-  });
+      if (filters) {
+        this.users.set([user!, ...(user?.assignedUsers ?? [])]);
+        this.types.set(filters.types);
+        this.weights.set(filters.weights.map(x => `${x}`));
+        this.exercises.set(this.exerciseApiService.exercises().filter(x => filters.exercisesIds.includes(x.exerciseId!)));
+      }
+    });
 
-  readonly #onAnyFilterChange = effect(() => {
-    const userValue = this.userControlValues();
-    const typeValue = this.typeControlValues();
-    const exerciseValue = this.exerciseControlValues();
-    const weightValue = this.weightControlValues();
+    // If any filter value change then refetch filters and emit an event
+    effect(() => {
+      const userValue = this.userControlValues();
+      const typeValue = this.typeControlValues();
+      const exerciseValue = this.exerciseControlValues();
+      const weightValue = this.weightControlValues();
 
-    const userId = !!userValue ? [userValue.userId] : [];
-    const types = !!typeValue ? [typeValue] : [];
-    const exercisesIds = !!exerciseValue?.exerciseId ? [exerciseValue.exerciseId] : [];
-    const weights = !!weightValue ? [+weightValue] : [];
+      const userId = !!userValue ? [userValue.userId] : [];
+      const types = !!typeValue ? [typeValue] : [];
+      const exercisesIds = !!exerciseValue?.exerciseId ? [exerciseValue.exerciseId] : [];
+      const weights = !!weightValue ? [+weightValue] : [];
 
-    this.filters.reload();
-    this.filtersChanged.emit({ userId, exercisesIds, types, weights });
-  });
+      this.filters.reload();
+      this.filtersChanged.emit({ userId, exercisesIds, types, weights });
+    });
+  }
 }

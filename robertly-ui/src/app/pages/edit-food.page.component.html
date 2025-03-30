@@ -60,7 +60,7 @@
         <app-typeahead
           placeholder="Unit"
           [(value)]="foodFormSignal.unit"
-          [items]="['g', 'ml', 'u']"
+          [items]="['g', 'ml', 'u', 'tbsp', 'tsp']"
           [disabled]="!foodFormEnabled()"
         ></app-typeahead>
       </div>
@@ -96,7 +96,7 @@
           type="button"
           class="btn w-100 d-flex justify-content-center align-items-center"
           [class.btn-primary]="foodFormValid()"
-          [class.btn-secondary]="!foodFormValid()"
+          [class.btn-secondary]="!foodFormValid() || isSaveLoading()"
           [disabled]="!foodFormValid() || isSaveLoading()"
           (click)="save()"
         >

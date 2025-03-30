@@ -1,27 +1,48 @@
 <div class="header-footer-padding">
   <div class="container">
-    <app-filters (filtersChanged)="onFilterChange($event)"></app-filters>
-
-    <div class="container d-flex justify-content-end align-items-center gap-2">
+    <div class="d-flex justify-content-end">
+      @if (filtersCount()) {
+        <span class="active-filters">{{ filtersCount() }}</span>
+      }
       <button
         class="btn btn-secondary"
-        (click)="prevPage()"
+        (click)="showFilters.set(!showFilters())"
       >
-        <i class="fa fa-angle-left"></i>
-      </button>
-      {{ currentPage() + 1 }}
-      <button
-        class="btn btn-secondary"
-        (click)="nextPage()"
-      >
-        <i class="fa fa-angle-right"></i>
+        <i class="fa fa-sliders"></i>
       </button>
     </div>
 
-    <div class="mt-4">
+    <div
+      class="mt-2"
+      [hidden]="!showFilters()"
+    >
+      <app-filters (filtersChanged)="onFilterChange($event)"></app-filters>
+    </div>
+
+    <div class="mt-2">
       @for (log of logs(); track $index) {
         <app-exercise-log [exerciseLog]="log"></app-exercise-log>
+      } @empty {
+        <div class="d-flex justify-content-center align-items-center my-5">No results found</div>
       }
     </div>
+
+    @if (logs()?.length) {
+      <div class="d-flex justify-content-center align-items-center gap-2">
+        <button class="btn">
+          <i
+            (click)="prevPage()"
+            class="fa fa-angle-left"
+          ></i>
+        </button>
+        Page {{ currentPage() + 1 }} of {{ (logsResource.value()?.pageCount ?? 0) + 1 }}
+        <button
+          class="btn"
+          (click)="nextPage()"
+        >
+          <i class="fa fa-angle-right"></i>
+        </button>
+      </div>
+    }
   </div>
 </div>
