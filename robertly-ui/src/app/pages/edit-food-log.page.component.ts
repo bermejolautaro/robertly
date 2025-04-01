@@ -52,7 +52,7 @@ export class EditFoodLogPageComponent {
 
   public readonly foodLogIdFromRoute = input<number | undefined>(undefined, { alias: 'id' });
 
-  public readonly isLoading = linkedSignal(() => this.originalValue.isLoading() && this.foods.isLoading());
+  public readonly isLoading = linkedSignal(() => this.originalValue.isLoading() || this.foods.isLoading());
 
   private readonly url = toSignal(this.route.url, { initialValue: [] });
   public readonly mode = computed(() => {
