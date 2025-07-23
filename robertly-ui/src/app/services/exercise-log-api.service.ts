@@ -6,7 +6,9 @@ import { SeriesPerMuscle } from '@models/series-per-muscle';
 import { Stats } from '@models/stats';
 import { AuthService } from '@services/auth.service';
 import { CacheService } from '@services/cache.service';
-import { Observable, map, startWith, tap } from 'rxjs';
+import { Observable, iif, map, startWith, tap } from 'rxjs';
+import { cacheResponse } from 'src/app/functions/cache-response';
+import { nameof } from 'src/app/functions/name-of';
 
 import { API_URL } from 'src/main';
 
@@ -36,11 +38,15 @@ export class ExerciseLogApiService {
   private readonly apiUrl = inject(API_URL);
 
   private readonly endpoint = `${this.apiUrl}/exercise-logs`;
-  private readonly recentlyUpdatedCache = signal<ExerciseLogDto[]>([]);
-  public readonly recentlyUpdated = this.recentlyUpdatedCache.asReadonly();
 
   public getExerciseLogById(exerciseLogId: number): Observable<ExerciseLogDto> {
-    return this.http.get<ExerciseLogDto>(`${this.endpoint}/${exerciseLogId}`);
+    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
+    const methodName = nameof<ExerciseLogApiService>('getExerciseLogById');
+    const cacheKey = `${userFirebaseUuid}:${methodName}:${exerciseLogId}`;
+
+    return this.http
+      .get<ExerciseLogDto>(`${this.endpoint}/${exerciseLogId}`)
+      .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getExerciseLogs(
@@ -65,37 +71,46 @@ export class ExerciseLogApiService {
       queryParams = queryParams.append('weightInKg', weightInKg);
     }
 
-    const cacheKey = `${this.authService.user.value()?.userFirebaseUuid}:getExerciseLogs:${page}:${userId}:${exerciseType}:${exerciseId}:${weightInKg}`;
-    const cached = this.cacheService.get<ExercisesLogsDto>(cacheKey);
+    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
+    const methodName = nameof<ExerciseLogApiService>('getExerciseLogs');
+    const cacheKey = `${userFirebaseUuid}:${methodName}:${page}:${userId}:${exerciseType}:${exerciseId}:${weightInKg}`;
 
-    const exerciseLogs$ = this.http
+    return this.http
       .get<ExercisesLogsDto>(`${this.endpoint}?page=${page}&count=10`, { params: queryParams })
-      .pipe(tap(response => this.cacheService.set(cacheKey, response)));
-
-    if (cached) {
-      return exerciseLogs$.pipe(startWith(cached));
-    } else {
-      return exerciseLogs$;
-    }
+      .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getSeriesPerMuscle(): Observable<SeriesPerMuscle> {
-    return this.http.get<SeriesPerMuscle>(`${this.endpoint}/series-per-muscle?serviceWorkerCache=true`);
+    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
+    const methodName = nameof<ExerciseLogApiService>('getSeriesPerMuscle');
+    const cacheKey = `${userFirebaseUuid}:${methodName}`;
+    return this.http
+      .get<SeriesPerMuscle>(`${this.endpoint}/series-per-muscle`)
+      .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getDaysTrained(): Observable<Stats> {
-    return this.http.get<Stats>(`${this.endpoint}/days-trained?serviceWorkerCache=true`);
+    return this.http.get<Stats>(`${this.endpoint}/days-trained`);
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {
+    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
+    const methodName = nameof<ExerciseLogApiService>('getRecentlyUpdated');
+    const cacheKey = `${userFirebaseUuid}:${methodName}`;
     return this.http.get<ExercisesLogsDto>(`${this.endpoint}/recently-updated`).pipe(
       map(x => x.data),
-      tap(x => this.recentlyUpdatedCache.set(x))
+      cacheResponse(this.cacheService, cacheKey)
     );
   }
 
   public getExerciseLogsLatestWorkout(): Observable<ExerciseLogDto[]> {
-    return this.http.get<ExercisesLogsDto>(`${this.endpoint}/latest-workout`).pipe(map(x => x.data));
+    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
+    const methodName = nameof<ExerciseLogApiService>('getExerciseLogsLatestWorkout');
+    const cacheKey = `${userFirebaseUuid}:${methodName}`;
+    return this.http.get<ExercisesLogsDto>(`${this.endpoint}/latest-workout`).pipe(
+      map(x => x.data),
+      cacheResponse(this.cacheService, cacheKey)
+    );
   }
 
   public getFilters(

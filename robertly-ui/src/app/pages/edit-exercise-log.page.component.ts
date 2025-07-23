@@ -178,6 +178,10 @@ export class EditExerciseLogPageComponent {
     },
   });
 
+  public recentlyUpdated = rxResource({
+    loader: () => this.exerciseLogApiService.getRecentlyUpdated(),
+  });
+
   readonly #onOriginalValueErrorNavigateToHome = effect(() => {
     if (this.originalValue.error()) {
       this.router.navigate([Paths.HOME]);

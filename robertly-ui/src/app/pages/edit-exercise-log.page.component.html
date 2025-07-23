@@ -157,11 +157,11 @@
           </div>
         }
 
-        @if (exerciseLogApiService.recentlyUpdated().length) {
+        @if (recentlyUpdated.value()?.length) {
           <div class="card mb-3">
             <div class="card-body">
               <div class="card-title">Recently Updated</div>
-              @for (log of exerciseLogApiService.recentlyUpdated() | slice: 0 : 3; track $index) {
+              @for (log of recentlyUpdated.value() | slice: 0 : 3; track $index) {
                 <app-exercise-log
                   class="w-100"
                   [exerciseLog]="log"
