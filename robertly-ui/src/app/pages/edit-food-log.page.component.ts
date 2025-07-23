@@ -72,7 +72,7 @@ export class EditFoodLogPageComponent {
     typeof x === 'string' ? '' : (this.titleCasePipe.transform(x?.name) ?? '');
 
   public readonly users = computed(() => {
-    const user = this.authService.user()!;
+    const user = this.authService.user.value()!;
 
     return [user, ...(user?.assignedUsers ?? [])];
   });
@@ -112,13 +112,13 @@ export class EditFoodLogPageComponent {
     effect(() => {
       const mode = this.mode();
       const foodLog = this.originalValue.value();
-      const user = untracked(() => this.authService.user());
+      const user = untracked(() => this.authService.user.value());
 
       if (mode === 'create') {
         const todayDate = this.dayjs().format('YYYY-MM-DD');
 
         this.foodLogForm.date.set(todayDate);
-        this.foodLogForm.user.set(user);
+        this.foodLogForm.user.set(user!);
       }
 
       if (mode === 'edit' && !!foodLog) {

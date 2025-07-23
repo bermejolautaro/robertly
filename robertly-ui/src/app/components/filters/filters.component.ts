@@ -63,7 +63,7 @@ export class FiltersComponent {
     // When filters or user load then set filter values
     effect(() => {
       const filters = this.filters.value();
-      const user = this.authService.user();
+      const user = this.authService.user.value();
 
       if (filters) {
         this.users.set([user!, ...(user?.assignedUsers ?? [])]);

@@ -32,13 +32,13 @@ import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.comp
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { lastValueFrom, of, take } from 'rxjs';
-import { CreateOrUpdateSerieFormGroupValue } from '@models/create-or-update-serie';
 import { User } from '@models/user.model';
 
 import * as R from 'remeda';
 import { HttpErrorResponse } from '@angular/common/http';
 import { OnlyNumbersDirective } from '../directives/only-numbers.directive';
 import { parseNumber } from '@validators/parse-number';
+import { OfflineQueueService } from '@services/offline-queue.service';
 
 @Component({
   selector: 'edit-exercise-log-page',
@@ -61,6 +61,7 @@ export class EditExerciseLogPageComponent {
   public readonly authService = inject(AuthService);
   public readonly exerciseLogApiService = inject(ExerciseLogApiService);
   public readonly exerciseApiService = inject(ExerciseApiService);
+  private readonly offlineQueueService = inject(OfflineQueueService);
 
   private readonly location = inject(Location);
   private readonly router = inject(Router);
@@ -161,7 +162,7 @@ export class EditExerciseLogPageComponent {
   public readonly exerciseSelector = (x: Exercise | null) => this.titleCasePipe.transform(x?.name) ?? '';
 
   public readonly users = computed(() => {
-    const user = this.authService.user()!;
+    const user = this.authService.user.value()!;
 
     return [user, ...(user?.assignedUsers ?? [])];
   });
@@ -186,14 +187,14 @@ export class EditExerciseLogPageComponent {
   readonly #onModeOrOriginalValueChangeTheUpdateForm = effect(() => {
     const mode = this.mode();
     const exerciseLog = this.originalValue.value();
-    const { user } = untracked(() => ({ user: this.authService.user() }));
+    const { user } = untracked(() => ({ user: this.authService.user.value() }));
 
     if (mode === 'create') {
       untracked(() => {
         const todayDate = this.dayjs().format('YYYY-MM-DD');
 
         this.formSignal.date.set(todayDate);
-        this.formSignal.user.set(user);
+        this.formSignal.user.set(user!);
       });
     }
 
@@ -318,11 +319,25 @@ export class EditExerciseLogPageComponent {
             series: seriesToCreate,
           },
         };
+
+        this.offlineQueueService.enqueue({
+          id: crypto.randomUUID(),
+          method: 'POST',
+          endpoint: 'exercise-logs',
+          payload: request,
+          retries: 0,
+          maxRetries: 3,
+          optimisticType: 'exercise-log',
+          userUuid: this.authService.userUuid()!,
+        });
+
+        this.toastService.ok('Log enqueued for creation successfully!');
+
         try {
-          const exerciseLogId = await lastValueFrom(this.exerciseLogApiService.createExerciseLog(request));
+          // const exerciseLogId = await lastValueFrom(this.exerciseLogApiService.createExerciseLog(request));
           localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-          this.toastService.ok('Log created successfully!');
-          this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLogId]);
+          // this.toastService.ok('Log created successfully!');
+          // this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLogId]);
         } catch (e) {
           this.toastService.error(`${e}`);
         }
@@ -360,10 +375,23 @@ export class EditExerciseLogPageComponent {
           },
         };
 
+        this.offlineQueueService.enqueue({
+          id: crypto.randomUUID(),
+          method: 'PUT',
+          endpoint: `exercise-logs/${this.exerciseLogId()!}`,
+          payload: request,
+          retries: 0,
+          maxRetries: 3,
+          optimisticType: 'exercise-log',
+          userUuid: this.authService.userUuid()!,
+        });
+
+        this.toastService.ok('Log enqueued for update successfully!');
+
         try {
-          await lastValueFrom(this.exerciseLogApiService.updateExerciseLog(request));
-          this.toastService.ok('Log updated successfully!');
-          this.originalValue.reload();
+          // await lastValueFrom(this.exerciseLogApiService.updateExerciseLog(request));
+          // this.toastService.ok('Log updated successfully!');
+          // this.originalValue.reload();
         } catch (e) {
           const error = e as HttpErrorResponse;
           this.toastService.error(`${error.message}`);

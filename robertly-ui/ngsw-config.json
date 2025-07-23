@@ -1,18 +1,7 @@
 {
   "$schema": "./node_modules/@angular/service-worker/config/schema.json",
   "index": "/index.html",
-  "dataGroups": [
-    {
-      "name": "api",
-      "urls": ["/api*serviceWorkerCache=true*"],
-      "cacheConfig": {
-        "strategy": "freshness",
-        "maxSize": 100,
-        "maxAge": "2d",
-        "timeout": "2s"
-      }
-    }
-  ],
+  "dataGroups": [],
   "assetGroups": [
     {
       "name": "app",
@@ -27,6 +16,14 @@
       "updateMode": "prefetch",
       "resources": {
         "files": ["/assets/**", "/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"]
+      }
+    },
+    {
+      "name": "iconoir",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "resources": {
+        "files": ["https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir@main/css/iconoir.css"]
       }
     }
   ]

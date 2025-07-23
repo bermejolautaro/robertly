@@ -4,7 +4,9 @@ import { ExerciseLog, ExerciseLogDto } from '@models/exercise-log.model';
 import { Filter } from '@models/filter';
 import { SeriesPerMuscle } from '@models/series-per-muscle';
 import { Stats } from '@models/stats';
-import { Observable, map, tap } from 'rxjs';
+import { AuthService } from '@services/auth.service';
+import { CacheService } from '@services/cache.service';
+import { Observable, map, startWith, tap } from 'rxjs';
 
 import { API_URL } from 'src/main';
 
@@ -29,6 +31,8 @@ export type UpdateExerciseLogRequest = {
 })
 export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
+  private readonly cacheService = inject(CacheService);
   private readonly apiUrl = inject(API_URL);
 
   private readonly endpoint = `${this.apiUrl}/exercise-logs`;
@@ -51,20 +55,28 @@ export class ExerciseLogApiService {
     if (!!userId) {
       queryParams = queryParams.append('userId', userId);
     }
-
     if (!!exerciseType) {
       queryParams = queryParams.append('exerciseType', exerciseType);
     }
-
     if (!!exerciseId) {
       queryParams = queryParams.append('exerciseId', exerciseId);
     }
-
     if (!!weightInKg) {
       queryParams = queryParams.append('weightInKg', weightInKg);
     }
 
-    return this.http.get<ExercisesLogsDto>(`${this.endpoint}?page=${page}&count=10`, { params: queryParams });
+    const cacheKey = `${this.authService.user.value()?.userFirebaseUuid}:getExerciseLogs:${page}:${userId}:${exerciseType}:${exerciseId}:${weightInKg}`;
+    const cached = this.cacheService.get<ExercisesLogsDto>(cacheKey);
+
+    const exerciseLogs$ = this.http
+      .get<ExercisesLogsDto>(`${this.endpoint}?page=${page}&count=10`, { params: queryParams })
+      .pipe(tap(response => this.cacheService.set(cacheKey, response)));
+
+    if (cached) {
+      return exerciseLogs$.pipe(startWith(cached));
+    } else {
+      return exerciseLogs$;
+    }
   }
 
   public getSeriesPerMuscle(): Observable<SeriesPerMuscle> {

@@ -23,6 +23,8 @@ import { HeaderComponent } from '@components/header/header.component';
 import { FooterComponent } from '@components/footer/footer.component';
 import { AuthService } from '@services/auth.service';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
+import { CacheService } from '@services/cache.service';
+import { OfflineQueueService } from '@services/offline-queue.service';
 
 @Component({
   selector: 'app-root',
@@ -44,6 +46,8 @@ export class AppComponent implements OnInit {
   public readonly authApiService = inject(AuthApiService);
   public readonly authService = inject(AuthService);
 
+  private readonly offlineQueueService = inject(OfflineQueueService);
+  private readonly cacheService = inject(CacheService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly document = inject(DOCUMENT);
@@ -89,14 +93,16 @@ export class AppComponent implements OnInit {
   }
 
   public async ngOnInit(): Promise<void> {
+    this.offlineQueueService.processQueue();
+    this.cacheService.load();
+    this.cacheService.cleanupExpired();
     this.isLoading.set(true);
     if (this.authChecksEnabled) {
-      await this.authApiService.tryRefreshToken();
+      this.authApiService.tryRefreshToken();
     }
     this.preloaderProgress.set(75);
-    await this.exerciseApiService.fetchExercises();
+    this.exerciseApiService.fetchExercises();
     this.preloaderProgress.set(100);
-    await new Promise(resolve => setTimeout(resolve, 500));
     this.isLoading.set(false);
   }
 

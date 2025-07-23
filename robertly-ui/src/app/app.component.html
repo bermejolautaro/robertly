@@ -13,7 +13,7 @@
     ></button>
   </div>
   <div class="offcanvas-body">
-    @if (!authService.user()) {
+    @if (!authService.user.value()) {
       <a
         [routerLink]="Paths.SIGN_IN"
         (click)="offcanvas.dismiss()"
@@ -26,7 +26,7 @@
       >
     }
 
-    @if (!!authService.user()) {
+    @if (!!authService.user.value()) {
       <a
         [routerLink]="Paths.EXERCISES"
         (click)="offcanvas.dismiss()"
@@ -39,7 +39,7 @@
       >
     }
 
-    @if (!!authService.user()) {
+    @if (!!authService.user.value()) {
       <button
         (click)="signOut(); offcanvas.dismiss()"
         class="btn btn-link"

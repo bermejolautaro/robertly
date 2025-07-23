@@ -1,8 +1,8 @@
 <nav class="navbar fixed-top px-1 z-3">
   <div class="container-fluid d-flex">
     <div style="color: white; font-weight: bold; font-size: 16px">
-      @if (authService.user()) {
-        Hello! {{ authService.user()?.name }}
+      @if (authService.user.value()) {
+        Hello! {{ authService.user.value()?.name }}
       }
     </div>
 
