@@ -5,6 +5,9 @@ import { API_URL } from 'src/main';
 import { FoodLog } from '@models/food-log.model';
 import { Macros } from '@models/macros';
 import { Macro } from '@models/macro';
+import { CacheService } from '@services/cache.service';
+import { cacheResponse } from 'src/app/functions/cache-response';
+import { AuthService } from '@services/auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -12,22 +15,30 @@ import { Macro } from '@models/macro';
 export class FoodLogsApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
+  private readonly cacheService = inject(CacheService);
+  private readonly authService = inject(AuthService);
   private readonly endpoint = `${this.apiUrl}/food-logs`;
 
   public getFoodLogById(foodLogId: number): Observable<FoodLog> {
-    return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`);
+    const cacheKey = `${this.authService.userUuid()}:getFoodLogById:${foodLogId}`;
+    return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getFoodLogs(): Observable<FoodLog[]> {
-    return this.http.get<FoodLog[]>(`${this.endpoint}`);
+    const cacheKey = `${this.authService.userUuid()}:getFoodLogs`;
+    return this.http.get<FoodLog[]>(`${this.endpoint}`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getMacros(timezoneId: string): Observable<Macros> {
-    return this.http.get<Macros>(`${this.endpoint}/macros`, { params: { timezoneId } });
+    const cacheKey = `${this.authService.userUuid()}:getMacros:${timezoneId}`;
+    return this.http
+      .get<Macros>(`${this.endpoint}/macros`, { params: { timezoneId } })
+      .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getMacrosDaily(): Observable<Macro[]> {
-    return this.http.get<Macro[]>(`${this.endpoint}/macros-daily`);
+    const cacheKey = `${this.authService.userUuid()}:getMacrosDaily`;
+    return this.http.get<Macro[]>(`${this.endpoint}/macros-daily`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public createFoodLog(request: FoodLog): Observable<void> {

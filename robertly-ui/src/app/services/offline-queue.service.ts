@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders, HttpRequest } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, HttpHeaders, HttpRequest } from '@angular/common/http';
 import { effect, inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '@services/auth.service';
 import { ToastService } from '@services/toast.service';
@@ -14,18 +14,19 @@ export interface SerializableQueuedAction {
   maxRetries: number;
   optimisticType: string;
   userUuid: string;
+  onActionDone?: (e: unknown) => void;
 }
 
 const QUEUE_KEY = 'offline-queue';
 
 @Injectable({ providedIn: 'root' })
 export class OfflineQueueService {
+  public readonly isOnline = signal<boolean>(navigator.onLine);
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
   private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
   private queue: SerializableQueuedAction[] = [];
-  private isOnline = signal<boolean>(navigator.onLine);
 
   public constructor() {
     const queueAsString = localStorage.getItem(QUEUE_KEY);
@@ -33,12 +34,6 @@ export class OfflineQueueService {
 
     window.addEventListener('online', () => this.isOnline.set(true));
     window.addEventListener('offline', () => this.isOnline.set(false));
-
-    effect(async () => {
-      if (this.isOnline()) {
-        await this.processQueue();
-      }
-    });
   }
 
   private saveQueue() {
@@ -60,15 +55,17 @@ export class OfflineQueueService {
       return;
     }
 
-    for (const action of this.queue) {
-      const action = this.queue[0];
+    const actionProcessed: string[] = [];
+
+    for (let i = 0; i < this.queue.length; i++) {
+      const action = this.queue[i];
 
       if (!action) {
-        this.queue.shift();
         continue;
       }
 
       if (action.userUuid !== this.authService.userUuid()) {
+        actionProcessed.push(action.id);
         continue;
       }
 
@@ -82,19 +79,27 @@ export class OfflineQueueService {
           }
         );
 
-        await lastValueFrom(this.http.request(request));
-        this.queue.shift();
+        const response = await lastValueFrom(this.http.request(request));
+
+        actionProcessed.push(action.id);
         this.saveQueue();
         this.toastService.ok('Log synced successfully!');
+
+        if (action.onActionDone && response.type === HttpEventType.Response) {
+          action.onActionDone(response.body);
+        }
       } catch (error) {
         if (action.retries < action.maxRetries) {
           action.retries++;
         } else {
-          this.queue.shift();
+          actionProcessed.push(action.id);
           this.toastService.error('Max retries reached. Log synced failed.');
         }
         this.saveQueue();
       }
     }
+
+    this.queue = this.queue.filter(action => !actionProcessed.includes(action.id));
+    this.saveQueue();
   }
 }

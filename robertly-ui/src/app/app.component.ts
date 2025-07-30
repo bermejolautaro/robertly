@@ -93,15 +93,22 @@ export class AppComponent implements OnInit {
   }
 
   public async ngOnInit(): Promise<void> {
-    this.offlineQueueService.processQueue();
+    this.isLoading.set(true);
+
+    if (this.authChecksEnabled && this.offlineQueueService.isOnline()) {
+      await this.authApiService.tryRefreshToken();
+    }
+
+    this.preloaderProgress.set(75);
+
     this.cacheService.load();
     this.cacheService.cleanupExpired();
-    this.isLoading.set(true);
-    if (this.authChecksEnabled) {
-      this.authApiService.tryRefreshToken();
-    }
-    this.preloaderProgress.set(75);
-    this.exerciseApiService.fetchExercises();
+    this.offlineQueueService.processQueue();
+
+    try {
+      await this.exerciseApiService.fetchExercises();
+    } catch (error) {}
+
     this.preloaderProgress.set(100);
     this.isLoading.set(false);
   }

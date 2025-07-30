@@ -1,9 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Exercise } from '@models/exercise.model';
-import { Observable, lastValueFrom, map, tap } from 'rxjs';
+import { Observable, lastValueFrom, map, of, switchMap, tap } from 'rxjs';
 import { API_URL } from 'src/main';
 import * as R from 'remeda';
+import { nameof } from 'src/app/functions/name-of';
+import { cacheResponse } from 'src/app/functions/cache-response';
+import { CacheService } from '@services/cache.service';
 
 type ExercisesResponse = {
   data: Exercise[];
@@ -28,6 +31,7 @@ export type UpdateExerciseRequest = {
 export class ExerciseApiService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = inject(API_URL);
+  private readonly cacheService = inject(CacheService);
 
   public readonly exercises = signal<Exercise[]>([]);
 
@@ -48,12 +52,16 @@ export class ExerciseApiService {
   });
 
   public async fetchExercises(): Promise<void> {
-    await lastValueFrom(this.getExercises());
+    return lastValueFrom(this.getExercises().pipe(switchMap(() => of())));
   }
 
   public getExercises(): Observable<Exercise[]> {
+    const methodName = nameof<ExerciseApiService>('getExercises');
+    const cacheKey = `${methodName}`;
+
     return this.http.get<ExercisesResponse>(`${this.apiUrl}/exercises`).pipe(
       map(x => x.data),
+      cacheResponse(this.cacheService, cacheKey),
       tap(x => this.exercises.set(x))
     );
   }

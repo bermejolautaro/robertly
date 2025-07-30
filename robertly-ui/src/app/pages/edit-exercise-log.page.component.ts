@@ -333,15 +333,16 @@ export class EditExerciseLogPageComponent {
           maxRetries: 3,
           optimisticType: 'exercise-log',
           userUuid: this.authService.userUuid()!,
+          onActionDone: e => {
+            const exerciseLogId = e as number;
+            this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLogId]);
+          },
         });
 
         this.toastService.ok('Log enqueued for creation successfully!');
 
         try {
-          // const exerciseLogId = await lastValueFrom(this.exerciseLogApiService.createExerciseLog(request));
           localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-          // this.toastService.ok('Log created successfully!');
-          // this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLogId]);
         } catch (e) {
           this.toastService.error(`${e}`);
         }
@@ -388,18 +389,12 @@ export class EditExerciseLogPageComponent {
           maxRetries: 3,
           optimisticType: 'exercise-log',
           userUuid: this.authService.userUuid()!,
+          onActionDone: () => {
+            this.originalValue.reload();
+          },
         });
 
         this.toastService.ok('Log enqueued for update successfully!');
-
-        try {
-          // await lastValueFrom(this.exerciseLogApiService.updateExerciseLog(request));
-          // this.toastService.ok('Log updated successfully!');
-          // this.originalValue.reload();
-        } catch (e) {
-          const error = e as HttpErrorResponse;
-          this.toastService.error(`${error.message}`);
-        }
       }
     }
 

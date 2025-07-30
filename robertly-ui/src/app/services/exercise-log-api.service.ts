@@ -1,12 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ExerciseLog, ExerciseLogDto } from '@models/exercise-log.model';
 import { Filter } from '@models/filter';
 import { SeriesPerMuscle } from '@models/series-per-muscle';
 import { Stats } from '@models/stats';
 import { AuthService } from '@services/auth.service';
 import { CacheService } from '@services/cache.service';
-import { Observable, iif, map, startWith, tap } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { cacheResponse } from 'src/app/functions/cache-response';
 import { nameof } from 'src/app/functions/name-of';
 
@@ -84,13 +84,15 @@ export class ExerciseLogApiService {
     const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
     const methodName = nameof<ExerciseLogApiService>('getSeriesPerMuscle');
     const cacheKey = `${userFirebaseUuid}:${methodName}`;
+
     return this.http
       .get<SeriesPerMuscle>(`${this.endpoint}/series-per-muscle`)
       .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getDaysTrained(): Observable<Stats> {
-    return this.http.get<Stats>(`${this.endpoint}/days-trained`);
+    const cacheKey = `${this.authService.userUuid()}:getDaysTrained`;
+    return this.http.get<Stats>(`${this.endpoint}/days-trained`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLogDto[]> {
