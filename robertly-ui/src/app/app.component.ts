@@ -94,6 +94,8 @@ export class AppComponent implements OnInit {
 
   public async ngOnInit(): Promise<void> {
     this.isLoading.set(true);
+    this.cacheService.load();
+    this.cacheService.cleanupExpired();
 
     if (this.authChecksEnabled && this.offlineQueueService.isOnline()) {
       await this.authApiService.tryRefreshToken();
@@ -101,8 +103,6 @@ export class AppComponent implements OnInit {
 
     this.preloaderProgress.set(75);
 
-    this.cacheService.load();
-    this.cacheService.cleanupExpired();
     this.offlineQueueService.processQueue();
 
     try {

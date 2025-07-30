@@ -1,5 +1,5 @@
-import { HttpClient, HttpEvent, HttpEventType, HttpHeaders, HttpRequest } from '@angular/common/http';
-import { effect, inject, Injectable, signal } from '@angular/core';
+import { HttpClient, HttpEventType, HttpHeaders, HttpRequest } from '@angular/common/http';
+import { inject, Injectable, signal } from '@angular/core';
 import { AuthService } from '@services/auth.service';
 import { ToastService } from '@services/toast.service';
 import { lastValueFrom } from 'rxjs';
