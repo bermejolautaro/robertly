@@ -43,7 +43,7 @@ public class GetFoodLogsQueryBuilder
     WHERE 1 = 1
     %filters%
     %orderBy%
-    %offset%
+    %offset%;
     """;
 
   private readonly string _baseQueryCount =
@@ -53,7 +53,7 @@ public class GetFoodLogsQueryBuilder
     INNER JOIN Foods F ON FL.FoodId = F.FoodId
     INNER JOIN Users U ON FL.UserId = U.UserId
     WHERE 1 = 1
-    %filters%
+    %filters%;
     """;
 
   public GetFoodLogsQueryBuilder() { }
