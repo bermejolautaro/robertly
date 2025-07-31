@@ -56,7 +56,7 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpGet("latest-workout")]
-  public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetCurrentAndPreviousWorkoutByUser()
+  public async Task<Results<Ok<PaginatedList<ExerciseLogDto>>, UnauthorizedHttpResult>> GetCurrentAndPreviousWorkoutByUser()
   {
     var user = await _userHelper.GetUser(Request);
 
@@ -81,7 +81,7 @@ public class ExerciseLogController : ControllerBase
 
     var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
 
-    return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
+    return TypedResults.Ok(new PaginatedList<ExerciseLogDto>() { Data = exerciseLogsDto });
   }
 
   [HttpGet("series-per-muscle")]
@@ -115,7 +115,7 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpGet("recently-updated")]
-  public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetRecentlyUpdated()
+  public async Task<Results<Ok<PaginatedList<ExerciseLogDto>>, UnauthorizedHttpResult>> GetRecentlyUpdated()
   {
     var user = await _userHelper.GetUser(Request);
 
@@ -140,11 +140,11 @@ public class ExerciseLogController : ControllerBase
 
     var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
 
-    return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDto });
+    return TypedResults.Ok(new PaginatedList<ExerciseLogDto>() { Data = exerciseLogsDto });
   }
 
   [HttpGet]
-  public async Task<Results<Ok<ExerciseLogsDto>, UnauthorizedHttpResult>> GetExerciseLogs(
+  public async Task<Results<Ok<PaginatedList<ExerciseLogDto>>, UnauthorizedHttpResult>> GetExerciseLogs(
       [FromQuery] PaginationRequest pagination,
       [FromQuery] int? userId,
       [FromQuery] string? exerciseType = null,
@@ -199,7 +199,11 @@ public class ExerciseLogController : ControllerBase
 
     var exerciseLogsDtos = MapToExerciseLogDto(exerciseLogs);
 
-    return TypedResults.Ok(new ExerciseLogsDto() { Data = exerciseLogsDtos, PageCount = totalCount / (pagination.Count ?? 1) });
+    return TypedResults.Ok(new PaginatedList<ExerciseLogDto>()
+    {
+      Data = exerciseLogsDtos,
+      PageCount = totalCount / (pagination.Count ?? 1)
+    });
   }
 
   [HttpGet("{id}")]

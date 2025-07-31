@@ -1,10 +1,11 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
 
 import { FiltersComponent } from '@components/filters/filters.component';
+import { PaginatorComponent } from '@components/paginator.component';
 import { Filter } from '@models/filter';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 
@@ -34,7 +35,7 @@ import { ExerciseLogApiService } from '@services/exercise-log-api.service';
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ExerciseLogComponent, FiltersComponent],
+  imports: [FormsModule, ExerciseLogComponent, FiltersComponent, PaginatorComponent],
 })
 export class ExerciseLogsPageComponent implements OnInit {
   private readonly document = inject(DOCUMENT);
@@ -77,7 +78,12 @@ export class ExerciseLogsPageComponent implements OnInit {
     this.logsResource.isLoading() ? [null, null, null, null, null] : this.logsResource.value()?.data
   );
 
-  public constructor() {}
+  public constructor() {
+    effect(() => {
+      this.currentPage();
+      this.logsResource.reload();
+    })
+  }
 
   public ngOnInit(): void {
     this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
@@ -87,24 +93,5 @@ export class ExerciseLogsPageComponent implements OnInit {
     this.currentPage.set(0);
     this.filter.set(filter);
     this.logsResource.reload();
-  }
-
-  public prevPage(): void {
-    const prevValue = this.currentPage();
-    this.currentPage.update(x => Math.max(x - 1, 0));
-
-    if (prevValue !== this.currentPage()) {
-      this.logsResource.reload();
-    }
-  }
-
-  public nextPage(): void {
-    const prevValue = this.currentPage();
-
-    this.currentPage.update(x => Math.min(x + 1, this.logsResource.value()?.pageCount ?? Infinity));
-
-    if (prevValue !== this.currentPage()) {
-      this.logsResource.reload();
-    }
   }
 }

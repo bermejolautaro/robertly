@@ -1,6 +1,19 @@
 <div class="header-footer-padding">
   <div class="container">
-    @for (log of foodLogs.value(); track log.foodLogId) {
+    <div class="d-flex justify-content-end mb-3">
+      <button
+        class="btn btn-link p-0 d-flex align-items-center"
+        (click)="navigateToAddLog()"
+        style="text-decoration: none; color: white"
+      >
+        Add Food Log
+        <i
+          class="iconoir-plus-circle-solid"
+          style="font-size: 1.2rem; margin: 0 0.3rem"
+        ></i>
+      </button>
+    </div>
+    @for (log of foodLogs.value()?.data; track log.foodLogId) {
       @if (!!log) {
         <app-food-log [foodLog]="log"></app-food-log>
       } @else {
@@ -22,6 +35,13 @@
           <span class="visually-hidden">Loading...</span>
         </div>
       </div>
+    }
+
+    @if (foodLogs.value()?.data?.length) {
+      <app-paginator
+        [(currentPage)]="currentPage"
+        [pageCount]="foodLogs.value()?.pageCount ?? 0"
+      ></app-paginator>
     }
   </div>
 </div>

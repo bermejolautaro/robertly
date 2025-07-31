@@ -1,4 +1,4 @@
-﻿namespace robertly;
+namespace robertly.Models;
 
 public record SignInRequest(string Email, string Password);
 
@@ -13,5 +13,3 @@ public record SignUpGoogleRequest()
 {
     public required string AccessToken { get; set; }
 }
-
-public record PaginationRequest(int? Page, int? Count);

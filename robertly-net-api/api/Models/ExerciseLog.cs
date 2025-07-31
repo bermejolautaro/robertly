@@ -57,9 +57,3 @@ public record ExerciseLogDto
   public required decimal? BrzyckiAverage { get; init; }
   public required IEnumerable<ExerciseLogDto> RecentLogs { get; init; }
 }
-
-public record ExerciseLogsDto
-{
-  public required IEnumerable<ExerciseLogDto> Data { get; init; }
-  public int PageCount { get; set; }
-};

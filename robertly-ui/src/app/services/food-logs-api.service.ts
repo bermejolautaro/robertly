@@ -8,6 +8,7 @@ import { Macro } from '@models/macro';
 import { CacheService } from '@services/cache.service';
 import { cacheResponse } from 'src/app/functions/cache-response';
 import { AuthService } from '@services/auth.service';
+import { PaginatedList } from '@models/pagination';
 
 @Injectable({
   providedIn: 'root',
@@ -24,9 +25,9 @@ export class FoodLogsApiService {
     return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
-  public getFoodLogs(): Observable<FoodLog[]> {
+  public getFoodLogs(page: number): Observable<PaginatedList<FoodLog>> {
     const cacheKey = `${this.authService.userUuid()}:getFoodLogs`;
-    return this.http.get<FoodLog[]>(`${this.endpoint}`).pipe(cacheResponse(this.cacheService, cacheKey));
+    return this.http.get<PaginatedList<FoodLog>>(`${this.endpoint}?page=${page}&count=10`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getMacros(timezoneId: string): Observable<Macros> {
@@ -36,9 +37,9 @@ export class FoodLogsApiService {
       .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
-  public getMacrosDaily(): Observable<Macro[]> {
+  public getMacrosDaily(page: number): Observable<PaginatedList<Macro>> {
     const cacheKey = `${this.authService.userUuid()}:getMacrosDaily`;
-    return this.http.get<Macro[]>(`${this.endpoint}/macros-daily`).pipe(cacheResponse(this.cacheService, cacheKey));
+    return this.http.get<PaginatedList<Macro>>(`${this.endpoint}/macros-daily?page=${page}&count=10`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public createFoodLog(request: FoodLog): Observable<void> {

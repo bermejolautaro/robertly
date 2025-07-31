@@ -34,9 +34,9 @@ namespace robertly.Controllers
         (appLogsRepository, genericRepository, connection, schema, userHelper);
 
     [HttpGet]
-    public async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(int page, int size)
+    public async Task<PaginatedList<Models.FoodLog>> GetFoodLogs(int page, int count)
     {
-      return await GetFoodLogs(new GetFoodLogsQueryBuilder(), page, size);
+      return await GetFoodLogs(new GetFoodLogsQueryBuilder(), page, count);
     }
 
     [HttpGet("{foodLogId}")]
@@ -46,7 +46,7 @@ namespace robertly.Controllers
           .AndFoodLogId(foodLogId);
 
       var foodLogs = await GetFoodLogs(queryBuilder, 1, 1);
-      return foodLogs.FirstOrDefault();
+      return foodLogs.Data.FirstOrDefault();
     }
 
     [HttpGet("macros")]
@@ -146,7 +146,9 @@ namespace robertly.Controllers
     }
 
     [HttpGet("macros-daily")]
-    public async Task<Results<Ok<IEnumerable<Models.Macro>>, UnauthorizedHttpResult>> GetMacrosDaily()
+    public async Task<Results<Ok<PaginatedList<Models.Macro>>, UnauthorizedHttpResult>> GetMacrosDaily(
+      [FromQuery] PaginationRequest pagination
+    )
     {
       var user = await _userHelper.GetUser(Request);
 
@@ -156,6 +158,8 @@ namespace robertly.Controllers
       }
 
       using var connection = _connection.Create();
+
+      var (page, count) = pagination;
 
       var query =
         $"""
@@ -167,15 +171,27 @@ namespace robertly.Controllers
         INNER JOIN Foods F ON FL.FoodId = F.FoodId
         WHERE UserId = @UserId
         GROUP BY Date
-        ORDER BY DATE DESC
-        OFFSET 0 LIMIT 10
+        ORDER BY Date DESC
+        OFFSET {(page * count) ?? 0} LIMIT {count ?? 20};
+
+        SELECT COUNT(DISTINCT Date)
+        FROM FoodLogs FL
+        INNER JOIN Foods F ON FL.FoodId = F.FoodId
+        WHERE UserId = @UserId;
         """;
 
       query = _schema.AddSchemaToQuery(query);
 
-      var values = await connection.QueryAsync<DataQueries.Macro>(query, new { UserId = user.UserId });
+      var values = await connection.QueryMultipleAsync(query, new { UserId = user.UserId });
 
-      return TypedResults.Ok(values.Select(x => x.Map<Models.Macro>()));
+      var macros = values.Read<DataQueries.Macro>().ToList();
+      var totalCount = values.ReadFirst<int>();
+
+      return TypedResults.Ok(new PaginatedList<Models.Macro>
+      {
+        Data = macros.Select(x => x.Map<Models.Macro>()),
+        PageCount = totalCount / (count ?? 1)
+      });
     }
 
     [HttpPost]
@@ -268,39 +284,55 @@ namespace robertly.Controllers
       return TypedResults.Ok();
     }
 
-    private async Task<IEnumerable<Models.FoodLog>> GetFoodLogs(GetFoodLogsQueryBuilder queryBuilder, int page, int size)
+    private async Task<PaginatedList<Models.FoodLog>> GetFoodLogs(GetFoodLogsQueryBuilder queryBuilder, int page, int count)
     {
       using var connection = _connection.Create();
 
-      var (query, parameters) = queryBuilder.Build();
+      var (query, parameters) = queryBuilder.Build(page, count);
       query = query.ReplaceSchema(_schema);
+
+      var (queryCount, parametersCount) = queryBuilder.BuildCountQuery();
+      queryCount = queryCount.ReplaceSchema(_schema);
+
+
+      IEnumerable<FoodLog> foodLogs = [];
+      int totalCount = 0;
 
       try
       {
-        var foodLogs = await connection.QueryAsync<
-            DataModels.FoodLog,
-            DataModels.Food,
-            DataModels.User,
-            Models.FoodLog
-        >(
-            query,
-            (log, food, user) => (log.Map<Models.FoodLog>() with
-            {
-              Food = food.Map<Models.Food>(),
-              User = user.Map<Models.User>()
-            }),
-            param: parameters,
-            splitOn: "FoodId,UserId"
-        );
-
-        return foodLogs;
+        foodLogs = await connection.QueryAsync<
+           DataModels.FoodLog,
+           DataModels.Food,
+           DataModels.User,
+           Models.FoodLog
+       >(
+           query,
+           (log, food, user) => (log.Map<Models.FoodLog>() with
+           {
+             Food = food.Map<Models.Food>(),
+             User = user.Map<Models.User>()
+           }),
+           param: parameters,
+           splitOn: "FoodId,UserId"
+       );
       }
       catch (Exception e)
       {
         await _appLogsRepository.LogError(query, e);
       }
 
-      return [];
+      try
+      {
+        totalCount = await connection.QuerySingleAsync<int>(
+          queryCount,
+          parametersCount);
+      }
+      catch (Exception e)
+      {
+        await _appLogsRepository.LogError(queryCount, e);
+      }
+
+      return new PaginatedList<Models.FoodLog>() { Data = foodLogs, PageCount = totalCount / Math.Max(count, 1) };
     }
   }
 }

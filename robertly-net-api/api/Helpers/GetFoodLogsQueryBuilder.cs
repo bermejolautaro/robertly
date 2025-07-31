@@ -43,7 +43,17 @@ public class GetFoodLogsQueryBuilder
     WHERE 1 = 1
     %filters%
     %orderBy%
-    OFFSET %offset% LIMIT %limit%;
+    %offset%
+    """;
+
+  private readonly string _baseQueryCount =
+    """
+    SELECT COUNT(DISTINCT FL.FoodLogId)
+    FROM FoodLogs FL
+    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    INNER JOIN Users U ON FL.UserId = U.UserId
+    WHERE 1 = 1
+    %filters%
     """;
 
   public GetFoodLogsQueryBuilder() { }
@@ -120,13 +130,12 @@ public class GetFoodLogsQueryBuilder
     return this;
   }
 
-  public (string query, DynamicParameters parameters) Build()
+  public (string query, DynamicParameters parameters) Build(int page, int count)
   {
     var query = _baseQuery
       .Replace("%filters%", _filters.ToString())
       .Replace("%orderBy%", BuildOrderBy())
-      .Replace("%offset%", "0")
-      .Replace("%limit%", "10")
+      .Replace("%offset%", $"OFFSET {page * count} LIMIT {count}")
       .Split(Environment.NewLine)
       .Where(x => !String.IsNullOrWhiteSpace(x))
       .StringJoin(Environment.NewLine);
@@ -134,7 +143,18 @@ public class GetFoodLogsQueryBuilder
     return (query, new DynamicParameters(_params));
   }
 
-  public string BuildOrderBy()
+  public (string query, DynamicParameters parameters) BuildCountQuery()
+  {
+    var query = _baseQueryCount
+      .Replace("%filters%", _filters.ToString())
+      .Split(Environment.NewLine)
+      .Where(x => !String.IsNullOrWhiteSpace(x))
+      .StringJoin(Environment.NewLine);
+
+    return (query, new DynamicParameters(_params));
+  }
+
+  private string BuildOrderBy()
   {
     if (orderBy.Count == 0)
     {

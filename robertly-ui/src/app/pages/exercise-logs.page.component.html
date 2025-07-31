@@ -28,21 +28,10 @@
     </div>
 
     @if (logs()?.length) {
-      <div class="d-flex justify-content-center align-items-center gap-2">
-        <button class="btn">
-          <i
-            (click)="prevPage()"
-            class="fa fa-angle-left"
-          ></i>
-        </button>
-        Page {{ currentPage() + 1 }} of {{ (logsResource.value()?.pageCount ?? 0) + 1 }}
-        <button
-          class="btn"
-          (click)="nextPage()"
-        >
-          <i class="fa fa-angle-right"></i>
-        </button>
-      </div>
+      <app-paginator
+        [(currentPage)]="currentPage"
+        [pageCount]="logsResource.value()?.pageCount ?? 0"
+      ></app-paginator>
     }
   </div>
 </div>

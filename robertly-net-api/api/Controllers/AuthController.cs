@@ -5,6 +5,7 @@ using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using robertly.Repositories;
+using robertly.Models;
 using System;
 using System.Threading.Tasks;
 

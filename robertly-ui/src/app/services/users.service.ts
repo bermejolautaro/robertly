@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { User } from '@models/user.model';
 import { CacheService } from '@services/cache.service';
-import { Observable, startWith, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { cacheResponse } from 'src/app/functions/cache-response';
 import { API_URL } from 'src/main';
 
