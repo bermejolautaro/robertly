@@ -16,7 +16,7 @@ import { Component, input, model } from '@angular/core';
           class="fa fa-angle-left"
         ></i>
       </button>
-      Page {{ currentPage() + 1 }} of {{ pageCount() + 1 }}
+      Page {{ currentPage() + 1 }} of {{ pageCount() }}
       <button
         class="btn"
         (click)="nextPage()"
@@ -51,10 +51,10 @@ export class PaginatorComponent {
   }
 
   public nextPage(): void {
-    this.currentPage.update(x => Math.min(x + 1, this.pageCount() ?? Infinity));
+    this.currentPage.update(x => Math.min(x + 1, this.pageCount() - 1));
   }
 
   public lastPage(): void {
-    this.currentPage.update(() => this.pageCount());
+    this.currentPage.update(() => this.pageCount() - 1);
   }
 }
