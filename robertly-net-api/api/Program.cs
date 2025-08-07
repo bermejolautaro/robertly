@@ -86,11 +86,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 var app = builder.Build();
 
 var schema = app.Services.GetRequiredService<SchemaHelper>();
-await schema.LoadTableNamesAsync();
-
 var migrations = app.Services.GetRequiredService<MigrationHelper>();
-await migrations.ApplyMigrations();
 
+await schema.LoadTableNamesAsync();
+await migrations.ApplyMigrations();
+await schema.LoadTableNamesAsync();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();
