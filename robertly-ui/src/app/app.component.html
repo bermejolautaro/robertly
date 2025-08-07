@@ -37,6 +37,11 @@
         (click)="offcanvas.dismiss()"
         >Food Tracker</a
       >
+      <a
+        [routerLink]="Paths.CONFIGURATION"
+        (click)="offcanvas.dismiss()"
+        >Configuration</a
+      >
     }
 
     @if (!!authService.user.value()) {
@@ -48,7 +53,6 @@
         Sign Out
       </button>
     }
-
   </div>
 </ng-template>
 

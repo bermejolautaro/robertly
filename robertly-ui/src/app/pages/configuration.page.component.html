@@ -1,0 +1,26 @@
+<div class="header-footer-padding">
+  <div class="container">
+    <div class="pb-3">
+      <h4 class="title">Configuration</h4>
+      <span class="subtitle">Change your preferences and personal targets</span>
+    </div>
+
+    @for (goal of goals(); track $index) {
+      <div class="row g-1 pb-2">
+        <div class="col-10">{{ goal.label }}</div>
+        <div class="col-10">
+          <input
+            type="text"
+            inputmode="decimal"
+            class="form-control"
+            [(ngModel)]="goal.targetValue"
+            onlyNumbers
+          />
+        </div>
+        <div class="col-2">
+          <button class="btn btn-secondary" (click)="onSave(goal)">Save</button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

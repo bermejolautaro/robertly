@@ -2,7 +2,6 @@ import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, linkedSignal, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { DAY_JS } from 'src/main';
 import * as R from 'remeda';
@@ -10,25 +9,6 @@ import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { SeriesPerMuscleRow } from '@models/series-per-muscle';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { RingComponent } from '@components/ring.component';
-
-function calculateTarget(muscleGroup: string) {
-  switch (muscleGroup) {
-    case 'biceps':
-    case 'triceps':
-    case 'calves':
-    case 'shoulders':
-      return 6;
-    case 'back':
-    case 'legs':
-    case 'chest':
-      return 10;
-    case 'forearms':
-    case 'glutes':
-      return 3;
-    default:
-      return 10;
-  }
-}
 
 @Component({
   selector: 'app-series-per-muscle-page',
@@ -67,7 +47,7 @@ function calculateTarget(muscleGroup: string) {
                 <div class="d-flex justify-content-center align-items-center flex-column">
                   <app-ring
                     [value]="series.totalSeries"
-                    [maxValue]="series.target * 1"
+                    [maxValue]="series.targetValue"
                     size="s"
                   ></app-ring>
                   <div style="text-align: center; font-size: 12px">
@@ -93,7 +73,7 @@ function calculateTarget(muscleGroup: string) {
                 <div class="d-flex justify-content-center align-items-center flex-column">
                   <app-ring
                     [value]="series.totalSeries"
-                    [maxValue]="series.target * 4"
+                    [maxValue]="series.targetValue"
                     size="s"
                   ></app-ring>
                   <div style="text-align: center; font-size: 12px">
@@ -119,7 +99,7 @@ function calculateTarget(muscleGroup: string) {
                 <div class="d-flex justify-content-center align-items-center flex-column">
                   <app-ring
                     [value]="series.totalSeries"
-                    [maxValue]="series.target * 52"
+                    [maxValue]="series.targetValue"
                     size="s"
                   ></app-ring>
                   <div style="text-align: center; font-size: 12px">
@@ -150,27 +130,28 @@ function calculateTarget(muscleGroup: string) {
   imports: [TitleCasePipe, NgbModalModule, FormsModule, ReactiveFormsModule, RingComponent],
 })
 export class SeriesPerMusclePageComponent {
-  private readonly router = inject(Router);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
-  private readonly dayjs = inject(DAY_JS);
   private readonly exercisesApiService = inject(ExerciseApiService);
+  private readonly dayjs = inject(DAY_JS);
   private readonly titleCasePipe = inject(TitleCasePipe);
+
+  private readonly defaultValues = linkedSignal({
+    source: () => ({ muscleGroups: this.exercisesApiService.muscleGroups() }),
+    computation: ({ muscleGroups }) =>
+      muscleGroups.map(x => ({
+        totalSeries: 0,
+        muscleGroup: x ?? '',
+        firstDateInPeriod: '',
+        month: 0,
+        week: 0,
+        year: 0,
+        targetValue: 0,
+      })),
+  });
 
   public readonly seriesPerMuscle = rxResource({
     loader: () => this.exerciseLogApiService.getSeriesPerMuscle(),
   });
-
-  private readonly defaultValues = linkedSignal<SeriesPerMuscleRow[]>(() =>
-    this.exercisesApiService.muscleGroups().map(x => ({
-      totalSeries: 0,
-      muscleGroup: x ?? '',
-      firstDateInPeriod: '',
-      month: 0,
-      week: 0,
-      year: 0,
-      target: calculateTarget(x),
-    }))
-  );
 
   public readonly period = signal<'week' | 'month' | 'year'>('week');
 
@@ -178,84 +159,87 @@ export class SeriesPerMusclePageComponent {
   public readonly seriesPerMonth = signal<[key: string, value: SeriesPerMuscleRow[]][]>([]);
   public readonly seriesPerYear = signal<[key: string, value: SeriesPerMuscleRow[]][]>([]);
 
-  readonly #onFetchSeriesPerMuscle = effect(() => {
-    const seriesPerMuscle = this.seriesPerMuscle.value();
+  public constructor() {
+    // When series per muscle finish fetching
+    // then update the series per week, month and year
+    effect(() => {
+      const seriesPerMuscle = this.seriesPerMuscle.value();
 
-    if (seriesPerMuscle) {
-      const perWeek = R.pipe(
-        seriesPerMuscle.seriesPerMuscleWeekly,
-        R.groupBy(x => `${x.year}-${x.week.toString().padStart(2, '0')}`),
-        R.mapValues(x => {
-          const result = this.defaultValues().map(defaultValue => {
-            const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
+      if (seriesPerMuscle) {
+        const perWeek = R.pipe(
+          seriesPerMuscle.seriesPerMuscleWeekly,
+          R.groupBy(x => `${x.year}-${x.week.toString().padStart(2, '0')}`),
+          R.mapValues(x => {
+            const result = this.defaultValues().map(defaultValue => {
+              const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
+              if (row) {
+                return { ...row, targetValue: row?.targetValue ?? defaultValue.targetValue };
+              }
 
-            if (row) {
-              return { ...row, target: defaultValue.target };
-            }
+              return defaultValue;
+            });
 
-            return defaultValue;
-          });
+            return result;
+          }),
+          R.entries(),
+          R.sortBy(x => x[0]),
+          R.reverse(),
+          R.map(x => [`Week ${x[0].split('-')[1]} of ${x[0].split('-')[0]}`, x[1]] as [string, SeriesPerMuscleRow[]])
+        );
 
-          return result;
-        }),
-        R.entries(),
-        R.sortBy(x => x[0]),
-        R.reverse(),
-        R.map(x => [`Week ${x[0].split('-')[1]} of ${x[0].split('-')[0]}`, x[1]] as [string, SeriesPerMuscleRow[]])
-      );
+        const perMonth = R.pipe(
+          seriesPerMuscle.seriesPerMuscleMonthly,
+          R.groupBy(x => `${x.year.toString()}-${x.month.toString().padStart(2, '0')}-01`),
+          R.mapValues(x => {
+            const result = this.defaultValues().map(defaultValue => {
+              const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
 
-      const perYear = R.pipe(
-        seriesPerMuscle.seriesPerMuscleYearly,
-        R.groupBy(x => `${x.year}`),
-        R.mapValues(x => {
-          const result = this.defaultValues().map(defaultValue => {
-            const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
+              if (row) {
+                return { ...row, targetValue: row?.targetValue ?? defaultValue.targetValue };
+              }
 
-            if (row) {
-              return { ...row, target: defaultValue.target };
-            }
+              return defaultValue;
+            });
 
-            return defaultValue;
-          });
+            return result;
+          }),
+          R.entries(),
+          R.sortBy(x => x[0]),
+          R.reverse(),
+          R.map(
+            x =>
+              [this.titleCasePipe.transform(this.dayjs(x[0]).format('MMM[ - ]YYYY')), x[1]] as [
+                string,
+                SeriesPerMuscleRow[],
+              ]
+          )
+        );
 
-          return result;
-        }),
-        R.entries(),
-        R.sortBy(x => x[0]),
-        R.reverse()
-      );
+        const perYear = R.pipe(
+          seriesPerMuscle.seriesPerMuscleYearly,
+          R.groupBy(x => `${x.year}`),
+          R.mapValues(x => {
+            const result = this.defaultValues().map(defaultValue => {
+              const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
 
-      const perMonth = R.pipe(
-        seriesPerMuscle.seriesPerMuscleMonthly,
-        R.groupBy(x => `${x.year.toString()}-${x.month.toString().padStart(2, '0')}-01`),
-        R.mapValues(x => {
-          const result = this.defaultValues().map(defaultValue => {
-            const row = x.find(z => z.muscleGroup === defaultValue.muscleGroup);
+              if (row) {
+                return { ...row, targetValue: row?.targetValue ?? defaultValue.targetValue };
+              }
 
-            if (row) {
-              return { ...row, target: defaultValue.target };
-            }
+              return defaultValue;
+            });
 
-            return defaultValue;
-          });
+            return result;
+          }),
+          R.entries(),
+          R.sortBy(x => x[0]),
+          R.reverse()
+        );
 
-          return result;
-        }),
-        R.entries(),
-        R.sortBy(x => x[0]),
-        R.reverse(),
-        R.map(
-          x =>
-            [this.titleCasePipe.transform(this.dayjs(x[0]).format('MMM[ - ]YYYY')), x[1]] as [
-              string,
-              SeriesPerMuscleRow[],
-            ]
-        )
-      );
-
-      this.seriesPerWeek.set(perWeek);
-      this.seriesPerMonth.set(perMonth);
-      this.seriesPerYear.set(perYear);
-    }
-  });
+        this.seriesPerWeek.set(perWeek);
+        this.seriesPerMonth.set(perMonth);
+        this.seriesPerYear.set(perYear);
+      }
+    });
+  }
 }

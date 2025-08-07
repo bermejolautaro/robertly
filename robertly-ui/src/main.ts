@@ -32,7 +32,8 @@ export const Paths = {
   DEVELOPER: 'developer',
   FOODS: 'foods',
   SERIES_PER_MUSCLE: 'series-per-muscle',
-  MACROS: 'macros'
+  MACROS: 'macros',
+  CONFIGURATION: 'configuration'
 } as const;
 
 const routes = [
@@ -126,6 +127,11 @@ const routes = [
     path: `${Paths.FOODS}/${Paths.CREATE}`,
     pathMatch: 'full',
     loadComponent: () => import('@pages/edit-food.page.component').then(x => x.EditFoodPageComponent),
+  } as const,
+  {
+    path: `${Paths.CONFIGURATION}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/configuration.page.component').then(x => x.ConfigurationPageComponent)
   } as const,
   {
     path: '',

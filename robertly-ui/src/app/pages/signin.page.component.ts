@@ -34,7 +34,11 @@ export class SignInComponent implements OnInit {
   public password: string = '';
 
   public async ngOnInit(): Promise<void> {
-    await this.authApiService.tryRefreshToken();
+    await this.authApiService.tryRefreshToken().then(success => {
+      if (success) {
+        this.router.navigate([Paths.HOME]);
+      }
+    });
   }
 
   public async onClickSignIn(): Promise<void> {

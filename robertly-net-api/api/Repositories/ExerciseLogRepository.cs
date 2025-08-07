@@ -30,70 +30,156 @@ public class ExerciseLogRepository
     using var connection = _connection.Create();
 
     var query = $"""
-    WITH WeeklyCounts AS (
-        SELECT
-            E.MuscleGroup,
-            EXTRACT(ISOYEAR FROM EL.date) AS Year,
-            EXTRACT(WEEK FROM EL.date) AS Week,
-            COUNT(s.SerieId) AS TotalSeries,
-            MIN(EL.date) AS FirstDateInPeriod
-        FROM ExerciseLogs EL
-        INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
-        INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
-        WHERE EL.UserId = @UserId
-        GROUP BY E.MuscleGroup, EXTRACT(ISOYEAR FROM el.date), EXTRACT(WEEK FROM el.date)
-    )
-    SELECT
-        MuscleGroup,
-        Year,
-        Week,
-        TotalSeries,
-        FirstDateInPeriod
-    FROM WeeklyCounts
-    ORDER BY MuscleGroup ASC;
-
-    WITH MonthlyCounts AS (
-    SELECT
-        E.MuscleGroup,
-        EXTRACT(YEAR FROM EL.date) AS Year,
-        EXTRACT(MONTH FROM EL.date) AS Month,
-        COUNT(S.SerieId) AS TotalSeries,
-        MIN(EL.date) AS FirstDateInPeriod
-    FROM ExerciseLogs EL
-    INNER JOIN Series S ON EL.ExerciseLogId = s.ExerciseLogId
-    INNER JOIN Exercises E ON EL.ExerciseId = e.ExerciseId
-    WHERE EL.UserId = @UserId
-    GROUP BY E.MuscleGroup, EXTRACT(YEAR FROM EL.date), EXTRACT(MONTH FROM EL.date)
-    )
-    SELECT
-        MuscleGroup,
-        Year,
-        Month,
-        TotalSeries,
-        FirstDateInPeriod
-    FROM
-        MonthlyCounts
-    ORDER BY MuscleGroup ASC;
-
-    WITH YearlyCounts AS (
-    SELECT
-        E.MuscleGroup,
-        EXTRACT(YEAR FROM el.date) AS Year,
+    WITH MuscleGroups AS (
+      SELECT DISTINCT MuscleGroup FROM Exercises
+    ),
+    MuscleGroupsPerYearAndWeek AS (
+      SELECT 
+        MG.MuscleGroup,
+        EXTRACT(ISOYEAR FROM EL.Date) AS Year,
+        EXTRACT(WEEK FROM EL.Date) AS Week,
         COUNT(S.SerieId) AS TotalSeries,
         MIN(EL.Date) AS FirstDateInPeriod
-    FROM ExerciseLogs EL
-    INNER JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
-    INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
-    WHERE EL.UserId = @UserId
-    GROUP BY E.MuscleGroup, EXTRACT(YEAR FROM EL.Date)
+      FROM MuscleGroups MG
+      CROSS JOIN ExerciseLogs EL
+      LEFT JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId AND MG.MuscleGroup = E.MuscleGroup
+      WHERE UserId = @UserId
+      GROUP BY MG.MuscleGroup, EXTRACT(ISOYEAR FROM EL.Date), EXTRACT(WEEK FROM EL.Date)
     )
-    SELECT
-        MuscleGroup,
-        Year,
-        TotalSeries,
-        FirstDateInPeriod
-    FROM YearlyCounts
-    ORDER BY MuscleGroup ASC;
+    SELECT 
+      MYW.MuscleGroup,
+      MYW.Year,
+      MYW.Week,
+      MYW.TotalSeries,
+      CAST(
+        CASE 
+          WHEN G.TargetValue IS NULL
+          THEN 
+            CASE
+              WHEN MYW.MuscleGroup = 'biceps' THEN 6
+              WHEN MYW.MuscleGroup = 'triceps' THEN 6
+              WHEN MYW.MuscleGroup = 'calves' THEN 6
+              WHEN MYW.MuscleGroup = 'shoulders' THEN 6
+              WHEN MYW.MuscleGroup = 'back' THEN 9
+              WHEN MYW.MuscleGroup = 'legs' THEN 9
+              WHEN MYW.MuscleGroup = 'chest' THEN 9
+              WHEN MYW.MuscleGroup = 'forearms' THEN 3
+              WHEN MYW.MuscleGroup = 'glutes' THEN 3
+              ELSE 3
+            END
+        ELSE G.TargetValue
+        END AS INT
+      ) AS TargetValue
+    FROM MuscleGroupsPerYearAndWeek MYW
+    LEFT JOIN Goals G ON MYW.MuscleGroup = G.MuscleGroup 
+      AND G.UserId = @UserId
+      AND G.CreatedAtUtc = (SELECT MAX(G2.CreatedAtUtc)
+                            FROM Goals G2
+                            WHERE G2.CreatedAtUtc <= MYW.FirstDateInPeriod
+                            AND G2.MuscleGroup = MYW.MuscleGroup
+                            AND G2.UserId = @UserId)
+    ORDER BY MYW.Year DESC, MYW.Week DESC, MYW.MuscleGroup ASC;
+
+    WITH MuscleGroups AS (
+      SELECT DISTINCT MuscleGroup FROM Exercises
+    ),
+    MuscleGroupsPerYearAndMonth AS (
+      SELECT 
+        MG.MuscleGroup,
+        EXTRACT(YEAR FROM EL.Date) AS Year,
+        EXTRACT(MONTH FROM EL.Date) AS Month,
+        COUNT(S.SerieId) AS TotalSeries,
+        MIN(EL.Date) AS FirstDateInPeriod
+      FROM MuscleGroups MG
+      CROSS JOIN ExerciseLogs EL
+      LEFT JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId AND MG.MuscleGroup = E.MuscleGroup
+      WHERE UserId = @UserId
+      GROUP BY MG.MuscleGroup, EXTRACT(YEAR FROM EL.Date), EXTRACT(MONTH FROM EL.Date)
+    )
+    SELECT 
+      MYM.MuscleGroup,
+      MYM.Year,
+      MYM.Month,
+      MYM.TotalSeries,
+      CAST(
+        CASE 
+          WHEN G.TargetValue IS NULL
+          THEN 
+            CASE
+              WHEN MYM.MuscleGroup = 'biceps' THEN 6 * 4
+              WHEN MYM.MuscleGroup = 'triceps' THEN 6 * 4
+              WHEN MYM.MuscleGroup = 'calves' THEN 6 * 4
+              WHEN MYM.MuscleGroup = 'shoulders' THEN 6 * 4
+              WHEN MYM.MuscleGroup = 'back' THEN 9 * 4
+              WHEN MYM.MuscleGroup = 'legs' THEN 9 * 4
+              WHEN MYM.MuscleGroup = 'chest' THEN 9 * 4
+              WHEN MYM.MuscleGroup = 'forearms' THEN 3 * 4
+              WHEN MYM.MuscleGroup = 'glutes' THEN 3 * 4
+              ELSE 3 * 4
+            END
+          ELSE G.TargetValue * 4
+          END
+      AS INT) AS TargetValue
+    FROM MuscleGroupsPerYearAndMonth MYM
+    LEFT JOIN Goals G ON MYM.MuscleGroup = G.MuscleGroup 
+      AND G.UserId = @UserId
+      AND G.CreatedAtUtc = (SELECT MAX(G2.CreatedAtUtc)
+                            FROM Goals G2
+                            WHERE G2.CreatedAtUtc <= MYM.FirstDateInPeriod
+                            AND G2.MuscleGroup = MYM.MuscleGroup
+                            AND G2.UserId = @UserId)
+    ORDER BY MYM.Year DESC, MYM.Month DESC, MYM.MuscleGroup ASC;
+
+    WITH MuscleGroups AS (
+      SELECT DISTINCT MuscleGroup FROM Exercises
+    ),
+    MuscleGroupsPerYear AS (
+      SELECT 
+        MG.MuscleGroup,
+        EXTRACT(YEAR FROM EL.Date) AS Year,
+        COUNT(S.SerieId) AS TotalSeries,
+        MIN(EL.Date) AS FirstDateInPeriod
+      FROM MuscleGroups MG
+      CROSS JOIN ExerciseLogs EL
+      LEFT JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId AND MG.MuscleGroup = E.MuscleGroup
+      WHERE UserId = @UserId
+      GROUP BY MG.MuscleGroup, EXTRACT(YEAR FROM EL.Date)
+    )
+    SELECT 
+      MY.MuscleGroup,
+      MY.Year,
+      MY.TotalSeries,
+      CAST(
+      CASE 
+        WHEN G.TargetValue IS NULL
+        THEN 
+        CASE
+          WHEN MY.MuscleGroup = 'biceps' THEN 6 * 52
+          WHEN MY.MuscleGroup = 'triceps' THEN 6 * 52
+          WHEN MY.MuscleGroup = 'calves' THEN 6 * 52
+          WHEN MY.MuscleGroup = 'shoulders' THEN 6 * 52
+          WHEN MY.MuscleGroup = 'back' THEN 9 * 52
+          WHEN MY.MuscleGroup = 'legs' THEN 9 * 52
+          WHEN MY.MuscleGroup = 'chest' THEN 9 * 52
+          WHEN MY.MuscleGroup = 'forearms' THEN 3 * 52
+          WHEN MY.MuscleGroup = 'glutes' THEN 3 * 52
+          ELSE 3 * 52
+        END
+        ELSE G.TargetValue * 52
+        END
+      AS INT) AS TargetValue
+    FROM MuscleGroupsPerYear MY
+    LEFT JOIN Goals G ON MY.MuscleGroup = G.MuscleGroup 
+      AND G.UserId = @UserId
+      AND G.CreatedAtUtc = (SELECT MAX(G2.CreatedAtUtc)
+                FROM Goals G2
+                WHERE G2.CreatedAtUtc <= MY.FirstDateInPeriod
+                AND G2.MuscleGroup = MY.MuscleGroup
+                AND G2.UserId = @UserId)
+    ORDER BY MY.Year DESC, MY.MuscleGroup ASC;
     """;
 
     using var values = await connection.QueryMultipleAsync(_schema.AddSchemaToQuery(query), new { UserId = userId });

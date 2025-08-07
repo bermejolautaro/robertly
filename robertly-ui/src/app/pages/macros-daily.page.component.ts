@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FoodLogsApiService } from '@services/food-logs-api.service';
+import { GoalsApiService } from '@services/goals-api.service';
 import { ProgressBarComponent } from '@components/progress-bar.component';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 import { PaginatorComponent } from '@components/paginator.component';
@@ -14,12 +15,12 @@ import { PaginatorComponent } from '@components/paginator.component';
         <div>{{ macro.date | parseToDate }}</div>
         <app-progress-bar
           [current]="macro.calories"
-          [goal]="2300"
+          [goal]="macro.caloriesGoal ?? 2000"
           [label]="'Calories'"
         ></app-progress-bar>
         <app-progress-bar
           [current]="macro.protein"
-          [goal]="130"
+          [goal]="macro.proteinGoal ?? 100"
           [label]="'Protein'"
         ></app-progress-bar>
       </div>
@@ -45,6 +46,7 @@ import { PaginatorComponent } from '@components/paginator.component';
 })
 export class SeriesPerMusclePageComponent {
   private readonly foodLogsApiService = inject(FoodLogsApiService);
+  private readonly goalsApiService = inject(GoalsApiService);
 
   public readonly currentPage = signal<number>(0);
 
@@ -56,6 +58,6 @@ export class SeriesPerMusclePageComponent {
     effect(() => {
       this.currentPage();
       this.macros.reload();
-    })
+    });
   }
 }
