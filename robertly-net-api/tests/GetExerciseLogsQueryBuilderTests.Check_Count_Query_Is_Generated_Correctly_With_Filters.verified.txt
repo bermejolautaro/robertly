@@ -1,0 +1,19 @@
+﻿Query:
+
+SELECT COUNT(DISTINCT EL.ExerciseLogId)
+FROM ExerciseLogs EL
+INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+INNER JOIN Users U ON EL.UserId = U.UserId
+LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+WHERE EL.Date IN (@Date_0, @Date_1)
+AND U.UserId IN (@UserId_2, @UserId_3, @UserId_4)
+AND S.WeightInKg = @WeightInKg_5;
+
+Parameters:
+
+Date_0 = 26/8/2025 00:00:00
+Date_1 = 20/10/1997 00:00:00
+UserId_2 = 1
+UserId_3 = 2
+UserId_4 = 3
+WeightInKg_5 = 45

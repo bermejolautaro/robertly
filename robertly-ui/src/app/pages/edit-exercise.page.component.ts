@@ -1,6 +1,6 @@
 import { TitleCasePipe, Location } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal, effect, input, numberAttribute } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -29,7 +29,7 @@ export class EditExercisePageComponent {
 
   public readonly exerciseApiService = inject(ExerciseApiService);
 
-  public readonly exerciseIdFromRoute = input<number | undefined>(undefined, { alias: 'id' });
+  public readonly exerciseIdFromRoute = input(null, { alias: 'id', transform: numberAttribute });
 
   private readonly url = toSignal(this.route.url, { initialValue: [] });
   public readonly mode = computed(() => {

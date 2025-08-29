@@ -1,0 +1,60 @@
+﻿Query:
+
+SELECT DISTINCT
+   EL.ExerciseLogId
+  ,EL.UserId AS ExerciseLogUserId
+  ,EL.ExerciseId AS ExerciseLogExerciseId
+  ,EL.Date AS ExerciseLogDate
+  ,EL.CreatedByUserId
+  ,EL.CreatedAtUtc
+  ,EL.LastUpdatedByUserId
+  ,EL.LastUpdatedAtUtc
+  ,S2.TotalReps
+  ,S2.AverageReps
+  ,S2.Tonnage
+  ,S2.AverageBrzycki
+  ,S2.AverageEpley
+  ,S2.AverageLander
+  ,S2.AverageLombardi
+  ,S2.AverageMayhew
+  ,S2.AverageOConner
+  ,S2.AverageWathan
+  ,S2.MaxReps
+  ,S2.MinReps
+  ,E.ExerciseId
+  ,E.Name
+  ,E.MuscleGroup
+  ,E.Type
+  ,U.UserId
+  ,U.UserFirebaseUuid
+  ,U.Email
+  ,U.Name
+FROM ExerciseLogs EL
+INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+INNER JOIN Users U ON EL.UserId = U.UserId
+LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+LEFT JOIN (
+  SELECT 
+     A.ExerciseLogId
+    ,MAX(A.Reps)                                                        AS MaxReps
+    ,MIN(A.Reps)                                                        AS MinReps
+    ,SUM(A.Reps)                                                        AS TotalReps
+    ,ROUND(AVG(A.Reps), 0)                                              AS AverageReps
+    ,SUM(A.Reps * A.WeightInKg)                                         AS Tonnage
+    ,ROUND(AVG(A.WeightInKg * (36.0 / (37.0 - A.Reps))), 2)             AS AverageBrzycki
+    ,AVG(A.WeightInKg * (1 + 0.0333 * A.Reps))                          AS AverageEpley
+    ,AVG((100 * A.WeightInKg) / (101.3 - 2.67123 * A.Reps))             AS AverageLander
+    ,AVG(A.WeightInKg * POWER(ABS(A.Reps), 0.1))                        AS AverageLombardi
+    ,AVG((100 * A.WeightInKg) / (52.2 + (41.9 * EXP(-0.055 * A.Reps)))) AS AverageMayhew
+    ,AVG(A.WeightInKg * (1 + 0.025 * A.Reps))                           AS AverageOConner
+    ,AVG((100 * A.WeightInKg) / (48.8 + (53.8 * EXP(-0.075 * A.Reps)))) AS AverageWathan
+    ,STRING_AGG(CAST(A.Reps AS VARCHAR), '-')                           AS RepsString
+    ,STRING_AGG(CAST(A.WeightInKg AS VARCHAR), '-')                     AS WeightsString
+  FROM Series A
+  GROUP BY A.ExerciseLogId
+) S2 ON EL.ExerciseLogId = S2.ExerciseLogId
+ORDER BY EL.Date DESC, EL.ExerciseLogId DESC
+OFFSET 0 LIMIT 10;
+
+Parameters:
+

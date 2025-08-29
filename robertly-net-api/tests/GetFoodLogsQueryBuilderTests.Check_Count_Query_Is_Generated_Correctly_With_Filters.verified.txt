@@ -1,0 +1,18 @@
+﻿Query:
+
+SELECT COUNT(DISTINCT FL.FoodLogId)
+FROM FoodLogs FL
+INNER JOIN Foods F ON FL.FoodId = F.FoodId
+INNER JOIN Users U ON FL.UserId = U.UserId
+WHERE FL.Date IN (@Date_0, @Date_1)
+AND FL.FoodlogId = @FoodLogId_2
+AND U.UserId IN (@UserId_3, @UserId_4, @UserId_5);
+
+Parameters:
+
+Date_0 = 26/8/2025 00:00:00
+Date_1 = 20/10/1997 00:00:00
+FoodLogId_2 = 5
+UserId_3 = 1
+UserId_4 = 2
+UserId_5 = 3

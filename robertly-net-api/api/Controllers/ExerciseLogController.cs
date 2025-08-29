@@ -56,7 +56,7 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpGet("latest-workout")]
-  public async Task<Results<Ok<PaginatedList<ExerciseLogDto>>, UnauthorizedHttpResult>> GetCurrentAndPreviousWorkoutByUser()
+  public async Task<Results<Ok<PaginatedList<ExerciseLog>>, UnauthorizedHttpResult>> GetCurrentAndPreviousWorkoutByUser()
   {
     var user = await _userHelper.GetUser(Request);
 
@@ -67,21 +67,20 @@ public class ExerciseLogController : ControllerBase
 
     var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId.Value);
 
-    GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
-    {
-      return queryBuilder
-        .AndUserIds([user.UserId.Value])
-        .AndDate(date.HasValue ? [DateTime.Now.Date, date.Value.Date] : [DateTime.Now.Date]);
-    }
+    List<DateTime> dates = date.HasValue
+      ? [DateTime.Now.Date, date.Value.Date]
+      : [DateTime.Now.Date];
+
+    var queryBuilder = new GetExerciseLogsQueryBuilder()
+      .AndUserIds([user.UserId.Value])
+      .AndDate(dates);
 
     var (exerciseLogs, totalCount) = await _exerciseLogRepository.GetExerciseLogsAsync(
         0,
         1000,
-        queryBuilderFunc);
+        queryBuilder);
 
-    var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
-
-    return TypedResults.Ok(new PaginatedList<ExerciseLogDto>() { Data = exerciseLogsDto });
+    return TypedResults.Ok(new PaginatedList<ExerciseLog>() { Data = exerciseLogs });
   }
 
   [HttpGet("series-per-muscle")]
@@ -115,7 +114,7 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpGet("recently-updated")]
-  public async Task<Results<Ok<PaginatedList<ExerciseLogDto>>, UnauthorizedHttpResult>> GetRecentlyUpdated()
+  public async Task<Results<Ok<PaginatedList<ExerciseLog>>, UnauthorizedHttpResult>> GetRecentlyUpdated()
   {
     var user = await _userHelper.GetUser(Request);
 
@@ -126,25 +125,20 @@ public class ExerciseLogController : ControllerBase
 
     var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId.Value);
 
-    GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
-    {
-      return queryBuilder
-        .AndLastUpdatedByUserId([user!.UserId!.Value])
-        .OrderByLastUpdatedAtUtc(Direction.Desc);
-    }
+    var queryBuilder = new GetExerciseLogsQueryBuilder()
+      .AndLastUpdatedByUserId([user!.UserId!.Value])
+      .OrderByLastUpdatedAtUtc(Direction.Desc);
 
     var (exerciseLogs, totalCount) = await _exerciseLogRepository.GetExerciseLogsAsync(
         0,
         10,
-        queryBuilderFunc);
+        queryBuilder);
 
-    var exerciseLogsDto = MapToExerciseLogDto(exerciseLogs);
-
-    return TypedResults.Ok(new PaginatedList<ExerciseLogDto>() { Data = exerciseLogsDto });
+    return TypedResults.Ok(new PaginatedList<ExerciseLog>() { Data = exerciseLogs });
   }
 
   [HttpGet]
-  public async Task<Results<Ok<PaginatedList<ExerciseLogDto>>, UnauthorizedHttpResult>> GetExerciseLogs(
+  public async Task<Results<Ok<PaginatedList<ExerciseLog>>, UnauthorizedHttpResult>> GetExerciseLogs(
       [FromQuery] PaginationRequest pagination,
       [FromQuery] int? userId,
       [FromQuery] string? exerciseType = null,
@@ -159,55 +153,32 @@ public class ExerciseLogController : ControllerBase
       return TypedResults.Unauthorized();
     }
 
-    GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
-    {
-      if (userId is null)
-      {
-        var assignedUsersIds = user.AssignedUsers
-          .Select(x => x.UserId ?? throw new ArgumentException("Assigned UserIds should never be null"));
+    var queryBuilder = new GetExerciseLogsQueryBuilder();
 
-        queryBuilder = queryBuilder.AndUserIds(user.GetAllowedUserIds().ToList());
-      }
-      else
-      {
-        queryBuilder = queryBuilder.AndUserIds([userId.Value]);
-      }
+    queryBuilder = userId is null
+      ? queryBuilder.AndUserIds(user.GetAllowedUserIds().ToList()) 
+      : queryBuilder.AndUserIds([userId.Value]);
 
-      if (exerciseId is not null)
-      {
-        queryBuilder = queryBuilder.AndExerciseId(exerciseId.Value);
-      }
-
-      if (exerciseType is not null)
-      {
-        queryBuilder = queryBuilder.AndExerciseType(exerciseType);
-      }
-
-      if (weightInKg is not null)
-      {
-        queryBuilder = queryBuilder.AndWeightInKg(weightInKg.Value);
-      }
-
-      return queryBuilder;
-    }
+    queryBuilder = queryBuilder
+      .AndExerciseId(exerciseId)
+      .AndExerciseType(exerciseType)
+      .AndWeightInKg(weightInKg);
 
     var (exerciseLogs, totalCount) = await _exerciseLogRepository.GetExerciseLogsAsync(
         pagination.Page ?? 0,
         pagination.Count ?? 1000,
-        queryBuilderFunc
+        queryBuilder
     );
 
-    var exerciseLogsDtos = MapToExerciseLogDto(exerciseLogs);
-
-    return TypedResults.Ok(new PaginatedList<ExerciseLogDto>()
+    return TypedResults.Ok(new PaginatedList<ExerciseLog>()
     {
-      Data = exerciseLogsDtos,
+      Data = exerciseLogs,
       PageCount = totalCount / (pagination.Count ?? 1)
     });
   }
 
   [HttpGet("{id}")]
-  public async Task<Results<Ok<ExerciseLogDto>, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> GetExerciseLogById([FromRoute] int id)
+  public async Task<Results<Ok<ExerciseLog>, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> GetExerciseLogById([FromRoute] int id)
   {
     var user = await _userHelper.GetUser(Request);
 
@@ -230,7 +201,7 @@ public class ExerciseLogController : ControllerBase
       return TypedResults.Forbid();
     }
 
-    return TypedResults.Ok(MapToExerciseLogDto(logDb));
+    return TypedResults.Ok(logDb);
   }
 
   [HttpPost]
@@ -421,48 +392,5 @@ public class ExerciseLogController : ControllerBase
     await _exerciseLogRepository.DeleteExerciseLogAsync(id);
 
     return TypedResults.Ok();
-  }
-
-  private static IEnumerable<ExerciseLogDto> MapToExerciseLogDto(IEnumerable<Models.ExerciseLog> exerciseLogs)
-  {
-    return exerciseLogs.Select(MapToExerciseLogDto);
-  }
-
-  private static ExerciseLogDto MapToExerciseLogDto(Models.ExerciseLog log)
-  {
-    static int? getTotalReps(Models.ExerciseLog log)
-    {
-      return log.Series!.All(x => x.WeightInKg == log.Series!.FirstOrDefault()?.WeightInKg)
-        ? log.Series!.Sum(x => x.Reps)
-        : null;
-    }
-
-    if (log.ExerciseLogId is null)
-    {
-      throw new ArgumentException("Impossible state");
-    }
-
-    var seriesCount = log.Series!.Count();
-
-    return new ExerciseLogDto()
-    {
-      Id = log.ExerciseLogId!.Value,
-      User = log.User!,
-      Exercise = log.Exercise!,
-      Date = log.ExerciseLogDate,
-      Series = log.Series!,
-      Highlighted = log.Series!.All(x => x.WeightInKg == log.Series!.FirstOrDefault()?.WeightInKg)
-        ? log.Series!.All(x => x.Reps >= 12)
-          ? "green"
-          : log.Series!.All(x => x.Reps >= 8)
-            ? "yellow"
-            : null
-        : null,
-      TotalReps = getTotalReps(log),
-      Tonnage = log.Series!.Aggregate(0, (acc, curr) => acc + (curr?.Reps ?? 0) * (int)(curr?.WeightInKg ?? 0)),
-      Average = getTotalReps(log) is not null && seriesCount != 0 ? getTotalReps(log) / seriesCount : null,
-      BrzyckiAverage = seriesCount != 0 ? log.Series!.Sum(x => x.Brzycki) / seriesCount : 0,
-      RecentLogs = MapToExerciseLogDto(log.RecentLogs ?? [])
-    };
   }
 }

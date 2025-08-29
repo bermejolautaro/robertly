@@ -174,17 +174,46 @@
         @if (original) {
           <div class="card mb-3">
             <div class="card-body">
-              <div class="card-title">Possible 1RM (Brzycky Formula)</div>
-              @for (serie of original.series; track $index) {
-                <span class="serie-label">Serie {{ $index + 1 }}</span>
-                <ul class="list-group list-group-horizontal pb-1">
-                  <li class="list-group-item w-100">{{ serie.brzycki | number: '1.2-2' }}kg</li>
-                </ul>
-              }
-              <span class="serie-label">Average</span>
-              <ul class="list-group list-group-horizontal pb-1">
-                <li class="list-group-item w-100">{{ original.brzyckiAverage | number: '1.2-2' }}kg</li>
-              </ul>
+              <div class="card-title">Stats</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr">
+                <span class="serie-label">Total Reps</span>
+                <span class="serie-label">{{ original.totalReps }} reps</span>
+                <span class="serie-label">Average Reps</span>
+                <span class="serie-label">{{ original.averageReps }} reps</span>
+                <span class="serie-label">Tonnage</span>
+                <span class="serie-label">{{ original.tonnage }}kg</span>
+              </div>
+            </div>
+          </div>
+        }
+
+        @if (original) {
+          <div class="card mb-3">
+            <div class="card-body">
+              <div class="card-title">Possible 1RM (Multiple Formulas)</div>
+              <div style="display: grid; grid-template-columns: repeat(6, 1fr)">
+                <span class="serie-label"></span>
+                <span class="serie-label pb-2">Brzycki</span>
+                <span class="serie-label pb-2">Epley</span>
+                <span class="serie-label pb-2">Lander</span>
+                <span class="serie-label pb-2">Lombardi</span>
+                <span class="serie-label pb-2">Mayhew</span>
+
+                @for (serie of original.series; track $index) {
+                  <span class="serie-label">Serie {{ $index + 1 }}</span>
+                  <span class="serie-label">{{ serie.brzycki | number: '1.2-2' }}kg</span>
+                  <span class="serie-label">{{ serie.brzycki | number: '1.2-2' }}kg</span>
+                  <span class="serie-label">{{ serie.brzycki | number: '1.2-2' }}kg</span>
+                  <span class="serie-label">{{ serie.brzycki | number: '1.2-2' }}kg</span>
+                  <span class="serie-label">{{ serie.brzycki | number: '1.2-2' }}kg</span>
+                }
+                <span class="serie-label pt-2">Average</span>
+                <span class="serie-label pt-2">{{ original.averageBrzycki | number: '1.2-2' }}kg</span>
+                <span class="serie-label pt-2">{{ original.averageEpley | number: '1.2-2' }}kg</span>
+                <span class="serie-label pt-2">{{ original.averageLander | number: '1.2-2' }}kg</span>
+                <span class="serie-label pt-2">{{ original.averageLombardi | number: '1.2-2' }}kg</span>
+                <span class="serie-label pt-2">{{ original.averageMayhew | number: '1.2-2' }}kg</span>
+              </div>
             </div>
           </div>
         }

@@ -1,7 +1,7 @@
 import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Router } from '@angular/router';
-import { ExerciseLogDto } from '@models/exercise-log.model';
+import { ExerciseLog } from '@models/exercise-log.model';
 import { PadStartPipe } from '@pipes/pad-start.pipe';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 import { Paths } from 'src/main';
@@ -19,13 +19,13 @@ import { Paths } from 'src/main';
 })
 export class ExerciseLogComponent {
   private readonly router = inject(Router);
-  public readonly exerciseLog = input<ExerciseLogDto | null>();
+  public readonly exerciseLog = input<ExerciseLog | null>();
 
   public navigateToEditLog(): void {
     const exerciseLog = this.exerciseLog();
 
     if (exerciseLog) {
-      this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLog.id]);
+      this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLog.exerciseLogId]);
     }
   }
 }

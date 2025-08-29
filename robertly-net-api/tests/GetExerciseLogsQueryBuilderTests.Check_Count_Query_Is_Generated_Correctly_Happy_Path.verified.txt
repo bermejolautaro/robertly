@@ -1,0 +1,10 @@
+﻿Query:
+
+SELECT COUNT(DISTINCT EL.ExerciseLogId)
+FROM ExerciseLogs EL
+INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
+INNER JOIN Users U ON EL.UserId = U.UserId
+LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId;
+
+Parameters:
+

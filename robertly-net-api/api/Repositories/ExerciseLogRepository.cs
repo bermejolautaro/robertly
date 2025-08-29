@@ -23,7 +23,11 @@ public class ExerciseLogRepository
   private readonly ConnectionHelper _connection;
   private readonly SchemaHelper _schema;
 
-  public ExerciseLogRepository(ConnectionHelper connection, SchemaHelper schema) => (_connection, _schema) = (connection, schema);
+  public ExerciseLogRepository(ConnectionHelper connection, SchemaHelper schema)
+  {
+    _connection = connection;
+    _schema = schema;
+  }
 
   public async Task<Models.SeriesPerMuscle> GetSeriesPerMuscle(int userId)
   {
@@ -175,10 +179,10 @@ public class ExerciseLogRepository
     LEFT JOIN Goals G ON MY.MuscleGroup = G.MuscleGroup 
       AND G.UserId = @UserId
       AND G.CreatedAtUtc = (SELECT MAX(G2.CreatedAtUtc)
-                FROM Goals G2
-                WHERE G2.CreatedAtUtc <= MY.FirstDateInPeriod
-                AND G2.MuscleGroup = MY.MuscleGroup
-                AND G2.UserId = @UserId)
+                            FROM Goals G2
+                            WHERE G2.CreatedAtUtc <= MY.FirstDateInPeriod
+                            AND G2.MuscleGroup = MY.MuscleGroup
+                            AND G2.UserId = @UserId)
     ORDER BY MY.Year DESC, MY.MuscleGroup ASC;
     """;
 
@@ -192,7 +196,7 @@ public class ExerciseLogRepository
     };
   }
 
-  public async Task<Models.DaysTrained> GetDaysTrained(int userId)
+  public async Task<Models.DaysTrained?> GetDaysTrained(int userId)
   {
     using var connection = _connection.Create();
 
@@ -212,36 +216,27 @@ public class ExerciseLogRepository
     var endOfWeek = startOfWeek.AddDays(6);
 
     var query = $"""
-    -- DaysTrainedThisWeek
-    SELECT COUNT(DISTINCT Date)
-    FROM ExerciseLogs
-    WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
-    AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
-    AND UserId = @UserId;
-
-    -- DaysTrainedThisMonth
-    SELECT COUNT(DISTINCT Date)
-    FROM ExerciseLogs
-    WHERE Date >= '{currentYear}-{currentMonth}-1'
-    AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
-    AND UserId = @UserId;
-
-    -- DaysTrainedThisYear
-    SELECT COUNT(DISTINCT Date)
-    FROM ExerciseLogs
-    WHERE Date >= '{currentYear}-1-1'
-    AND Date <= '{currentYear}-12-31'
-    AND UserId = @UserId;
+    SELECT
+      (SELECT COUNT(DISTINCT Date)
+        FROM ExerciseLogs
+        WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
+        AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
+        AND UserId = @UserId) AS DaysTrainedThisWeek,
+      (SELECT COUNT(DISTINCT Date)
+        FROM ExerciseLogs
+        WHERE Date >= '{currentYear}-{currentMonth}-1'
+        AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
+        AND UserId = @UserId) AS DaysTrainedThisMonth,
+      (SELECT COUNT(DISTINCT Date)
+        FROM ExerciseLogs
+        WHERE Date >= '{currentYear}-1-1'
+        AND Date <= '{currentYear}-12-31'
+        AND UserId = @UserId) AS DaysTrainedThisYear;
     """;
 
-    using var values = await connection.QueryMultipleAsync(_schema.AddSchemaToQuery(query), new { UserId = userId });
-
-    return new Models.DaysTrained
-    {
-      DaysTrainedThisWeek = values.ReadFirst<int>(),
-      DaysTrainedThisMonth = values.ReadFirst<int>(),
-      DaysTrainedThisYear = values.ReadFirst<int>()
-    };
+    return await connection.QueryFirstOrDefaultAsync<Models.DaysTrained>(
+      _schema.AddSchemaToQuery(query),
+      new { UserId = userId });
   }
 
   public async Task<DateTime?> GetMostRecentButNotTodayDateByUserId(int userId)
@@ -257,26 +252,25 @@ public class ExerciseLogRepository
 
   public async Task<Models.ExerciseLog?> GetExerciseLogByIdAsync(int exerciseLogId, bool includeExtraData = false)
   {
-    var (exerciseLogs, totalCount) = await GetExerciseLogsAsync(0, 1000, qb => qb.AndExerciseLogId(exerciseLogId));
+    var queryBuilder = new GetExerciseLogsQueryBuilder()
+      .AndExerciseLogId(exerciseLogId);
+
+    var (exerciseLogs, totalCount) = await GetExerciseLogsAsync(0, 1000, queryBuilder);
     var exerciseLog = exerciseLogs.FirstOrDefault();
 
-    if (exerciseLog is null)
+    if (exerciseLog?.ExerciseLogExerciseId is null || exerciseLog?.User?.UserId is null)
     {
       return null;
     }
 
     if (includeExtraData)
     {
-      GetExerciseLogsQueryBuilder queryBuilderFunc(GetExerciseLogsQueryBuilder queryBuilder)
-      {
-        return queryBuilder
-          .AndExerciseId(exerciseLog!.ExerciseLogExerciseId!.Value)
-          .AndUserIds([exerciseLog.User!.UserId!.Value])
-          .AndDate(exerciseLog.ExerciseLogDate, "<");
-      }
-      ;
+      var queryBuilderExtraData = new GetExerciseLogsQueryBuilder()
+        .AndExerciseId(exerciseLog.ExerciseLogExerciseId.Value)
+        .AndUserIds([exerciseLog.User.UserId.Value])
+        .AndDate(exerciseLog.ExerciseLogDate, "<");
 
-      var (recentLogs, recentLogsTotalCount) = await GetExerciseLogsAsync(0, 5, queryBuilderFunc);
+      var (recentLogs, recentLogsTotalCount) = await GetExerciseLogsAsync(0, 5, queryBuilderExtraData);
       exerciseLog = exerciseLog with { RecentLogs = recentLogs };
     }
 
@@ -318,54 +312,12 @@ public class ExerciseLogRepository
   public async Task<(IEnumerable<Models.ExerciseLog> ExerciseLogs, int TotalCount)> GetExerciseLogsAsync(
       int page,
       int size,
-      Func<GetExerciseLogsQueryBuilder, GetExerciseLogsQueryBuilder> queryBuilderFunc)
+      GetExerciseLogsQueryBuilder queryBuilder)
   {
     using var connection = _connection.Create();
-    var queryBuilder = new GetExerciseLogsQueryBuilder("EL", "U", "E", "S");
-    queryBuilder = queryBuilderFunc(queryBuilder);
 
-    var (filters, queryParams) = queryBuilder.BuildFilters();
-    var orderBy = queryBuilder.BuildOrderBy();
-
-    var query =
-      $"""
-      SELECT DISTINCT
-         EL.ExerciseLogId
-        ,EL.UserId AS ExerciseLogUserId
-        ,EL.ExerciseId AS ExerciseLogExerciseId
-        ,EL.Date AS ExerciseLogDate
-        ,EL.CreatedByUserId
-        ,EL.CreatedAtUtc
-        ,EL.LastUpdatedByUserId
-        ,EL.LastUpdatedAtUtc
-        ,E.ExerciseId
-        ,E.Name
-        ,E.MuscleGroup
-        ,E.Type
-        ,U.UserId
-        ,U.UserFirebaseUuid
-        ,U.Email
-        ,U.Name
-      FROM ExerciseLogs EL
-      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
-      INNER JOIN Users U ON EL.UserId = U.UserId
-      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      WHERE 1 = 1
-      {filters}
-      {orderBy}
-      OFFSET {page * size} LIMIT {size};
-      """;
-
-    var queryCount =
-      $"""
-      SELECT COUNT(DISTINCT EL.ExerciseLogId)
-      FROM ExerciseLogs EL
-      INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
-      INNER JOIN Users U ON EL.UserId = U.UserId
-      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
-      WHERE 1 = 1
-      {filters}
-      """;
+    var (query, queryParams) = queryBuilder.Build(page, size);
+    var (queryCount, queryCountParams) = queryBuilder.BuildCountQuery();
 
     var totalCount = await connection.ExecuteScalarAsync<int>(
       _schema.AddSchemaToQuery(queryCount),

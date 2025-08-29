@@ -182,43 +182,6 @@ export class EditExerciseLogPageComponent {
     loader: () => this.exerciseLogApiService.getRecentlyUpdated(),
   });
 
-  readonly #onOriginalValueErrorNavigateToHome = effect(() => {
-    if (this.originalValue.error()) {
-      this.router.navigate([Paths.HOME]);
-    }
-  });
-
-  readonly #onModeOrOriginalValueChangeTheUpdateForm = effect(() => {
-    const mode = this.mode();
-    const exerciseLog = this.originalValue.value();
-    const { user } = untracked(() => ({ user: this.authService.user.value() }));
-
-    if (mode === 'create') {
-      untracked(() => {
-        const todayDate = this.dayjs().format('YYYY-MM-DD');
-
-        this.formSignal.date.set(todayDate);
-        this.formSignal.user.set(user!);
-      });
-    }
-
-    if (mode === 'edit' && !!exerciseLog) {
-      this.formSignal.exercise.set(exerciseLog.exercise);
-      this.formSignal.date.set(this.dayjsService.parseDate(exerciseLog.date).format('YYYY-MM-DD'));
-      this.formSignal.user.set(exerciseLog.user);
-      this.formSignal.series.update(x => {
-        for (let i = 0; i < x.length; i++) {
-          x[i]?.set({
-            serieId: exerciseLog.series[i]?.serieId ?? null,
-            reps: signal(exerciseLog.series[i]?.reps?.toString() ?? null),
-            weightInKg: signal(exerciseLog.series[i]?.weightInKg?.toString() ?? null),
-          });
-        }
-        return x;
-      });
-    }
-  });
-
   public readonly hasUnsavedChanges = computed(() => {
     const formValue = this.formValue();
     const mode = this.mode();
@@ -233,6 +196,10 @@ export class EditExerciseLogPageComponent {
 
     const originalValue = this.originalValue.value();
 
+    if (!originalValue?.series || !originalValue?.exercise || !originalValue?.user || !originalValue?.exerciseLogDate) {
+      return false;
+    }
+
     const originalSeries =
       originalValue?.series.map(x => ({
         serieId: x.serieId,
@@ -246,10 +213,60 @@ export class EditExerciseLogPageComponent {
       (mode === 'edit' && !R.isDeepEqual(originalSeries, updatedSeries)) ||
       originalValue?.exercise.exerciseId !== formValue.exercise?.exerciseId ||
       originalValue?.user.userId !== formValue.user.userId ||
-      this.dayjs(originalValue?.date).unix() !== this.dayjs(formValue.date).unix();
+      this.dayjs(originalValue?.exerciseLogDate).unix() !== this.dayjs(formValue.date).unix();
 
     return result;
   });
+
+  public constructor() {
+    this.setup_effect_when_original_value_throws_an_error_then_navigate_to_home();
+    this.setup_effect_when_mode_or_original_value_changes_then_update_form();
+  }
+
+  private setup_effect_when_mode_or_original_value_changes_then_update_form() {
+    effect(() => {
+      const mode = this.mode();
+      const exerciseLog = this.originalValue.value();
+      const { user } = untracked(() => ({ user: this.authService.user.value() }));
+
+      if (mode === 'create') {
+        untracked(() => {
+          const todayDate = this.dayjs().format('YYYY-MM-DD');
+
+          this.formSignal.date.set(todayDate);
+          this.formSignal.user.set(user!);
+        });
+      }
+
+      if (mode === 'edit' && !!exerciseLog?.exercise && !!exerciseLog.exerciseLogDate && !!exerciseLog.user) {
+        this.formSignal.exercise.set(exerciseLog.exercise);
+        this.formSignal.date.set(this.dayjsService.parseDate(exerciseLog.exerciseLogDate).format('YYYY-MM-DD'));
+        this.formSignal.user.set(exerciseLog.user);
+        this.formSignal.series.update(x => {
+          if (!exerciseLog.series) {
+            return x;
+          }
+
+          for (let i = 0; i < x.length; i++) {
+            x[i]?.set({
+              serieId: exerciseLog.series[i]?.serieId ?? null,
+              reps: signal(exerciseLog.series[i]?.reps?.toString() ?? null),
+              weightInKg: signal(exerciseLog.series[i]?.weightInKg?.toString() ?? null),
+            });
+          }
+          return x;
+        });
+      }
+    });
+  }
+
+  private setup_effect_when_original_value_throws_an_error_then_navigate_to_home() {
+    effect(() => {
+      if (this.originalValue.error()) {
+        this.router.navigate([Paths.HOME]);
+      }
+    });
+  }
 
   public openDeleteModal(): void {
     const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
@@ -265,9 +282,9 @@ export class EditExerciseLogPageComponent {
     modalRef.closed.pipe(take(1)).subscribe(async () => {
       const log = this.originalValue.value();
 
-      if (log) {
+      if (log?.exerciseLogId) {
         try {
-          await lastValueFrom(this.exerciseLogApiService.deleteExerciseLog(log.id));
+          await lastValueFrom(this.exerciseLogApiService.deleteExerciseLog(log.exerciseLogId));
           this.toastService.ok('Log deleted successfully!');
           this.router.navigate([Paths.HOME]);
         } catch (e) {
@@ -316,11 +333,28 @@ export class EditExerciseLogPageComponent {
         const request: CreateExerciseLogRequest = {
           seriesIdsToDelete,
           exerciseLog: {
-            exerciseLogUsername: user?.name,
             exerciseLogUserId: user.userId,
-            exerciseLogExerciseId: exercise?.exerciseId ?? undefined,
+            exerciseLogExerciseId: exercise?.exerciseId ?? null,
             exerciseLogDate: date.format('YYYY-MM-DD'),
             series: seriesToCreate,
+            averageBrzycki: null,
+            averageEpley: null,
+            averageLander: null,
+            averageLombardi: null,
+            averageMayhew: null,
+            averageOConner: null,
+            averageWathan: null,
+            totalReps: null,
+            tonnage: null,
+            averageReps: null,
+            recentLogs: null,
+            createdAtUtc: null,
+            lastUpdatedAtUtc: null,
+            createdByUserId: null,
+            exercise: null,
+            exerciseLogId: null,
+            lastUpdatedByUserId: null,
+            user: null,
           },
         };
 
@@ -372,11 +406,28 @@ export class EditExerciseLogPageComponent {
           seriesIdsToDelete,
           id: this.exerciseLogId()!,
           exerciseLog: {
-            exerciseLogUsername: user?.name,
             exerciseLogUserId: user.userId,
-            exerciseLogExerciseId: exercise?.exerciseId ?? undefined,
+            exerciseLogExerciseId: exercise?.exerciseId ?? null,
             exerciseLogDate: date.format('YYYY-MM-DD'),
             series: seriesToEdit,
+            averageBrzycki: null,
+            totalReps: null,
+            tonnage: null,
+            averageReps: null,
+            recentLogs: null,
+            createdAtUtc: null,
+            lastUpdatedAtUtc: null,
+            createdByUserId: null,
+            exercise: null,
+            exerciseLogId: null,
+            lastUpdatedByUserId: null,
+            user: null,
+            averageEpley: null,
+            averageLander: null,
+            averageLombardi: null,
+            averageMayhew: null,
+            averageOConner: null,
+            averageWathan: null,
           },
         };
 

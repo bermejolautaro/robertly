@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Dapper;
 using robertly.Models;
 
 namespace robertly.Helpers;
@@ -10,9 +9,9 @@ namespace robertly.Helpers;
 public class GetFoodLogsQueryBuilder
 {
   private int _index = 0;
-  private readonly StringBuilder _filters = new();
+  private readonly List<string> _filters = [];
   private readonly Dictionary<string, object> _params = [];
-  private readonly List<string> orderBy = [];
+  private readonly List<string> _orderBy = [];
 
   private readonly string _baseQuery =
     """
@@ -40,10 +39,6 @@ public class GetFoodLogsQueryBuilder
     FROM FoodLogs FL
     INNER JOIN Foods F ON FL.FoodId = F.FoodId
     INNER JOIN Users U ON FL.UserId = U.UserId
-    WHERE 1 = 1
-    %filters%
-    %orderBy%
-    %offset%;
     """;
 
   private readonly string _baseQueryCount =
@@ -52,8 +47,6 @@ public class GetFoodLogsQueryBuilder
     FROM FoodLogs FL
     INNER JOIN Foods F ON FL.FoodId = F.FoodId
     INNER JOIN Users U ON FL.UserId = U.UserId
-    WHERE 1 = 1
-    %filters%;
     """;
 
   public GetFoodLogsQueryBuilder() { }
@@ -61,7 +54,7 @@ public class GetFoodLogsQueryBuilder
   public GetFoodLogsQueryBuilder AndFoodLogId(int foodLogId)
   {
     var param = $"@FoodLogId_{UseIndex()}";
-    _filters.AppendLine($"AND FL.FoodlogId = {param}");
+    _filters.Add($"FL.FoodlogId = {param}");
     _params.Add(param, foodLogId);
 
     return this;
@@ -69,9 +62,14 @@ public class GetFoodLogsQueryBuilder
 
   public GetFoodLogsQueryBuilder AndUserIds(List<int> userIds)
   {
+    if (userIds.IsNullOrEmpty())
+    {
+      return this;
+    }
+
     List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"UserId_{UseIndex()}", x)).ToList();
     var parameters = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
-    _filters.AppendLine($"AND U.UserId IN ({parameters})");
+    _filters.Add($"U.UserId IN ({parameters})");
 
     foreach (var (param, value) in paramsWithValue)
     {
@@ -83,11 +81,16 @@ public class GetFoodLogsQueryBuilder
 
   public GetFoodLogsQueryBuilder AndLastUpdatedByUserId(List<int> userIds)
   {
-    List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"LastUpdatedByUserId_{UseIndex()}", x)).ToList();
-    var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
-    _filters.AppendLine($"AND FL.LastUpdatedByUserId IN ({@params})");
+    if (userIds.IsNullOrEmpty())
+    {
+      return this;
+    }
 
-    foreach (var (param, value) in @paramsWithValue)
+    List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"LastUpdatedByUserId_{UseIndex()}", x)).ToList();
+    var sqlParams = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
+    _filters.Add($"FL.LastUpdatedByUserId IN ({sqlParams})");
+
+    foreach (var (param, value) in paramsWithValue)
     {
       _params.Add(param, value);
     }
@@ -97,11 +100,16 @@ public class GetFoodLogsQueryBuilder
 
   public GetFoodLogsQueryBuilder AndDate(List<DateTime> dates)
   {
-    List<(string Param, DateTime Value)> paramsWithValue = dates.Select(x => ($"Date_{UseIndex()}", x)).ToList();
-    var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
-    _filters.AppendLine($"AND FL.Date IN ({@params})");
+    if (dates.IsNullOrEmpty())
+    {
+      return this;
+    }
 
-    foreach (var (param, value) in @paramsWithValue)
+    List<(string Param, DateTime Value)> paramsWithValue = dates.Select(x => ($"Date_{UseIndex()}", x)).ToList();
+    var sqlParams = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
+    _filters.Add($"FL.Date IN ({sqlParams})");
+
+    foreach (var (param, value) in paramsWithValue)
     {
       _params.Add(param, value);
     }
@@ -112,7 +120,7 @@ public class GetFoodLogsQueryBuilder
   public GetFoodLogsQueryBuilder AndDate(DateTime date, string comparisonOperator = "=")
   {
     var param = $"@Date_{UseIndex()}";
-    _filters.AppendLine($"AND FL.Date {comparisonOperator} {param}");
+    _filters.Add($"FL.Date {comparisonOperator} {param}");
     _params.Add(param, date);
 
     return this;
@@ -120,48 +128,46 @@ public class GetFoodLogsQueryBuilder
 
   public GetFoodLogsQueryBuilder OrderByDate(Direction direction)
   {
-    orderBy.Add($"FL.Date {ParseDirection(direction)}");
+    _orderBy.Add($"FL.Date {ParseDirection(direction)}");
     return this;
   }
 
   public GetFoodLogsQueryBuilder OrderByLastUpdatedAtUtc(Direction direction)
   {
-    orderBy.Add($"FL.LastUpdatedAtUtc {ParseDirection(direction)}");
+    _orderBy.Add($"FL.LastUpdatedAtUtc {ParseDirection(direction)}");
     return this;
   }
 
-  public (string query, DynamicParameters parameters) Build(int page, int count)
+  public (string query, Dictionary<string, object> parameters) Build(int page, int count)
   {
-    var query = _baseQuery
-      .Replace("%filters%", _filters.ToString())
-      .Replace("%orderBy%", BuildOrderBy())
-      .Replace("%offset%", $"OFFSET {page * count} LIMIT {count}")
-      .Split(Environment.NewLine)
-      .Where(x => !String.IsNullOrWhiteSpace(x))
-      .StringJoin(Environment.NewLine);
-
-    return (query, new DynamicParameters(_params));
-  }
-
-  public (string query, DynamicParameters parameters) BuildCountQuery()
-  {
-    var query = _baseQueryCount
-      .Replace("%filters%", _filters.ToString())
-      .Split(Environment.NewLine)
-      .Where(x => !String.IsNullOrWhiteSpace(x))
-      .StringJoin(Environment.NewLine);
-
-    return (query, new DynamicParameters(_params));
-  }
-
-  private string BuildOrderBy()
-  {
-    if (orderBy.Count == 0)
+    var whereClause = _filters.Count switch
     {
-      return $"ORDER BY FL.Date DESC, FL.FoodLogId DESC";
-    }
+      0 => "",
+      1 => $"\nWHERE {_filters[0]}",
+      _ => $"\nWHERE {_filters[0]}\nAND {string.Join("\nAND ", _filters.Skip(1))}"
+    };
 
-    return $"ORDER BY {string.Join(",", orderBy)}";
+    var orderByClause = _orderBy.Count == 0
+      ? $"\nORDER BY FL.Date DESC, FL.FoodLogId DESC"
+      : $"\nORDER BY {string.Join(", ", _orderBy)}";
+
+    var query = $"{_baseQuery}{whereClause}{orderByClause}\nOFFSET {page * count} LIMIT {count};";
+
+    return (query, _params);
+  }
+
+  public (string query, Dictionary<string, object> parameters) BuildCountQuery()
+  {
+    var whereClause = _filters.Count switch
+    {
+      0 => "",
+      1 => $"\nWHERE {_filters[0]}",
+      _ => $"\nWHERE {_filters[0]}\nAND {string.Join("\nAND ", _filters.Skip(1))}"
+    };
+
+    var query = $"{_baseQueryCount}{whereClause};";
+
+    return (query, _params);
   }
 
   private int UseIndex()

@@ -7,9 +7,9 @@
   >
     <div style="display: grid; grid-template-columns: auto auto">
       <div class="d-flex flex-column align-self-center">
-        <div class="title">{{ log.exercise.name | titlecase }}</div>
-        <div class="hint">{{ log.date | parseToDate }}</div>
-        <div class="hint">{{ log.user.name }}</div>
+        <div class="title">{{ log.exercise?.name | titlecase }}</div>
+        <div class="hint">{{ log.exerciseLogDate | parseToDate }}</div>
+        <div class="hint">{{ log.user?.name }}</div>
       </div>
       <div class="series">
         @for (serie of log.series; track $index) {

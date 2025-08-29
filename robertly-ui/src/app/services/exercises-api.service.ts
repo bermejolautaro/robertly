@@ -52,7 +52,7 @@ export class ExerciseApiService {
   });
 
   public async fetchExercises(): Promise<void> {
-    return lastValueFrom(this.getExercises().pipe(switchMap(() => of())));
+    return lastValueFrom(this.getExercises().pipe(switchMap(() => of(undefined))));
   }
 
   public getExercises(): Observable<Exercise[]> {
