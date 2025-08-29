@@ -60,7 +60,7 @@ export class EditFoodLogPageComponent {
   });
 
   public readonly foods = rxResource({
-    loader: () => {
+    stream: () => {
       return this.foodsApiService.getFoods();
     },
     defaultValue: [],
@@ -81,8 +81,8 @@ export class EditFoodLogPageComponent {
   public readonly titleCaseSelector = (x: string | null) => (!!x ? this.titleCasePipe.transform(x) : '');
 
   public originalValue = rxResource({
-    request: this.foodLogIdFromRoute,
-    loader: ({ request: foodLogId }) => {
+    params: this.foodLogIdFromRoute,
+    stream: ({ params: foodLogId }) => {
       return !!foodLogId ? this.foodLogsApiService.getFoodLogById(foodLogId) : of(null);
     },
   });

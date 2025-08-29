@@ -3,13 +3,27 @@
   "compileOnSave": false,
   "compilerOptions": {
     "paths": {
-      "@pages/*": ["src/app/pages/*"],
-      "@helpers/*": ["src/app/helpers/*"],
-      "@services/*": ["src/app/services/*"],
-      "@models/*": ["src/app/models/*"],
-      "@validators/*": ["src/app/validators/*"],
-      "@components/*": ["src/app/components/*"],
-      "@pipes/*": ["src/app/pipes/*"]
+      "@pages/*": [
+        "src/app/pages/*"
+      ],
+      "@helpers/*": [
+        "src/app/helpers/*"
+      ],
+      "@services/*": [
+        "src/app/services/*"
+      ],
+      "@models/*": [
+        "src/app/models/*"
+      ],
+      "@validators/*": [
+        "src/app/validators/*"
+      ],
+      "@components/*": [
+        "src/app/components/*"
+      ],
+      "@pipes/*": [
+        "src/app/pipes/*"
+      ]
     },
     "baseUrl": "./",
     "outDir": "./dist/out-tsc",
@@ -27,7 +41,7 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",

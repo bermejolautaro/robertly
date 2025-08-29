@@ -1,6 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
-
-import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DOCUMENT } from '@angular/core';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { DropdownComponent } from '../components/dropdown.component';
 import { FormControl } from '@angular/forms';

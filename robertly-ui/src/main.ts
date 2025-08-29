@@ -1,10 +1,15 @@
 import { provideServiceWorker } from '@angular/service-worker';
-import { InjectionToken, isDevMode, provideExperimentalZonelessChangeDetection } from '@angular/core';
+import {
+  ErrorHandler,
+  InjectionToken,
+  isDevMode,
+  provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { Routes, provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { JsonPipe, TitleCasePipe } from '@angular/common';
 import { environment } from './environments/environment';
 import { httpErrorResponseInterceptor } from './app/interceptors/httpErrorResponse.interceptor';
@@ -33,7 +38,7 @@ export const Paths = {
   FOODS: 'foods',
   SERIES_PER_MUSCLE: 'series-per-muscle',
   MACROS: 'macros',
-  CONFIGURATION: 'configuration'
+  CONFIGURATION: 'configuration',
 } as const;
 
 const routes = [
@@ -60,14 +65,15 @@ const routes = [
       return [
         {
           path: `${Paths.SERIES_PER_MUSCLE}`,
-          loadComponent: () => import('@pages/series-per-muscle.page.component').then(x => x.SeriesPerMusclePageComponent)
+          loadComponent: () =>
+            import('@pages/series-per-muscle.page.component').then(x => x.SeriesPerMusclePageComponent),
         },
         {
           path: `${Paths.MACROS}`,
-          loadComponent: () => import('@pages/macros-daily.page.component').then(x => x.SeriesPerMusclePageComponent)
-        }
-      ]
-    }
+          loadComponent: () => import('@pages/macros-daily.page.component').then(x => x.SeriesPerMusclePageComponent),
+        },
+      ];
+    },
   } as const,
   {
     path: Paths.SIGN_IN,
@@ -131,7 +137,7 @@ const routes = [
   {
     path: `${Paths.CONFIGURATION}`,
     pathMatch: 'full',
-    loadComponent: () => import('@pages/configuration.page.component').then(x => x.ConfigurationPageComponent)
+    loadComponent: () => import('@pages/configuration.page.component').then(x => x.ConfigurationPageComponent),
   } as const,
   {
     path: '',
@@ -150,6 +156,13 @@ export const API_URL = new InjectionToken<string>('API_URL');
 export const DAY_JS = new InjectionToken<typeof dayjs>('DAY_JS');
 export const AUTH_CHECKS_ENABLED = new InjectionToken<boolean>('AUTH_CHECKS_ENABLED');
 
+export class CustomErrorHandler extends ErrorHandler {
+  public override handleError(error: unknown): void {
+    super.handleError(error);
+    alert(error);
+  }
+}
+
 if (isDevMode()) {
   setLogLevel(LogLevel.VERBOSE);
 }
@@ -158,8 +171,8 @@ bootstrapApplication(AppComponent, {
   providers: [
     TitleCasePipe,
     JsonPipe,
-    provideExperimentalZonelessChangeDetection(),
-    provideAnimationsAsync(),
+    provideBrowserGlobalErrorListeners(),
+    provideZonelessChangeDetection(),
     provideHttpClient(withInterceptors([httpErrorResponseInterceptor])),
     provideRouter(routes, withComponentInputBinding()),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
@@ -188,5 +201,6 @@ bootstrapApplication(AppComponent, {
         return dayjsInstance;
       },
     },
+    { provide: ErrorHandler, useClass: CustomErrorHandler }
   ],
 }).catch((err: unknown) => console.error(err));

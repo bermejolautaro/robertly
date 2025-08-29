@@ -1,11 +1,10 @@
-import { Component, OnInit, TemplateRef, inject, signal } from '@angular/core';
+import { Component, OnInit, TemplateRef, inject, signal, DOCUMENT } from '@angular/core';
 import { NavigationEnd, Router, RouterLinkWithHref, RouterOutlet } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
 import { filter, take } from 'rxjs';
 import { AUTH_CHECKS_ENABLED, Paths } from 'src/main';
 
-import { DOCUMENT } from '@angular/common';
 
 import {
   NgbAlertModule,

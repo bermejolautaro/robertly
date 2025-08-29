@@ -1,5 +1,5 @@
-import { DOCUMENT, SlicePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { SlicePipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal, DOCUMENT } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -45,25 +45,25 @@ export class HomePageComponent implements OnInit {
   );
 
   public readonly exerciseLogStats = rxResource({
-    loader: () => {
+    stream: () => {
       return this.exerciseLogApiService.getDaysTrained();
     },
   });
 
   public readonly recentlyUpdatedLogsResource = rxResource({
-    loader: () => {
+    stream: () => {
       return this.exerciseLogApiService.getRecentlyUpdated();
     },
   });
 
   public readonly latestWorkoutLogsResource = rxResource({
-    loader: () => {
+    stream: () => {
       return this.exerciseLogApiService.getExerciseLogsLatestWorkout();
     },
   });
 
   public readonly macros = rxResource({
-    loader: () => {
+    stream: () => {
       return this.foodLogsApiService.getMacros(Intl.DateTimeFormat().resolvedOptions().timeZone);
     },
   });

@@ -150,7 +150,7 @@ export class SeriesPerMusclePageComponent {
   });
 
   public readonly seriesPerMuscle = rxResource({
-    loader: () => this.exerciseLogApiService.getSeriesPerMuscle(),
+    stream: () => this.exerciseLogApiService.getSeriesPerMuscle(),
   });
 
   public readonly period = signal<'week' | 'month' | 'year'>('week');

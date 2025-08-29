@@ -14,13 +14,13 @@ export class AuthService {
   public readonly userUuid = signal<string | null>(null);
 
   public readonly user = rxResource({
-    request: () => ({ userUuid: this.userUuid(), idToken: this.authApiService.idToken() }),
-    loader: ({ request }) => {
-      if (request.userUuid === null || request.idToken === null) {
+    params: () => ({ userUuid: this.userUuid(), idToken: this.authApiService.idToken() }),
+    stream: ({ params }) => {
+      if (params.userUuid === null || params.idToken === null) {
         return of(null);
       }
 
-      return this.usersService.getUserByFirebaseUuid(request.userUuid).pipe(
+      return this.usersService.getUserByFirebaseUuid(params.userUuid).pipe(
         map(userFromDb => ({
           email: userFromDb.email,
           userId: userFromDb.userId,

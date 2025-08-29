@@ -40,7 +40,7 @@ export class EditFoodPageComponent {
   });
 
   public readonly food = rxResource({
-    loader: () => {
+    stream: () => {
       const foodId = this.foodIdFromRoute();
 
       if (foodId) {

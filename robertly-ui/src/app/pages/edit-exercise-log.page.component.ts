@@ -168,8 +168,8 @@ export class EditExerciseLogPageComponent {
   });
 
   public originalValue = rxResource({
-    request: this.exerciseLogId,
-    loader: ({ request: exerciseLogId }) => {
+    params: this.exerciseLogId,
+    stream: ({ params: exerciseLogId }) => {
       if (!exerciseLogId) {
         return of(null);
       }
@@ -179,7 +179,7 @@ export class EditExerciseLogPageComponent {
   });
 
   public recentlyUpdated = rxResource({
-    loader: () => this.exerciseLogApiService.getRecentlyUpdated(),
+    stream: () => this.exerciseLogApiService.getRecentlyUpdated(),
   });
 
   public readonly hasUnsavedChanges = computed(() => {

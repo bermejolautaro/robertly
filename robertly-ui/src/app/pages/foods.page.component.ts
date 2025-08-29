@@ -42,7 +42,7 @@ export class FoodsPageComponent {
   public readonly foodsApiService = inject(FoodsApiService);
 
   public readonly foods = rxResource({
-    loader: () => this.foodsApiService.getFoods()
+    stream: () => this.foodsApiService.getFoods()
   });
 
   public constructor() {}

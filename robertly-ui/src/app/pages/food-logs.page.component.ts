@@ -22,11 +22,11 @@ export class FoodsPageComponent {
   public readonly currentPage = signal<number>(0);
 
   public readonly foodLogs = rxResource({
-    loader: () => this.foodLogsApiService.getFoodLogs(this.currentPage()),
+    stream: () => this.foodLogsApiService.getFoodLogs(this.currentPage()),
   });
 
   public readonly foods = rxResource({
-    loader: () => this.foodsApiService.getFoods(),
+    stream: () => this.foodsApiService.getFoods(),
   });
 
   public constructor() {

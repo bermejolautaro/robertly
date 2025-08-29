@@ -31,7 +31,7 @@ export class ConfigurationPageComponent {
   public readonly exercises = computed(() => this.exerciseApiService.exercises());
 
   public readonly goalsResource = rxResource({
-    loader: () => this.goalsApiService.getGoals(),
+    stream: () => this.goalsApiService.getGoals(),
   });
 
   public readonly goals = linkedSignal({

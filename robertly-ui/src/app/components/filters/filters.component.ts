@@ -49,7 +49,7 @@ export class FiltersComponent {
   public readonly exercises = signal<Exercise[]>([]);
 
   private readonly filters = rxResource({
-    loader: () => {
+    stream: () => {
       return this.exerciseLogApiService.getFilters(
         this.userControl.value?.userId,
         this.exerciseControl.value?.exerciseId!,

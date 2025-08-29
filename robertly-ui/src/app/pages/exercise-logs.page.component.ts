@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, DOCUMENT } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
@@ -57,8 +56,8 @@ export class ExerciseLogsPageComponent implements OnInit {
   });
 
   public readonly logsResource = rxResource({
-    request: this.filter,
-    loader: ({ request: filter }) => {
+    params: this.filter,
+    stream: ({ params: filter }) => {
       const userId = filter?.userId.at(0);
       const exerciseType = filter?.types.at(0);
       const exerciseId = filter?.exercisesIds.at(0);

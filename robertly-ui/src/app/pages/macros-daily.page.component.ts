@@ -46,12 +46,11 @@ import { PaginatorComponent } from '@components/paginator.component';
 })
 export class SeriesPerMusclePageComponent {
   private readonly foodLogsApiService = inject(FoodLogsApiService);
-  private readonly goalsApiService = inject(GoalsApiService);
 
   public readonly currentPage = signal<number>(0);
 
   public readonly macros = rxResource({
-    loader: () => this.foodLogsApiService.getMacrosDaily(this.currentPage()),
+    stream: () => this.foodLogsApiService.getMacrosDaily(this.currentPage()),
   });
 
   public constructor() {
