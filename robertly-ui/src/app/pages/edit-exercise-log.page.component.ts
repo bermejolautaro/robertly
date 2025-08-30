@@ -309,8 +309,6 @@ export class EditExerciseLogPageComponent {
       throw new Error('User cannot be null');
     }
 
-    navigator.vibrate(100);
-
     if (this.formValid()) {
       this.formEnabled.set(false);
 
