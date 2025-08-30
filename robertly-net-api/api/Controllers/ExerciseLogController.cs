@@ -239,7 +239,7 @@ public class ExerciseLogController : ControllerBase
     {
       UserId = exerciseDoneByUserId,
       ExerciseId = exerciseId,
-      Date = request.ExerciseLog.ExerciseLogDate,
+      Date = request.ExerciseLog.ExerciseLogDate!.Value,
       CreatedByUserId = triggerByUserId,
       CreatedAtUtc = nowUtc,
       LastUpdatedByUserId = triggerByUserId,
@@ -285,7 +285,8 @@ public class ExerciseLogController : ControllerBase
 
     if (request.ExerciseLog?.Series is null ||
         request.ExerciseLog?.ExerciseLogExerciseId is null ||
-        request.ExerciseLog?.ExerciseLogUserId is null)
+        request.ExerciseLog?.ExerciseLogUserId is null ||
+        request.ExerciseLog?.ExerciseLogDate is null)
     {
       return TypedResults.BadRequest();
     }
@@ -312,7 +313,7 @@ public class ExerciseLogController : ControllerBase
     {
       UserId = userId,
       ExerciseId = exerciseId,
-      Date = request.ExerciseLog.ExerciseLogDate,
+      Date = request.ExerciseLog.ExerciseLogDate.Value,
       CreatedByUserId = triggerByUserId,
       LastUpdatedByUserId = triggerByUserId,
       LastUpdatedAtUtc = DateTime.UtcNow

@@ -21,13 +21,13 @@ import { Food } from '@models/food.model';
 import { User } from '@models/user.model';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '@services/auth.service';
-import { parseDate } from '@services/dayjs.service';
 import { FoodLogsApiService } from '@services/food-logs-api.service';
 import { FoodsApiService } from '@services/foods-api.service';
 import { ToastService } from '@services/toast.service';
 import { take, lastValueFrom, of } from 'rxjs';
 import { DAY_JS, Paths } from 'src/main';
 import { OnlyNumbersDirective } from '../directives/only-numbers.directive';
+import { DATE_FORMATS } from '@models/constants';
 
 @Component({
   selector: 'edit-food-log-page',
@@ -122,7 +122,7 @@ export class EditFoodLogPageComponent {
       }
 
       if (mode === 'edit' && !!foodLog) {
-        this.foodLogForm.date.set(parseDate(this.dayjs, foodLog.date).format('YYYY-MM-DD'));
+        this.foodLogForm.date.set(this.dayjs(foodLog.date, [...DATE_FORMATS]).format('YYYY-MM-DD'));
         this.foodLogForm.food.set(foodLog.food);
         this.foodLogForm.user.set(foodLog.user);
         this.foodLogForm.amount.set(foodLog.amount.toString());

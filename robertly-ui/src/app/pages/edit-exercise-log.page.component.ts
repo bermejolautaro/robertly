@@ -17,7 +17,7 @@ import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TypeaheadComponent } from '@components/typeahead.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Paths } from 'src/main';
+import { DAY_JS, Paths } from 'src/main';
 import {
   CreateExerciseLogRequest,
   ExerciseLogApiService,
@@ -25,9 +25,8 @@ import {
 } from '@services/exercise-log-api.service';
 import { ToastService } from '@services/toast.service';
 import { AuthService } from '@services/auth.service';
-import { DayjsService } from '@services/dayjs.service';
 import { ExerciseApiService } from '@services/exercises-api.service';
-import { CREATE_LOG_VALUE_CACHE_KEY } from '@models/constants';
+import { CREATE_LOG_VALUE_CACHE_KEY, DATE_FORMATS } from '@models/constants';
 import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
@@ -67,10 +66,11 @@ export class EditExerciseLogPageComponent {
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
   private readonly titleCasePipe = inject(TitleCasePipe);
-  private readonly dayjsService = inject(DayjsService);
-  private readonly dayjs = this.dayjsService.instance;
+  private readonly dayjs = inject(DAY_JS);
   private readonly route = inject(ActivatedRoute);
   private readonly modalService = inject(NgbModal);
+
+  private readonly randomUuid = crypto.randomUUID();
 
   public readonly isSaveLoading = signal(false);
   public readonly isLoading = linkedSignal(() => this.originalValue.isLoading());
@@ -111,6 +111,7 @@ export class EditExerciseLogPageComponent {
       }),
     ]),
   };
+
   public readonly formValid = computed(() => {
     const formValue = this.formValue();
 
@@ -223,6 +224,14 @@ export class EditExerciseLogPageComponent {
     this.setup_effect_when_mode_or_original_value_changes_then_update_form();
   }
 
+  private setup_effect_when_original_value_throws_an_error_then_navigate_to_home() {
+    effect(() => {
+      if (this.originalValue.error()) {
+        this.router.navigate([Paths.HOME]);
+      }
+    });
+  }
+
   private setup_effect_when_mode_or_original_value_changes_then_update_form() {
     effect(() => {
       const mode = this.mode();
@@ -240,31 +249,25 @@ export class EditExerciseLogPageComponent {
 
       if (mode === 'edit' && !!exerciseLog?.exercise && !!exerciseLog.exerciseLogDate && !!exerciseLog.user) {
         this.formSignal.exercise.set(exerciseLog.exercise);
-        this.formSignal.date.set(this.dayjsService.parseDate(exerciseLog.exerciseLogDate).format('YYYY-MM-DD'));
+        this.formSignal.date.set(this.dayjs(exerciseLog.exerciseLogDate, [...DATE_FORMATS]).format('YYYY-MM-DD'));
         this.formSignal.user.set(exerciseLog.user);
-        this.formSignal.series.update(x => {
+        this.formSignal.series.update(series => {
           if (!exerciseLog.series) {
-            return x;
+            return series;
           }
 
-          for (let i = 0; i < x.length; i++) {
-            x[i]?.set({
+          for (let i = 0; i < series.length; i++) {
+            series[i]?.set({
               serieId: exerciseLog.series[i]?.serieId ?? null,
               reps: signal(exerciseLog.series[i]?.reps?.toString() ?? null),
               weightInKg: signal(exerciseLog.series[i]?.weightInKg?.toString() ?? null),
             });
           }
-          return x;
+          return series;
         });
       }
-    });
-  }
 
-  private setup_effect_when_original_value_throws_an_error_then_navigate_to_home() {
-    effect(() => {
-      if (this.originalValue.error()) {
-        this.router.navigate([Paths.HOME]);
-      }
+      this.isSaveLoading.set(false);
     });
   }
 
@@ -297,15 +300,16 @@ export class EditExerciseLogPageComponent {
 
   public async save(): Promise<void> {
     const mode = this.mode();
-    this.isSaveLoading.set(true);
 
     const user = this.formSignal.user();
     const exercise = this.formSignal.exercise();
-    const date = this.dayjsService.parseDate(this.formSignal.date());
+    const date = this.dayjs(this.formSignal.date(), [...DATE_FORMATS]);
 
     if (!user) {
       throw new Error('User cannot be null');
     }
+
+    navigator.vibrate(100);
 
     if (this.formValid()) {
       this.formEnabled.set(false);
@@ -358,8 +362,17 @@ export class EditExerciseLogPageComponent {
           },
         };
 
+        if (this.offlineQueueService.isOnline()) {
+          this.isSaveLoading.set(true);
+        } else {
+          this.isSaveLoading.set(true);
+          setTimeout(() => {
+            this.isSaveLoading.set(false);
+          }, 1000);
+        }
+
         this.offlineQueueService.enqueue({
-          id: crypto.randomUUID(),
+          id: this.randomUuid,
           method: 'POST',
           endpoint: 'exercise-logs',
           payload: request,
@@ -369,17 +382,13 @@ export class EditExerciseLogPageComponent {
           userUuid: this.authService.userUuid()!,
           onActionDone: e => {
             const exerciseLogId = e as number;
+            this.isSaveLoading.set(false);
             this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, exerciseLogId]);
           },
         });
 
         this.toastService.ok('Log enqueued for creation successfully!');
-
-        try {
-          localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
-        } catch (e) {
-          this.toastService.error(`${e}`);
-        }
+        localStorage.removeItem(CREATE_LOG_VALUE_CACHE_KEY);
       }
 
       if (mode === 'edit') {
@@ -431,8 +440,17 @@ export class EditExerciseLogPageComponent {
           },
         };
 
+        if (this.offlineQueueService.isOnline()) {
+          this.isSaveLoading.set(true);
+        } else {
+          this.isSaveLoading.set(true);
+          setTimeout(() => {
+            this.isSaveLoading.set(false);
+          }, 1000);
+        }
+
         this.offlineQueueService.enqueue({
-          id: crypto.randomUUID(),
+          id: this.randomUuid,
           method: 'PUT',
           endpoint: `exercise-logs/${this.exerciseLogId()!}`,
           payload: request,
@@ -449,7 +467,6 @@ export class EditExerciseLogPageComponent {
       }
     }
 
-    this.isSaveLoading.set(false);
     this.formEnabled.set(true);
   }
 

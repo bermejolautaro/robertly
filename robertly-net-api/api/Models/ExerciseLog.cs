@@ -23,11 +23,11 @@ public record ExerciseLog
   public int? ExerciseLogId { get; set; }
   public int? ExerciseLogUserId { get; set; }
   public int? ExerciseLogExerciseId { get; set; }
-  public DateTime ExerciseLogDate { get; set; }
-  public int CreatedByUserId { get; set; }
-  public DateTime CreatedAtUtc { get; set; }
-  public int LastUpdatedByUserId { get; set; }
-  public DateTime LastUpdatedAtUtc { get; set; }
+  public DateTime? ExerciseLogDate { get; set; }
+  public int? CreatedByUserId { get; set; }
+  public DateTime? CreatedAtUtc { get; set; }
+  public int? LastUpdatedByUserId { get; set; }
+  public DateTime? LastUpdatedAtUtc { get; set; }
   public int? TotalReps { get; set; }
   public int? Tonnage { get; set; }
   public decimal? AverageReps { get; set; }

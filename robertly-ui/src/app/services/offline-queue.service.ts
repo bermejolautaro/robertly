@@ -36,19 +36,27 @@ export class OfflineQueueService {
     window.addEventListener('offline', () => this.isOnline.set(false));
   }
 
-  private saveQueue() {
+  private saveQueue(): void {
     localStorage.setItem(QUEUE_KEY, JSON.stringify(this.queue));
   }
 
-  public enqueue(action: SerializableQueuedAction) {
-    this.queue.push(action);
+  public enqueue(action: SerializableQueuedAction): void {
+    const index = this.queue.findIndex(x => x.id === action.id);
+
+    if (index === -1) {
+      this.queue.push(action);
+    } else {
+      this.queue[index] = action;
+    }
+
     this.saveQueue();
+
     if (this.isOnline()) {
       this.processQueue();
     }
   }
 
-  public async processQueue() {
+  public async processQueue(): Promise<void> {
     const httpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' });
 
     if (!this.isOnline() || !this.authService.userUuid()) {

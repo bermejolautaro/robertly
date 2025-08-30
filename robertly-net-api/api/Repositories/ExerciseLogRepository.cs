@@ -258,7 +258,9 @@ public class ExerciseLogRepository
     var (exerciseLogs, totalCount) = await GetExerciseLogsAsync(0, 1000, queryBuilder);
     var exerciseLog = exerciseLogs.FirstOrDefault();
 
-    if (exerciseLog?.ExerciseLogExerciseId is null || exerciseLog?.User?.UserId is null)
+    if (exerciseLog?.ExerciseLogExerciseId is null ||
+        exerciseLog.User?.UserId is null ||
+        exerciseLog.ExerciseLogDate is null)
     {
       return null;
     }
@@ -268,7 +270,7 @@ public class ExerciseLogRepository
       var queryBuilderExtraData = new GetExerciseLogsQueryBuilder()
         .AndExerciseId(exerciseLog.ExerciseLogExerciseId.Value)
         .AndUserIds([exerciseLog.User.UserId.Value])
-        .AndDate(exerciseLog.ExerciseLogDate, "<");
+        .AndDate(exerciseLog.ExerciseLogDate.Value, "<");
 
       var (recentLogs, recentLogsTotalCount) = await GetExerciseLogsAsync(0, 5, queryBuilderExtraData);
       exerciseLog = exerciseLog with { RecentLogs = recentLogs };
