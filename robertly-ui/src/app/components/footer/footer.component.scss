@@ -38,3 +38,56 @@ nav.navbar.fixed-bottom {
   }
 }
 
+
+.services {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  align-items: start;
+  margin-top: 0.5rem;
+  border-radius: 5px;
+  padding: 0.9rem 0;
+  gap: 1rem 0.5rem;
+}
+
+.service {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .iconoir-plus-circle-solid {
+    width: 0;
+    height: 0;
+    position: relative;
+    top: -26px;
+    right: 2px;
+    font-size: 18px;
+    color: #a78cf3;
+  }
+
+  span {
+    padding: 0;
+    font-size: 10px;
+    text-decoration: none;
+    color: white;
+    width: 64px;
+    margin: 0;
+  }
+}
+
+.service-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 100%;
+  color: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  padding: 1.1rem;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 0.15rem;
+
+  i {
+    font-size: 22px;
+  }
+}

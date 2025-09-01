@@ -29,12 +29,7 @@ export class HomePageComponent implements OnInit {
 
   public readonly showMoreRecentlyUpdated = signal(false);
   public readonly recentlyUpdatedAmountToShow = computed(() =>
-    this.showMoreRecentlyUpdated() ? (this.recentlyUpdatedLogsResource.value()?.length ?? 10) : 2
-  );
-
-  public readonly showMoreLatestWorkout = signal(false);
-  public readonly latestWorkoutAmountToShow = computed(() =>
-    this.showMoreLatestWorkout() ? (this.latestWorkoutLogsResource.value()?.length ?? 10) : 2
+    this.showMoreRecentlyUpdated() ? (this.recentlyUpdatedLogsResource.value()?.length ?? 10) : 3
   );
 
   public readonly isLoading = computed(
@@ -86,9 +81,5 @@ export class HomePageComponent implements OnInit {
 
   public toggleShowMoreRecentlyUpdated(): void {
     this.showMoreRecentlyUpdated.update(x => !x);
-  }
-
-  public toggleShowMoreLatestWorkout(): void {
-    this.showMoreLatestWorkout.update(x => !x);
   }
 }

@@ -1,3 +1,66 @@
+<ng-template
+  #addLogOffcanvas
+  let-offcanvas
+>
+  <div class="offcanvas-header">
+    <button
+      tabindex="-1"
+      style="margin-left: auto"
+      type="button"
+      class="btn-close btn-close-white"
+      aria-label="Close"
+      (click)="offcanvas.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="offcanvas-body">
+    <div class="services">
+      <div
+        class="service"
+        (click)="navigateTo([Paths.FOOD_LOGS, Paths.CREATE]); offcanvas.dismiss()"
+      >
+        <div class="service-icon">
+          <i class="iconoir-book"></i>
+          <i class="iconoir-plus-circle-solid"></i>
+        </div>
+        <span class="btn btn-link"> Add Food Log</span>
+      </div>
+
+      <div
+        class="service"
+        (click)="navigateTo([Paths.EXERCISE_LOGS, Paths.CREATE]); offcanvas.dismiss()"
+      >
+        <div class="service-icon">
+          <i class="iconoir-book"></i>
+          <i class="iconoir-plus-circle-solid"></i>
+        </div>
+        <span class="btn btn-link">Add Exercise Log</span>
+      </div>
+
+      <div
+        class="service"
+        (click)="navigateTo([Paths.FOODS, Paths.CREATE]); offcanvas.dismiss()"
+      >
+        <div class="service-icon">
+          <i class="iconoir-pizza-slice"></i>
+          <i class="iconoir-plus-circle-solid"></i>
+        </div>
+        <span class="btn btn-link">Add Food</span>
+      </div>
+
+      <div
+        class="service"
+        (click)="navigateTo([Paths.EXERCISES, Paths.CREATE]); offcanvas.dismiss()"
+      >
+        <div class="service-icon">
+          <i class="iconoir-gym"></i>
+          <i class="iconoir-plus-circle-solid"></i>
+        </div>
+        <span class="btn btn-link">Add Exercise</span>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
 <nav class="navbar fixed-bottom fw-bold">
   <div class="container">
     <ul class="navbar-nav flex-row justify-content-center w-100">
@@ -8,10 +71,10 @@
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
         >
-            <div>
-              <i class="fa fa-home"></i>
-            </div>
-            <div>Home</div>
+          <div>
+            <i class="fa fa-home"></i>
+          </div>
+          <div>Home</div>
         </a>
       </li>
       <li class="nav-item w-100">
@@ -21,17 +84,17 @@
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
         >
-            <div>
-              <i class="fa fa-history"></i>
-            </div>
-            <div>Logs</div>
+          <div>
+            <i class="fa fa-history"></i>
+          </div>
+          <div>Logs</div>
         </a>
       </li>
       <li class="nav-item w-100">
         <div class="d-flex justify-content-center align-items-center add-button-container">
           <button
             class="btn btn-lg btn-primary d-flex justify-content-center align-items-center"
-            (click)="navigateToCreateLog()"
+            (click)="openSidebar(addLogOffcanvas)"
           >
             <i class="fa fa-plus"></i>
           </button>

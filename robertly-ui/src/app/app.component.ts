@@ -112,10 +112,6 @@ export class AppComponent implements OnInit {
     this.isLoading.set(false);
   }
 
-  public navigateToCreateLog(): void {
-    this.router.navigate([Paths.EXERCISE_LOGS, Paths.CREATE]);
-  }
-
   public async signOut(): Promise<void> {
     await this.authApiService.signOut();
     this.router.navigate([Paths.SIGN_IN]);
