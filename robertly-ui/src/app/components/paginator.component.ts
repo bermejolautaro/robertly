@@ -23,17 +23,17 @@ import { Component, input, model } from '@angular/core';
       >
         <i class="fa fa-angle-right"></i>
       </button>
-      <button class="btn">
-        <i
-          (click)="lastPage()"
-          class="fa fa-angle-double-right"
-        ></i>
+      <button
+        class="btn"
+        (click)="lastPage()"
+      >
+        <i class="fa fa-angle-double-right"></i>
       </button>
     </div>
   `,
   styles: `
     .btn {
-      padding: .1rem;
+      padding: 0.1rem;
     }
   `,
   standalone: true,

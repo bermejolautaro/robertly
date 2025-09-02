@@ -38,6 +38,7 @@ export const Paths = {
   FOODS: 'foods',
   SERIES_PER_MUSCLE: 'series-per-muscle',
   MACROS: 'macros',
+  DAYS_TRAINED: 'days-trained',
   CONFIGURATION: 'configuration',
 } as const;
 
@@ -71,6 +72,10 @@ const routes = [
         {
           path: `${Paths.MACROS}`,
           loadComponent: () => import('@pages/macros-daily.page.component').then(x => x.SeriesPerMusclePageComponent),
+        },
+        {
+          path: `${Paths.DAYS_TRAINED}`,
+          loadComponent: () => import('@pages/days-trained.page.component').then(x => x.DaysTrainedPageComponent),
         },
       ];
     },
@@ -201,6 +206,6 @@ bootstrapApplication(AppComponent, {
         return dayjsInstance;
       },
     },
-    { provide: ErrorHandler, useClass: CustomErrorHandler }
+    { provide: ErrorHandler, useClass: CustomErrorHandler },
   ],
 }).catch((err: unknown) => console.error(err));

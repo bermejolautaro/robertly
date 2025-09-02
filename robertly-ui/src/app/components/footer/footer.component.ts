@@ -16,10 +16,6 @@ export class FooterComponent {
 
   public readonly Paths = Paths;
 
-  public navigateToCreateLog(): void {
-    this.router.navigate([Paths.EXERCISE_LOGS, Paths.CREATE]);
-  }
-
   public openSidebar(content: TemplateRef<unknown>): void {
     this.offcanvasService.open(content, { position: 'bottom' });
   }

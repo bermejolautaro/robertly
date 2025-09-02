@@ -81,8 +81,6 @@ builder.Services.AddLogging(logBuilder => logBuilder.AddApplicationInsights());
 builder.Services.AddCors();
 builder.Services.AddExceptionHandler<LoggerExceptionHandler>();
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
-
 var app = builder.Build();
 
 var schema = app.Services.GetRequiredService<SchemaHelper>();
@@ -101,12 +99,11 @@ app.UseHttpsRedirection();
 
 app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 
-app.UseAuthorization();
-
 app.MapControllers();
 app.UseExceptionHandler(new ExceptionHandlerOptions()
 {
   AllowStatusCode404Response = true,
   ExceptionHandlingPath = "/Error"
 });
+
 app.Run();

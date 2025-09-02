@@ -11,6 +11,7 @@ import { Observable, map } from 'rxjs';
 import { cacheResponse } from 'src/app/functions/cache-response';
 import { nameof } from 'src/app/functions/name-of';
 import { API_URL } from 'src/main';
+import { DaysTrained } from '@models/days-trained';
 
 export type CreateExerciseLogRequest = {
   exerciseLog: ExerciseLog;
@@ -86,8 +87,17 @@ export class ExerciseLogApiService {
   }
 
   public getDaysTrained(): Observable<Stats> {
-    const cacheKey = `${this.authService.userUuid()}:getDaysTrained`;
-    return this.http.get<Stats>(`${this.endpoint}/days-trained`).pipe(cacheResponse(this.cacheService, cacheKey));
+    const cacheKey = `${this.authService.userUuid()}:${nameof<ExerciseLogApiService>('getDaysTrained')}`;
+    return this.http
+      .get<Stats>(`${this.endpoint}/days-trained`)
+      .pipe(cacheResponse(this.cacheService, cacheKey));
+  }
+
+  public getDaysTrained2(): Observable<DaysTrained> {
+    const cacheKey = `${this.authService.userUuid()}:${nameof<ExerciseLogApiService>('getDaysTrained2')}`;
+    return this.http
+      .get<DaysTrained>(`${this.endpoint}/days-trained-2`)
+      .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLog[]> {

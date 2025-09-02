@@ -10,8 +10,13 @@ namespace robertly.Repositories;
 public class UserRepository
 {
   private readonly ConnectionHelper _connection;
+  private readonly SchemaHelper _schema;
 
-  public UserRepository(ConnectionHelper connection) => (_connection) = (connection);
+  public UserRepository(ConnectionHelper connection, SchemaHelper schema)
+  {
+    _connection = connection;
+    _schema = schema;
+  }
 
   public async Task<Models.User?> GetUserByFirebaseUuidAsync(string firebaseUuid)
   {
@@ -24,14 +29,13 @@ public class UserRepository
         ,U.UserFirebaseUuid
         ,U.Email
         ,U.Name
-      FROM {_connection.Schema}.Users U
+      FROM Users U
       WHERE UserFirebaseUuid = @FirebaseUuid
       """;
 
-    var user = await connection.QuerySingleOrDefaultAsync<DataModels.User>(query, new
-    {
-      FirebaseUuid = firebaseUuid
-    });
+    var user = await connection.QuerySingleOrDefaultAsync<DataModels.User>(
+      _schema.AddSchemaToQuery(query),
+      new { FirebaseUuid = firebaseUuid });
 
     if (user is null) {
       return null;
@@ -44,14 +48,16 @@ public class UserRepository
         ,U.UserFirebaseUuid
         ,U.Email
         ,U.Name
-      FROM {_connection.Schema}.AssignedUsers AU
-      INNER JOIN {_connection.Schema}.Users U ON AU.AssignedUserId = U.UserId
+      FROM AssignedUsers AU
+      INNER JOIN Users U ON AU.AssignedUserId = U.UserId
       WHERE AU.OwnerUserId = @UserId
       """;
 
-    var assignedUsers = await connection.QueryAsync<DataModels.User>(queryAssignedUsers, new { UserId = user?.UserId });
+    var assignedUsers = await connection.QueryAsync<DataModels.User>(
+      _schema.AddSchemaToQuery(queryAssignedUsers),
+      new { UserId = user.UserId });
 
-    var userModel = user?.Map<Models.User>();
+    var userModel = user.Map<Models.User>();
 
     if (userModel is null) {
       return null;

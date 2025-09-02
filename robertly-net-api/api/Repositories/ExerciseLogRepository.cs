@@ -196,49 +196,6 @@ public class ExerciseLogRepository
     };
   }
 
-  public async Task<Models.DaysTrained?> GetDaysTrained(int userId)
-  {
-    using var connection = _connection.Create();
-
-    var now = DateTime.UtcNow;
-    var currentYear = now.Year;
-    var currentMonth = now.Month;
-    var endOfMonth = DateTime.DaysInMonth(currentYear, currentMonth);
-
-    var dayOfWeek = DateTime.Today.DayOfWeek;
-    var daysUntilStartOfWeek = dayOfWeek switch
-    {
-      DayOfWeek.Sunday => 6,
-      _ => (int)dayOfWeek - 1
-    };
-
-    var startOfWeek = DateTime.Today.AddDays(daysUntilStartOfWeek * -1);
-    var endOfWeek = startOfWeek.AddDays(6);
-
-    var query = $"""
-    SELECT
-      (SELECT COUNT(DISTINCT Date)
-        FROM ExerciseLogs
-        WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
-        AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
-        AND UserId = @UserId) AS DaysTrainedThisWeek,
-      (SELECT COUNT(DISTINCT Date)
-        FROM ExerciseLogs
-        WHERE Date >= '{currentYear}-{currentMonth}-1'
-        AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
-        AND UserId = @UserId) AS DaysTrainedThisMonth,
-      (SELECT COUNT(DISTINCT Date)
-        FROM ExerciseLogs
-        WHERE Date >= '{currentYear}-1-1'
-        AND Date <= '{currentYear}-12-31'
-        AND UserId = @UserId) AS DaysTrainedThisYear;
-    """;
-
-    return await connection.QueryFirstOrDefaultAsync<Models.DaysTrained>(
-      _schema.AddSchemaToQuery(query),
-      new { UserId = userId });
-  }
-
   public async Task<DateTime?> GetMostRecentButNotTodayDateByUserId(int userId)
   {
     using var connection = _connection.Create();
@@ -364,16 +321,12 @@ public class ExerciseLogRepository
   public async Task DeleteExerciseLogAsync(int exerciseLogId)
   {
     using var connection = _connection.Create();
-    var seriesQuery = $"""
-            DELETE FROM {_connection.Schema}.Series WHERE ExerciseLogId = @ExerciseLogId;
-            """;
+    var seriesQuery = "DELETE FROM Series WHERE ExerciseLogId = @ExerciseLogId;";
 
-    await connection.ExecuteAsync(seriesQuery, new { ExerciseLogId = exerciseLogId });
+    await connection.ExecuteAsync(_schema.AddSchemaToQuery(seriesQuery), new { ExerciseLogId = exerciseLogId });
 
-    var exerciseLogQuery = $"""
-            DELETE FROM {_connection.Schema}.ExerciseLogs WHERE ExerciseLogId = @ExerciseLogId;
-            """;
+    var exerciseLogQuery = "DELETE FROM ExerciseLogs WHERE ExerciseLogId = @ExerciseLogId;";
 
-    await connection.ExecuteAsync(exerciseLogQuery, new { ExerciseLogId = exerciseLogId });
+    await connection.ExecuteAsync(_schema.AddSchemaToQuery(exerciseLogQuery), new { ExerciseLogId = exerciseLogId });
   }
 }

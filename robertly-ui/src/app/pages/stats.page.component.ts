@@ -19,6 +19,10 @@ const OPTIONS: Option[] = [
     label: 'Macros Daily',
     path: Paths.MACROS,
   },
+  {
+    label: 'Days Trained',
+    path: Paths.DAYS_TRAINED,
+  },
 ] as const;
 
 @Component({
@@ -39,13 +43,25 @@ export class StatsPageComponent implements OnInit {
   public readonly formatter = (x: Option | null | undefined) => x?.label ?? '';
 
   public constructor() {
-    this.selectedOptionControl.valueChanges.pipe(startWith(null), takeUntilDestroyed()).subscribe(option => {
+    this.selectedOptionControl.valueChanges.pipe(takeUntilDestroyed()).subscribe(option => {
       if (option) {
-        this.router.navigate([option.path], { relativeTo: this.route });
-      } else {
-        this.router.navigate([OPTIONS[0]?.path], { relativeTo: this.route });
+        this.router.navigate([option.path], { relativeTo: this.route, queryParamsHandling: 'preserve' });
       }
     });
+
+    if (this.route.firstChild) {
+      this.route.firstChild.url.pipe(takeUntilDestroyed()).subscribe(x => {
+        const path = x[0]?.path;
+        if (path) {
+          const option = OPTIONS.find(o => o.path === path);
+          if (option) {
+            this.selectedOptionControl.setValue(option);
+          }
+        }
+      });
+    } else {
+      this.selectedOptionControl.setValue(OPTIONS[0]);
+    }
   }
 
   public ngOnInit(): void {

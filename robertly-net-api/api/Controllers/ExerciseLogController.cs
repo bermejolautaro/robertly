@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -18,12 +19,23 @@ public class ExerciseLogController : ControllerBase
 {
   private readonly ExerciseLogRepository _exerciseLogRepository;
   private readonly GenericRepository _genericRepository;
-  private readonly UserHelper _userHelper;
+  private readonly ConnectionHelper _connection;
+  private readonly SchemaHelper _schema;
+  private readonly UserHelper _user;
 
   public ExerciseLogController(
       ExerciseLogRepository exerciseLogsRepository,
       GenericRepository genericRepository,
-      UserHelper userHelper) => (_exerciseLogRepository, _genericRepository, _userHelper) = (exerciseLogsRepository, genericRepository, userHelper);
+      ConnectionHelper connection,
+      SchemaHelper schema,
+      UserHelper user)
+  {
+    _exerciseLogRepository = exerciseLogsRepository;
+    _genericRepository = genericRepository;
+    _connection = connection;
+    _schema = schema;
+    _user = user;
+  }
 
   [HttpGet("filters")]
   public async Task<Results<Ok<Filter>, BadRequest, UnauthorizedHttpResult>> GetFiltersByUser(
@@ -32,7 +44,7 @@ public class ExerciseLogController : ControllerBase
     [FromQuery] string? type = null,
     [FromQuery] decimal? weightInKg = null)
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -58,7 +70,7 @@ public class ExerciseLogController : ControllerBase
   [HttpGet("latest-workout")]
   public async Task<Results<Ok<PaginatedList<ExerciseLog>>, UnauthorizedHttpResult>> GetCurrentAndPreviousWorkoutByUser()
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -86,7 +98,7 @@ public class ExerciseLogController : ControllerBase
   [HttpGet("series-per-muscle")]
   public async Task<Results<Ok<Models.SeriesPerMuscle>, UnauthorizedHttpResult>> GetSeriesPerMuscle()
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -101,22 +113,114 @@ public class ExerciseLogController : ControllerBase
   [HttpGet("days-trained")]
   public async Task<Results<Ok<Models.DaysTrained>, UnauthorizedHttpResult>> GetStats()
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
       return TypedResults.Unauthorized();
     }
 
-    var stats = await _exerciseLogRepository.GetDaysTrained(user.UserId.Value);
+    using var connection = _connection.Create();
+
+    var now = DateTime.UtcNow;
+    var currentYear = now.Year;
+    var currentMonth = now.Month;
+    var endOfMonth = DateTime.DaysInMonth(currentYear, currentMonth);
+
+    var dayOfWeek = DateTime.Today.DayOfWeek;
+    var daysUntilStartOfWeek = dayOfWeek switch
+    {
+      DayOfWeek.Sunday => 6,
+      _ => (int)dayOfWeek - 1
+    };
+
+    var startOfWeek = DateTime.Today.AddDays(daysUntilStartOfWeek * -1);
+    var endOfWeek = startOfWeek.AddDays(6);
+
+    var query =
+      $"""
+      SELECT
+        (SELECT COUNT(DISTINCT Date)
+          FROM ExerciseLogs
+          WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
+          AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
+          AND UserId = @UserId) AS DaysTrainedThisWeek,
+        (SELECT COUNT(DISTINCT Date)
+          FROM ExerciseLogs
+          WHERE Date >= '{currentYear}-{currentMonth}-1'
+          AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
+          AND UserId = @UserId) AS DaysTrainedThisMonth,
+        (SELECT COUNT(DISTINCT Date)
+          FROM ExerciseLogs
+          WHERE Date >= '{currentYear}-1-1'
+          AND Date <= '{currentYear}-12-31'
+          AND UserId = @UserId) AS DaysTrainedThisYear;
+      """;
+
+    var stats = await connection.QueryFirstOrDefaultAsync<Models.DaysTrained>(
+      _schema.AddSchemaToQuery(query),
+      new { UserId = user.UserId });
 
     return TypedResults.Ok(stats);
+  }
+
+  [HttpGet("days-trained-2")]
+  public async Task<Results<Ok<Models.DaysTrained2>, UnauthorizedHttpResult>> GetDaysTrained()
+  {
+    var user = await _user.GetUser(Request);
+
+    if (user?.UserId is null)
+    {
+      return TypedResults.Unauthorized();
+    }
+
+    using var connection = _connection.Create();
+
+    var query =
+      """
+      -- Days trained per year
+      SELECT EXTRACT(YEAR FROM EL.Date) AS Year
+            ,COUNT(DISTINCT Date) AS DaysTrained
+      FROM ExerciseLogs EL
+      WHERE EL.UserId = @UserId
+      GROUP BY EXTRACT(YEAR FROM EL.Date)
+      ORDER BY EXTRACT(YEAR FROM EL.Date) DESC;
+
+      -- Days trained per month each year
+      SELECT EXTRACT(YEAR FROM EL.Date) AS Year
+            ,EXTRACT(Month FROM EL.Date) AS Month
+            ,COUNT(DISTINCT Date) AS DaysTrained
+      FROM ExerciseLogs EL
+      WHERE EL.UserId = @UserId
+      GROUP BY EXTRACT(YEAR FROM EL.Date), EXTRACT(Month FROM EL.Date)
+      ORDER BY EXTRACT(YEAR FROM EL.Date) DESC, EXTRACT(Month FROM EL.Date) DESC;
+
+      -- Days trained per week each year
+      SELECT EXTRACT(YEAR FROM EL.Date) AS Year
+            ,EXTRACT(Week FROM EL.Date) AS Week
+            ,COUNT(DISTINCT Date) AS DaysTrained
+      FROM ExerciseLogs EL
+      WHERE EL.UserId = @UserId
+      GROUP BY EXTRACT(YEAR FROM EL.Date), EXTRACT(Week FROM EL.Date)
+      ORDER BY EXTRACT(YEAR FROM EL.Date) DESC, EXTRACT(Week FROM EL.Date) DESC;
+      """;
+
+    var daysTrained = await connection.QueryMultipleAsync(
+      _schema.AddSchemaToQuery(query),
+      new { UserId = user.UserId });
+
+    return TypedResults.Ok(new DaysTrained2
+    {
+      DaysTrainedYearly = await daysTrained.ReadAsync<DaysTrainedRow>(),
+      DaysTrainedMonthly = await daysTrained.ReadAsync<DaysTrainedRow>(),
+      DaysTrainedWeekly = await daysTrained.ReadAsync<DaysTrainedRow>()
+    });
   }
 
   [HttpGet("recently-updated")]
   public async Task<Results<Ok<PaginatedList<ExerciseLog>>, UnauthorizedHttpResult>> GetRecentlyUpdated()
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -126,7 +230,7 @@ public class ExerciseLogController : ControllerBase
     var date = await _exerciseLogRepository.GetMostRecentButNotTodayDateByUserId(user.UserId.Value);
 
     var queryBuilder = new GetExerciseLogsQueryBuilder()
-      .AndLastUpdatedByUserId([user!.UserId!.Value])
+      .AndLastUpdatedByUserId([user.UserId.Value])
       .OrderByLastUpdatedAtUtc(Direction.Desc);
 
     var (exerciseLogs, totalCount) = await _exerciseLogRepository.GetExerciseLogsAsync(
@@ -146,7 +250,7 @@ public class ExerciseLogController : ControllerBase
       [FromQuery] decimal? weightInKg = null
   )
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -156,7 +260,7 @@ public class ExerciseLogController : ControllerBase
     var queryBuilder = new GetExerciseLogsQueryBuilder();
 
     queryBuilder = userId is null
-      ? queryBuilder.AndUserIds(user.GetAllowedUserIds().ToList()) 
+      ? queryBuilder.AndUserIds(user.GetAllowedUserIds().ToList())
       : queryBuilder.AndUserIds([userId.Value]);
 
     queryBuilder = queryBuilder
@@ -180,7 +284,7 @@ public class ExerciseLogController : ControllerBase
   [HttpGet("{id}")]
   public async Task<Results<Ok<ExerciseLog>, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> GetExerciseLogById([FromRoute] int id)
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -205,9 +309,9 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpPost]
-  public async Task<Results<Ok<int>, UnauthorizedHttpResult, BadRequest, ForbidHttpResult>> Post([FromBody] ExerciseLogRequest request)
+  public async Task<Results<Ok<int>, UnauthorizedHttpResult, BadRequest, ForbidHttpResult>> CreateExerciseLog([FromBody] ExerciseLogRequest request)
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -269,12 +373,12 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpPut("{id}")]
-  public async Task<Results<Ok, BadRequest<string>, BadRequest, UnauthorizedHttpResult, ForbidHttpResult>> Put(
+  public async Task<Results<Ok, BadRequest<string>, BadRequest, UnauthorizedHttpResult, ForbidHttpResult>> UpdateExerciseLog(
       [FromRoute] int id,
       [FromBody] ExerciseLogRequest request
   )
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {
@@ -367,9 +471,9 @@ public class ExerciseLogController : ControllerBase
   }
 
   [HttpDelete("{id}")]
-  public async Task<Results<Ok, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> Delete([FromRoute] int id)
+  public async Task<Results<Ok, BadRequest<string>, UnauthorizedHttpResult, ForbidHttpResult>> DeleteExerciseLog([FromRoute] int id)
   {
-    var user = await _userHelper.GetUser(Request);
+    var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
     {

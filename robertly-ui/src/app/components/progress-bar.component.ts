@@ -11,40 +11,46 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
         <div class="value">
           {{ current() | padStart: 2 }} / {{ goal() }}
           @if (isExceeded()) {
-            @if (isDangerousExcess()) {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="warning-icon"
-              >
-                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
-                <path d="M12 9v4"></path>
-                <path d="M12 17h.01"></path>
-              </svg>
-            } @else {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                class="check-icon"
-              >
-                <path d="M20 6 9 17l-5-5"></path>
-              </svg>
+            @if (IsExcessInterpretedAsNegative()) {
+              @if (isDangerousExcess()) {
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="warning-icon"
+                >
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                  <path d="M12 9v4"></path>
+                  <path d="M12 17h.01"></path>
+                </svg>
+              } @else {
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="check-icon"
+                >
+                  <path d="M20 6 9 17l-5-5"></path>
+                </svg>
+              }
             }
-            <span class="excess-text">({{ achievedPercentage() - 100 }}% over)</span>
+            <span
+              class="excess-text excess-text-positive"
+              [class.excess-text-positive]="!IsExcessInterpretedAsNegative()"
+              >({{ achievedPercentage() - 100 }}% over)</span
+            >
           }
         </div>
       </div>
@@ -66,6 +72,7 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
           @if (isExceeded()) {
             <div
               class="excess-portion"
+              [class.excess-portion-positive]="!IsExcessInterpretedAsNegative()"
               [style.width.%]="excessPercentage()"
             >
               @if (excessPercentage() > 10) {
@@ -122,6 +129,10 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
       .excess-text {
         margin-left: 4px;
         color: #ef4444;
+
+        &-positive {
+          color: #00c3ff;
+        }
       }
 
       .progress-bar-container {
@@ -156,6 +167,10 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
         display: flex;
         align-items: center;
         justify-content: center;
+
+        &-positive {
+          background-color: #00c3ff;
+        }
       }
 
       .percentage-text {
@@ -197,42 +212,6 @@ import { PadStartPipe } from '@pipes/pad-start.pipe';
         text-align: center;
         margin-top: 8px;
       }
-
-      :host-context(.dark) .progress-bar-container {
-        background-color: #374151;
-      }
-
-      :host-context(.dark) .goal-portion {
-        background-color: #e5e7eb;
-      }
-
-      :host-context(.dark) .goal-portion .percentage-text {
-        color: #1f2937;
-      }
-
-      :host-context(.dark) .excess-portion {
-        background-color: #dc2626;
-      }
-
-      :host-context(.dark) .goal-color {
-        background-color: #e5e7eb;
-      }
-
-      :host-context(.dark) .excess-color {
-        background-color: #dc2626;
-      }
-
-      :host-context(.dark) .excess-text {
-        color: #f87171;
-      }
-
-      :host-context(.dark) .warning-icon {
-        color: #f87171;
-      }
-
-      :host-context(.dark) .check-icon {
-        color: #34d399;
-      }
     `,
   ],
 })
@@ -240,6 +219,7 @@ export class ProgressBarComponent {
   public readonly current = input.required<number>();
   public readonly goal = input.required<number>();
   public readonly label = input<string>('Value');
+  public readonly IsExcessInterpretedAsNegative = input<boolean>(true);
 
   public readonly isExceeded = computed(() => this.current() > this.goal());
 
