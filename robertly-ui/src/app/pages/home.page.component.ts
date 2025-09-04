@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal, D
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
+import { ExerciseLogComponent } from '@components/exercise-log.component';
 import { ProgressBarComponent } from '@components/progress-bar.component';
 import { RingComponent } from '@components/ring.component';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';

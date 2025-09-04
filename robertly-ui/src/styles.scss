@@ -13,8 +13,35 @@
   --bs-body-color: var(--font-color);
 }
 
+.app {
+  &-cursor-pointer {
+    cursor: pointer;
+  }
 
-[data-bs-theme=dark] .alert .btn-close {
+  &-spinner.spinner-border {
+    --bs-spinner-width: 4rem;
+    --bs-spinner-height: 4rem;
+    --bs-spinner-border-width: 0.45em;
+  }
+}
+
+// =======================
+// GLOBAL OVERRIDES
+// =======================
+
+a {
+  text-decoration: none;
+}
+
+input[type='date'] {
+  color-scheme: dark;
+}
+
+// =======================
+// BOOTSTRAP OVERRIDES
+// =======================
+
+[data-bs-theme='dark'] .alert .btn-close {
   filter: none;
 }
 
@@ -37,7 +64,7 @@
   overflow-y: scroll;
   overflow-x: hidden;
   max-height: 400px;
-  border: 1px solid rgba(255, 255, 255, 0.30);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   margin-top: 5px;
 }
 
@@ -67,8 +94,10 @@
   text-decoration: none;
 }
 
-a {
-  text-decoration: none;
+.offcanvas-header {
+  .btn-close {
+    margin-left: auto;
+  }
 }
 
 .btn.btn-secondary {
@@ -83,10 +112,6 @@ a {
   --bs-btn-hover-border-color: var(--primary);
   --bs-btn-active-bg: var(--primary);
   --bs-btn-hover-bg: var(--primary);
-}
-
-input[type='date'] {
-  color-scheme: dark;
 }
 
 .form-control::placeholder {
@@ -185,19 +210,6 @@ input[type='date'] {
     width: 2.5rem;
     height: 1.4rem;
   }
-}
-
-.robertly-spinner.spinner-border {
-  --bs-spinner-width: 4rem;
-  --bs-spinner-height: 4rem;
-  --bs-spinner-border-width: 0.45em;
-}
-
-.shadow-material-1 {
-  box-shadow:
-    0px 3px 1px -2px rgba(0, 0, 0, 0.2),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.14),
-    0px 1px 5px 0px rgba(0, 0, 0, 0.12);
 }
 
 .typeahead {

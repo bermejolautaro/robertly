@@ -5,7 +5,6 @@ import { SwUpdate } from '@angular/service-worker';
 import { filter, take } from 'rxjs';
 import { AUTH_CHECKS_ENABLED, Paths } from 'src/main';
 
-
 import {
   NgbAlertModule,
   NgbDropdownModule,
@@ -18,7 +17,7 @@ import { ExerciseApiService } from '@services/exercises-api.service';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { ToastService } from '@services/toast.service';
 import { AuthApiService } from '@services/auth-api.service';
-import { HeaderComponent } from '@components/header/header.component';
+import { HeaderComponent } from '@components/header.component';
 import { FooterComponent } from '@components/footer/footer.component';
 import { AuthService } from '@services/auth.service';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';

@@ -35,3 +35,13 @@
   --bs-btn-border-color: #6e363b;
   color: rgb(250, 137, 137);
 }
+
+.grid-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.grid-one-rep-max {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+}

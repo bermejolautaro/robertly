@@ -27,7 +27,7 @@ import { ToastService } from '@services/toast.service';
 import { AuthService } from '@services/auth.service';
 import { ExerciseApiService } from '@services/exercises-api.service';
 import { CREATE_LOG_VALUE_CACHE_KEY, DATE_FORMATS } from '@models/constants';
-import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
+import { ExerciseLogComponent } from '@components/exercise-log.component';
 import { rxResource, toSignal } from '@angular/core/rxjs-interop';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { lastValueFrom, of, take } from 'rxjs';

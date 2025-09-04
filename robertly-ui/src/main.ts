@@ -34,7 +34,6 @@ export const Paths = {
   EXERCISES: 'exercises',
   SIGN_IN: 'signin',
   SIGN_UP: 'signup',
-  DEVELOPER: 'developer',
   FOODS: 'foods',
   SERIES_PER_MUSCLE: 'series-per-muscle',
   MACROS: 'macros',
@@ -103,11 +102,6 @@ const routes = [
     path: `${Paths.EXERCISE_LOGS}/${Paths.CREATE}`,
     pathMatch: 'full',
     loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
-  } as const,
-  {
-    path: Paths.DEVELOPER,
-    pathMatch: 'full',
-    loadComponent: () => import('@pages/developer.page.component').then(x => x.DeveloperPageComponent),
   } as const,
   {
     path: Paths.FOOD_LOGS,

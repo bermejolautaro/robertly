@@ -5,7 +5,6 @@
   <div class="offcanvas-header">
     <button
       tabindex="-1"
-      style="margin-left: auto"
       type="button"
       class="btn-close btn-close-white"
       aria-label="Close"
@@ -47,8 +46,7 @@
     @if (!!authService.user.value()) {
       <button
         (click)="signOut(); offcanvas.dismiss()"
-        class="btn btn-link"
-        style="cursor: pointer"
+        class="btn btn-link app-cursor-pointer"
       >
         Sign Out
       </button>

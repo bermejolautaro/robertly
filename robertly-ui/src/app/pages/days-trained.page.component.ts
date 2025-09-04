@@ -49,7 +49,7 @@ import * as R from 'remeda';
     @let daysTrainedValue = daysTrained.value();
     @if (daysTrainedValue) {
       @if (period() === 'date') {
-        <div style="width: 25%">
+        <div class="year-container">
           <app-dropdown
             class="mb-3"
             [items]="years()"
@@ -57,7 +57,7 @@ import * as R from 'remeda';
             [control]="control"
             [showClear]="false"
           ></app-dropdown>
-      </div>
+        </div>
         <app-calendar
           [highlightedDates]="highlightedDates()"
           [year]="control.value ?? 2025"
@@ -67,14 +67,12 @@ import * as R from 'remeda';
       @if (period() === 'week') {
         @for (value of daysTrainedValue.daysTrainedWeekly; track $index) {
           <div class="pb-4">
-            <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem 0.2rem">
-              <app-progress-bar
-                [current]="value.daysTrained"
-                [goal]="4"
-                [IsExcessInterpretedAsNegative]="false"
-                label="Week {{ value.week }} of {{ value.year }}"
-              ></app-progress-bar>
-            </div>
+            <app-progress-bar
+              [current]="value.daysTrained"
+              [goal]="4"
+              [IsExcessInterpretedAsNegative]="false"
+              label="Week {{ value.week }} of {{ value.year }}"
+            ></app-progress-bar>
           </div>
         }
       }
@@ -82,14 +80,12 @@ import * as R from 'remeda';
       @if (period() === 'month') {
         @for (value of daysTrainedValue.daysTrainedMonthly; track $index) {
           <div class="pb-4">
-            <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem 0.2rem">
-              <app-progress-bar
-                [current]="value.daysTrained"
-                [goal]="4 * 4"
-                [IsExcessInterpretedAsNegative]="false"
-                [label]="getMonthLabel(value)"
-              ></app-progress-bar>
-            </div>
+            <app-progress-bar
+              [current]="value.daysTrained"
+              [goal]="4 * 4"
+              [IsExcessInterpretedAsNegative]="false"
+              [label]="getMonthLabel(value)"
+            ></app-progress-bar>
           </div>
         }
       }
@@ -97,14 +93,12 @@ import * as R from 'remeda';
       @if (period() === 'year') {
         @for (value of daysTrainedValue.daysTrainedYearly; track $index) {
           <div class="pb-4">
-            <div style="display: grid; grid-template-columns: 1fr; gap: 0.5rem 0.2rem">
-              <app-progress-bar
-                [current]="value.daysTrained"
-                [goal]="4 * 52"
-                [IsExcessInterpretedAsNegative]="false"
-                label="{{ value.year }}"
-              ></app-progress-bar>
-            </div>
+            <app-progress-bar
+              [current]="value.daysTrained"
+              [goal]="4 * 52"
+              [IsExcessInterpretedAsNegative]="false"
+              label="{{ value.year }}"
+            ></app-progress-bar>
           </div>
         }
       }
@@ -119,6 +113,10 @@ import * as R from 'remeda';
         --bs-btn-active-border-color: transparent;
         --bs-btn-active-bg: var(--primary);
       }
+    }
+
+    .year-container {
+      width: 25%;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -7,12 +7,6 @@
       </div>
 
       <div>
-        <input
-          type="text"
-          autofocus="autofocus"
-          style="display: none"
-        />
-
         <!-- #region INPUT DATE -->
         <div class="mb-2">
           <input
@@ -175,7 +169,7 @@
           <div class="card mb-3">
             <div class="card-body">
               <div class="card-title">Stats</div>
-              <div style="display: grid; grid-template-columns: 1fr 1fr">
+              <div class="grid-stats">
                 <span class="serie-label">Total Reps</span>
                 <span class="serie-label">{{ original.totalReps }} reps</span>
                 <span class="serie-label">Average Reps</span>
@@ -191,7 +185,7 @@
           <div class="card mb-3">
             <div class="card-body">
               <div class="card-title">Possible 1RM (Multiple Formulas)</div>
-              <div style="display: grid; grid-template-columns: repeat(6, 1fr)">
+              <div class="grid-one-rep-max">
                 <span class="serie-label"></span>
                 <span class="serie-label pb-2">Brzycki</span>
                 <span class="serie-label pb-2">Epley</span>
@@ -237,7 +231,7 @@
 } @else {
   <div class="position-absolute top-50 start-50 translate-middle">
     <div
-      class="robertly-spinner spinner-border text-primary"
+      class="app-spinner spinner-border text-primary"
       role="status"
     >
       <span class="visually-hidden">Loading...</span>

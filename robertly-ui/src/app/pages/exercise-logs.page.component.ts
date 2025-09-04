@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, DOCUMENT } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { ExerciseLogComponent } from '@components/exercise-log/exercise-log.component';
+import { ExerciseLogComponent } from '@components/exercise-log.component';
 
 import { FiltersComponent } from '@components/filters/filters.component';
 import { PaginatorComponent } from '@components/paginator.component';
@@ -81,7 +81,7 @@ export class ExerciseLogsPageComponent implements OnInit {
     effect(() => {
       this.currentPage();
       this.logsResource.reload();
-    })
+    });
   }
 
   public ngOnInit(): void {

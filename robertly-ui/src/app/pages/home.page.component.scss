@@ -50,3 +50,21 @@
     font-size: 22px;
   }
 }
+
+.days-trained {
+  &-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  &-label {
+    text-align: center;
+    font-size: 12px;
+    padding: 0.5rem;
+  }
+}
+
+.show-more {
+  font-size: 14px;
+  padding: 0 0.4rem;
+}

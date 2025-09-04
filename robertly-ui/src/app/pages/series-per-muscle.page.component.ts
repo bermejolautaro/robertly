@@ -43,7 +43,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     >
       <div class="pb-4">
         <div class="pb-2 text-end">{{ date }}</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.5rem 0.2rem">
+        <div class="series-per-muscle-grid">
           @for (series of groupedSeries; track $index) {
             @defer (on viewport) {
               <div class="d-flex justify-content-center align-items-center flex-column">
@@ -52,7 +52,7 @@ import { ActivatedRoute, Router } from '@angular/router';
                   [maxValue]="series.targetValue"
                   size="s"
                 ></app-ring>
-                <div style="text-align: center; font-size: 12px">
+                <div class="series-per-muscle-label">
                   {{ series.muscleGroup | titlecase }}
                 </div>
               </div>
@@ -97,6 +97,17 @@ import { ActivatedRoute, Router } from '@angular/router';
         --bs-btn-active-border-color: transparent;
         --bs-btn-active-bg: var(--primary);
       }
+    }
+
+    .series-per-muscle-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+      gap: 0.5rem 0.2rem;
+    }
+
+    .series-per-muscle-label {
+      text-align: center;
+      font-size: 12px;
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
