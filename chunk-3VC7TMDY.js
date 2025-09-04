@@ -1,0 +1,1 @@
+import{Xa as e}from"./chunk-DCXKOQXA.js";var a=(()=>{let i=class i{transform(t,n,m){return t==null?"":t.toLocaleString(void 0,{minimumFractionDigits:0,maximumFractionDigits:1})}};i.\u0275fac=function(n){return new(n||i)},i.\u0275pipe=e({name:"padStart",type:i,pure:!0});let r=i;return r})();export{a};
