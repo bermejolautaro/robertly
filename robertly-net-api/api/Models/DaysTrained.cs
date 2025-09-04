@@ -15,6 +15,7 @@ public record DaysTrainedRow
   public required int? Year { get; init; }
   public required int? Month { get; init; }
   public required int? Week { get; init; }
+  public required DateTime? Date { get; init; }
   public required int? DaysTrained { get; init; }
 }
 
@@ -23,4 +24,5 @@ public record DaysTrained2
   public required IEnumerable<DaysTrainedRow> DaysTrainedWeekly { get; init; } = [];
   public required IEnumerable<DaysTrainedRow> DaysTrainedMonthly { get; init; } = [];
   public required IEnumerable<DaysTrainedRow> DaysTrainedYearly { get; init; } = [];
+  public required IEnumerable<DaysTrainedRow> DaysTrained { get; init; } = [];
 }

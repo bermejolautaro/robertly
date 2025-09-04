@@ -203,6 +203,12 @@ public class ExerciseLogController : ControllerBase
       WHERE EL.UserId = @UserId
       GROUP BY EXTRACT(YEAR FROM EL.Date), EXTRACT(Week FROM EL.Date)
       ORDER BY EXTRACT(YEAR FROM EL.Date) DESC, EXTRACT(Week FROM EL.Date) DESC;
+
+      -- Days trained
+      SELECT DISTINCT
+        EL.Date
+      FROM ExerciseLogs EL
+      WHERE EL.UserId = @UserId;
       """;
 
     var daysTrained = await connection.QueryMultipleAsync(
@@ -213,7 +219,8 @@ public class ExerciseLogController : ControllerBase
     {
       DaysTrainedYearly = await daysTrained.ReadAsync<DaysTrainedRow>(),
       DaysTrainedMonthly = await daysTrained.ReadAsync<DaysTrainedRow>(),
-      DaysTrainedWeekly = await daysTrained.ReadAsync<DaysTrainedRow>()
+      DaysTrainedWeekly = await daysTrained.ReadAsync<DaysTrainedRow>(),
+      DaysTrained = await daysTrained.ReadAsync<DaysTrainedRow>()
     });
   }
 

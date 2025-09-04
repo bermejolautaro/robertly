@@ -58,20 +58,26 @@ export class TypeaheadComponent<T> implements OnInit {
   public readonly itemSelector = input<(item: T | null) => string>(x => `${x ?? ''}`);
   public readonly placeholder = input<string>('Placeholder');
 
-  readonly #updateNativeElementOnFormChange = effect(() => {
-    const control = this.control();
-    const value = this.value();
-    const inputHtml = this.typeaheadInputHtml();
-
-    if (inputHtml) {
-      inputHtml.nativeElement.value = this.itemSelector()(control?.value ?? value ?? null);
-    }
-  });
-
   public readonly focus$: Subject<T | null> = new Subject<T | null>();
   public readonly click$: Subject<T | null> = new Subject<T | null>();
 
   public search: ((text$: Observable<string>) => Observable<T[]>) | null = null;
+
+  public constructor() {
+    this.setup_effect_update_native_element_on_form_change();
+  }
+
+  private setup_effect_update_native_element_on_form_change() {
+    effect(() => {
+      const control = this.control();
+      const value = this.value();
+      const inputHtml = this.typeaheadInputHtml();
+
+      if (inputHtml) {
+        inputHtml.nativeElement.value = this.itemSelector()(control?.value ?? value ?? null);
+      }
+    });
+  }
 
   public ngOnInit(): void {
     this.search = createAutocomplete(

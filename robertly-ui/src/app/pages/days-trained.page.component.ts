@@ -1,16 +1,28 @@
 import { TitleCasePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { rxResource, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { CalendarComponent } from '@components/calendar.component';
+import { DropdownComponent } from '@components/dropdown.component';
 import { ProgressBarComponent } from '@components/progress-bar.component';
 import { DaysTrainedRow } from '@models/days-trained';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { DAY_JS } from 'src/main';
 
+import * as R from 'remeda';
+
 @Component({
   selector: 'app-series-per-muscle-page',
   template: `
     <div class="pb-4">
+      <button
+        [class.active]="period() === 'date'"
+        class="btn me-1 badge rounded-pill chip"
+        (click)="onClickPeriod('date')"
+      >
+        Date
+      </button>
       <button
         [class.active]="period() === 'week'"
         class="btn me-1 badge rounded-pill chip"
@@ -36,6 +48,22 @@ import { DAY_JS } from 'src/main';
 
     @let daysTrainedValue = daysTrained.value();
     @if (daysTrainedValue) {
+      @if (period() === 'date') {
+        <div style="width: 25%">
+          <app-dropdown
+            class="mb-3"
+            [items]="years()"
+            [placeholder]="'Select a date'"
+            [control]="control"
+            [showClear]="false"
+          ></app-dropdown>
+      </div>
+        <app-calendar
+          [highlightedDates]="highlightedDates()"
+          [year]="control.value ?? 2025"
+        ></app-calendar>
+      }
+
       @if (period() === 'week') {
         @for (value of daysTrainedValue.daysTrainedWeekly; track $index) {
           <div class="pb-4">
@@ -94,7 +122,7 @@ import { DAY_JS } from 'src/main';
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ProgressBarComponent],
+  imports: [ProgressBarComponent, CalendarComponent, DropdownComponent],
 })
 export class DaysTrainedPageComponent {
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
@@ -103,11 +131,16 @@ export class DaysTrainedPageComponent {
   private readonly dayjs = inject(DAY_JS);
   private readonly titleCasePipe = inject(TitleCasePipe);
 
-  public readonly period = signal<'week' | 'month' | 'year'>('week');
+  public readonly period = signal<'date' | 'week' | 'month' | 'year'>('week');
+
+  public control = new FormControl<number>(2025);
 
   public readonly daysTrained = rxResource({
     stream: () => this.exerciseLogApiService.getDaysTrained2(),
   });
+
+  public highlightedDates = computed(() => this.daysTrained.value()?.daysTrained.map(x => new Date(x.date)) ?? []);
+  public years = computed(() => R.sort(R.unique(this.highlightedDates().map(x => x.getFullYear())), (a, b) => b - a));
 
   public constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(paramMap => {
@@ -117,6 +150,8 @@ export class DaysTrainedPageComponent {
         this.period.set('month');
       } else if (period === 'year') {
         this.period.set('year');
+      } else if (period === 'date') {
+        this.period.set('date');
       } else {
         this.period.set('week');
       }
@@ -127,7 +162,7 @@ export class DaysTrainedPageComponent {
     return this.titleCasePipe.transform(this.dayjs(`${row.year}-${row.month}-01`).format('MMMM[ - ]YYYY'));
   }
 
-  public onClickPeriod(period: 'week' | 'month' | 'year'): void {
+  public onClickPeriod(period: 'date' | 'week' | 'month' | 'year'): void {
     this.period.set(period);
     this.router.navigate([], {
       queryParams: { period },
