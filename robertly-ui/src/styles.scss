@@ -5,12 +5,10 @@
 @use 'font-awesome/css/font-awesome.min';
 
 :root {
-  --bg: #1d212a;
+  --bg: #111318;
   --primary: #5d2be9;
-  --light-bg: #2a2e37;
+  --light-bg: #1b1d23;
   --font-color: #f8faf9;
-  --bs-body-bg: var(--bg);
-  --bs-body-color: var(--font-color);
 }
 
 .app {
@@ -40,6 +38,11 @@ input[type='date'] {
 // =======================
 // BOOTSTRAP OVERRIDES
 // =======================
+
+:root {
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--font-color);
+}
 
 [data-bs-theme='dark'] .alert .btn-close {
   filter: none;

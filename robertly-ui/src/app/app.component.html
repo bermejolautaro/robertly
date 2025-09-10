@@ -27,16 +27,6 @@
 
     @if (!!authService.user.value()) {
       <a
-        [routerLink]="Paths.EXERCISES"
-        (click)="offcanvas.dismiss()"
-        >Exercises</a
-      >
-      <a
-        [routerLink]="Paths.FOODS"
-        (click)="offcanvas.dismiss()"
-        >Food Tracker</a
-      >
-      <a
         [routerLink]="Paths.CONFIGURATION"
         (click)="offcanvas.dismiss()"
         >Configuration</a

@@ -2,14 +2,24 @@
   #addLogOffcanvas
   let-offcanvas
 >
-  <div class="offcanvas-header">
-    <button
-      tabindex="-1"
-      type="button"
-      class="btn-close btn-close-white"
-      aria-label="Close"
-      (click)="offcanvas.dismiss('Cross click')"
-    ></button>
+  <div style="display: flex; flex-direction: column" class="offcanvas-header">
+    <div style="display: flex; justify-content: flex-end; align-items: center; width: 100%">
+      <button
+        tabindex="-1"
+        type="button"
+        class="btn-close btn-close-white"
+        aria-label="Close"
+        (click)="offcanvas.dismiss('Cross click')"
+      ></button>
+    </div>
+    <div>
+      <h4
+        style="text-align: center; font-size: 14px"
+        class="offcanvas-title"
+      >
+        Choose an option
+      </h4>
+    </div>
   </div>
   <div class="offcanvas-body">
     <div class="services">
@@ -21,7 +31,7 @@
           <i class="iconoir-book"></i>
           <i class="iconoir-plus-circle-solid"></i>
         </div>
-        <span class="btn btn-link"> Add Food Log</span>
+        <span class="btn btn-link"> Food Log</span>
       </div>
 
       <div
@@ -32,7 +42,7 @@
           <i class="iconoir-book"></i>
           <i class="iconoir-plus-circle-solid"></i>
         </div>
-        <span class="btn btn-link">Add Exercise Log</span>
+        <span class="btn btn-link">Exercise Log</span>
       </div>
 
       <div
@@ -43,7 +53,7 @@
           <i class="iconoir-pizza-slice"></i>
           <i class="iconoir-plus-circle-solid"></i>
         </div>
-        <span class="btn btn-link">Add Food</span>
+        <span class="btn btn-link">Food</span>
       </div>
 
       <div
@@ -54,7 +64,7 @@
           <i class="iconoir-gym"></i>
           <i class="iconoir-plus-circle-solid"></i>
         </div>
-        <span class="btn btn-link">Add Exercise</span>
+        <span class="btn btn-link">Exercise</span>
       </div>
     </div>
   </div>

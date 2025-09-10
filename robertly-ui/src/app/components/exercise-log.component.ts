@@ -53,7 +53,7 @@ import { Paths } from 'src/main';
 
       .grid {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: 50% 50%;
       }
 
       .title {
@@ -67,15 +67,17 @@ import { Paths } from 'src/main';
       }
 
       .series {
-        display: grid;
+        display: flex;
+        flex-direction: column;
         font-size: 12px;
         opacity: 0.8;
 
         .serie {
           display: grid;
-          grid-template-columns: 1.5fr 1fr;
+          grid-template-columns: 1fr auto;
           white-space: pre-wrap;
           text-align: right;
+          gap: 10px;
         }
       }
     }

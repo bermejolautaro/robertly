@@ -1,6 +1,6 @@
 nav.navbar.fixed-bottom {
   padding-bottom: max(env(safe-area-inset-bottom), 0.8rem);
-  background: #2a2f3c;
+  background: var(--light-bg);
 
   .nav-link {
     --bs-nav-link-padding-y: 0;
@@ -34,7 +34,7 @@ nav.navbar.fixed-bottom {
     width: 60px;
     z-index: 10;
     margin-top: -25px;
-    border: 6px solid #1d212a;
+    border: 6px solid var(--bg);
   }
 }
 

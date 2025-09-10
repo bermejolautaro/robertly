@@ -78,7 +78,6 @@ export class EditFoodLogPageComponent {
   });
 
   public readonly isSaveLoading = signal(false);
-  public readonly titleCaseSelector = (x: string | null) => (!!x ? this.titleCasePipe.transform(x) : '');
 
   public originalValue = rxResource({
     params: this.foodLogIdFromRoute,

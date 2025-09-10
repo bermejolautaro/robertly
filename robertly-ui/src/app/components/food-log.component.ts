@@ -23,18 +23,34 @@ import { Paths } from 'src/main';
             <div class="hint">{{ log.user.name }}</div>
           </div>
           <div class="series">
-            <div class="serie">
-              <span>Calories:</span><span> {{ calories() | padStart: 2 }}cal</span>
+            <div>
+              <div style="text-align: right">Calories:</div>
+              <div style="text-align: right">Protein:</div>
+              <div style="text-align: right">Fat:</div>
+              <div style="text-align: right">Amount:</div>
+            </div>
+            <div>
+              <div>
+                {{ calories() | padStart: 2 }}cal
+              </div>
+              <div>
+               {{ protein() | padStart: 2 }}g
+              </div>
+              <div>{{ !!log.food.fat ? (log.food.fat | padStart: 2) + 'g' : '-' }}</div>
+              <div>{{ log.amount + log.food.unit }}</div>
+            </div>
+            <!-- <div class="serie">
+              <span>Calories:</span><span style="text-align: left"> {{ calories() | padStart: 2 }}cal</span>
             </div>
             <div class="serie">
-              <span>Protein:</span><span> {{ protein() | padStart: 2 }}g</span>
+              <span>Protein:</span><span style="text-align: left"> {{ protein() | padStart: 2 }}g</span>
             </div>
             <div class="serie">
-              <span>Fat:</span><span>{{ !!log.food.fat ? (log.food.fat | padStart: 2) + 'g' : '-' }}</span>
+              <span>Fat:</span><span style="text-align: left">{{ !!log.food.fat ? (log.food.fat | padStart: 2) + 'g' : '-' }}</span>
             </div>
             <div class="serie">
-              <span>Amount:</span><span>{{ log.amount + log.food.unit }}</span>
-            </div>
+              <span>Amount:</span><span style="text-align: left">{{ log.amount + log.food.unit }}</span>
+            </div> -->
           </div>
         </div>
       </div>
@@ -73,14 +89,10 @@ import { Paths } from 'src/main';
 
       .series {
         display: grid;
+        grid-template-columns: 1fr 30%;
         font-size: 12px;
         opacity: 0.8;
-
-        .serie {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          text-align: right;
-        }
+        gap: 10px;
       }
     }
   `,
