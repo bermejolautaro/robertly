@@ -88,7 +88,6 @@ var migrations = app.Services.GetRequiredService<MigrationHelper>();
 
 await schema.LoadTableNamesAsync();
 await migrations.ApplyMigrations();
-await schema.LoadTableNamesAsync();
 
 // Configure the HTTP request pipeline.
 app.UseSwagger();

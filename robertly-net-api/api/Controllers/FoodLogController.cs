@@ -85,39 +85,39 @@ public class FoodLogController : ControllerBase
     var query = $"""
     -- MacrosInDate
     SELECT
-      SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
-      SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      SUM((COALESCE(FL.Calories, 0) + COALESCE(F.Calories, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Calories,
+      SUM((COALESCE(FL.Protein, 0) + COALESCE(F.Protein, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Protein
     FROM FoodLogs FL
-    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    LEFT JOIN Foods F ON FL.FoodId = F.FoodId
     WHERE FL.Date = '{currentYear}-{currentMonth}-{currentDay}'
     AND UserId = @UserId;
 
     -- MacrosInWeek
     SELECT
-      SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
-      SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      SUM((COALESCE(FL.Calories, 0) + COALESCE(F.Calories, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Calories,
+      SUM((COALESCE(FL.Protein, 0) + COALESCE(F.Protein, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Protein
     FROM FoodLogs FL
-    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    LEFT JOIN Foods F ON FL.FoodId = F.FoodId
     WHERE Date >= '{startOfWeek.Year}-{startOfWeek.Month}-{startOfWeek.Day}'
     AND Date <= '{endOfWeek.Year}-{endOfWeek.Month}-{endOfWeek.Day}'
     AND UserId = @UserId;
 
     -- MacrosInMonth
     SELECT
-      SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
-      SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      SUM((COALESCE(FL.Calories, 0) + COALESCE(F.Calories, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Calories,
+      SUM((COALESCE(FL.Protein, 0) + COALESCE(F.Protein, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Protein
     FROM FoodLogs FL
-    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    LEFT JOIN Foods F ON FL.FoodId = F.FoodId
     WHERE Date >= '{currentYear}-{currentMonth}-1'
     AND Date <= '{currentYear}-{currentMonth}-{endOfMonth}'
     AND UserId = @UserId;
 
     -- MacrosInYear
     SELECT
-      SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
-      SUM((F.Protein * FL.Amount) / F.Amount) AS Protein
+      SUM((COALESCE(FL.Calories, 0) + COALESCE(F.Calories, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Calories,
+      SUM((COALESCE(FL.Protein, 0) + COALESCE(F.Protein, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Protein
     FROM FoodLogs FL
-    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    LEFT JOIN Foods F ON FL.FoodId = F.FoodId
     WHERE Date >= '{currentYear}-1-1'
     AND Date <= '{currentYear}-12-31'
     AND UserId = @UserId;
@@ -165,8 +165,8 @@ public class FoodLogController : ControllerBase
       $"""
       SELECT
         FL.Date,
-        SUM((F.Calories * FL.Amount) / F.Amount) AS Calories,
-        SUM((F.Protein * FL.Amount) / F.Amount) AS Protein,
+        SUM((COALESCE(FL.Calories, 0) + COALESCE(F.Calories, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Calories,
+        SUM((COALESCE(FL.Protein, 0) + COALESCE(F.Protein, 0) * COALESCE(FL.Amount, 0)) / COALESCE(F.Amount, 1)) AS Protein,
         (
           SELECT MAX(G.TargetValue)
           FROM Goals G
@@ -182,7 +182,7 @@ public class FoodLogController : ControllerBase
           AND CAST(G.CreatedAtUtc AS DATE) <= FL.Date
         ) AS ProteinGoal
       FROM FoodLogs FL
-      INNER JOIN Foods F ON FL.FoodId = F.FoodId
+      LEFT JOIN Foods F ON FL.FoodId = F.FoodId
       WHERE UserId = @UserId
       GROUP BY FL.Date, FL.UserId
       ORDER BY Date DESC
@@ -190,7 +190,7 @@ public class FoodLogController : ControllerBase
 
       SELECT COUNT(DISTINCT FL.Date)
       FROM FoodLogs FL
-      INNER JOIN Foods F ON FL.FoodId = F.FoodId
+      LEFT JOIN Foods F ON FL.FoodId = F.FoodId
       WHERE UserId = @UserId;
       """;
 
@@ -218,20 +218,52 @@ public class FoodLogController : ControllerBase
       return TypedResults.Unauthorized();
     }
 
-    if (foodLog?.Food is null)
+    if (foodLog.QuickAdd ?? false)
     {
-      return TypedResults.BadRequest();
+      if (string.IsNullOrWhiteSpace(foodLog.Description) || foodLog.Description.Length > 255)
+      {
+        return TypedResults.BadRequest();
+      }
+    }
+    else
+    {
+      if (foodLog.Food is null)
+      {
+        return TypedResults.BadRequest();
+      }
     }
 
-    var foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
+    DataModels.FoodLog foodLogDataModel;
+
+    if (foodLog.QuickAdd ?? false)
     {
-      FoodId = foodLog.Food.FoodId,
-      UserId = user.UserId.Value,
-      CreatedByUserId = user.UserId,
-      CreatedAtUtc = DateTime.UtcNow,
-      LastUpdatedByUserId = user.UserId,
-      LastUpdatedAtUtc = DateTime.UtcNow
-    };
+      foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
+      {
+        FoodId = null,
+        UserId = user.UserId.Value,
+        CreatedByUserId = user.UserId,
+        CreatedAtUtc = DateTime.UtcNow,
+        LastUpdatedByUserId = user.UserId,
+        LastUpdatedAtUtc = DateTime.UtcNow,
+        Amount = null
+      };
+    }
+    else
+    {
+      foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
+      {
+        FoodId = foodLog.Food!.FoodId,
+        UserId = user.UserId.Value,
+        CreatedByUserId = user.UserId,
+        CreatedAtUtc = DateTime.UtcNow,
+        LastUpdatedByUserId = user.UserId,
+        LastUpdatedAtUtc = DateTime.UtcNow,
+        Description = null,
+        Protein = null,
+        Calories = null,
+        Fat = null
+      };
+    }
 
     await _genericRepository.CreateAsync<DataModels.FoodLog>(foodLogDataModel);
 
@@ -315,16 +347,19 @@ public class FoodLogController : ControllerBase
     {
       foodLogs = await connection.QueryAsync<
          DataModels.FoodLog,
-         DataModels.Food,
+         DataModels.Food?,
          DataModels.User,
          Models.FoodLog
      >(
          query,
-         (log, food, user) => (log.Map<Models.FoodLog>() with
+         (log, food, user) =>
          {
-           Food = food.Map<Models.Food>(),
-           User = user.Map<Models.User>()
-         }),
+           return log.Map<Models.FoodLog>() with
+           {
+             Food = food?.Map<Models.Food>(),
+             User = user.Map<Models.User>()
+           };
+         },
          param: parameters,
          splitOn: "FoodId,UserId"
      );

@@ -156,9 +156,20 @@ export const DAY_JS = new InjectionToken<typeof dayjs>('DAY_JS');
 export const AUTH_CHECKS_ENABLED = new InjectionToken<boolean>('AUTH_CHECKS_ENABLED');
 
 export class CustomErrorHandler extends ErrorHandler {
-  public override handleError(error: unknown): void {
+  public override handleError(error: any): void {
     super.handleError(error);
-    alert(error);
+
+    const errors: string[] = [];
+    let cause: any = error;
+
+    do {
+      errors.push(cause.message);
+      cause = cause?.cause;
+    } while(cause?.cause);
+
+    errors.push(cause.message);
+
+    alert(JSON.stringify(errors.join('\n\n')));
   }
 }
 

@@ -122,6 +122,11 @@ input[type='date'] {
   opacity: 0.6;
 }
 
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
 .modal-header {
   justify-content: center;
 

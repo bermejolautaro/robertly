@@ -5,9 +5,9 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
   selector: 'app-ring',
   template: ` <svg
     class="progress-ring"
-    [attr.height]="this.dimensions()"
-    [attr.width]="this.dimensions()"
-    ngbTooltip="{{ this.value() }} / {{ this.maxValue() }}"
+    [attr.height]="dimensions()"
+    [attr.width]="dimensions()"
+    ngbTooltip="{{ value() }} / {{ maxValue() }}"
     tooltipClass="ring-tooltip"
     ontouchstart
     tabindex="-1"

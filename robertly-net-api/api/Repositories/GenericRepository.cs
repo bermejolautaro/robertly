@@ -14,7 +14,7 @@ public class GenericRepository
 
   public GenericRepository(ConnectionHelper connection, SchemaHelper schema) => (_connection, _schema) = (connection, schema);
 
-  public async Task<IEnumerable<T>> GetAllAsync<T>(string tableName = "") where T : IDataModel
+  public async Task<IEnumerable<T>> GetAllAsync<T>(string tableName = "", string schemaName = "") where T : IDataModel
   {
     using var connection = _connection.Create();
 
@@ -23,9 +23,10 @@ public class GenericRepository
       tableName = GetTableName<T>();
     }
 
-    var query = $"""SELECT * FROM {tableName}""";
+    var query = string.IsNullOrEmpty(schemaName)
+      ? _schema.AddSchemaToQuery($"SELECT * FROM {tableName}")
+      : $"SELECT * FROM {schemaName}.{tableName}";
 
-    query = _schema.AddSchemaToQuery(query);
     var parameters = new DynamicParameters();
 
     return await connection.QueryAsync<T>(query, parameters);

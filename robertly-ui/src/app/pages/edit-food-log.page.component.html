@@ -29,28 +29,93 @@
         </div>
         <!-- #endregion -->
 
-        <!-- #region TYPEAHEAD FOOD -->
-        <div class="mb-2">
-          <app-typeahead
-            placeholder="Food"
-            [(value)]="foodLogForm.food"
-            [items]="foods.value()"
-            [itemSelector]="foodSelector"
-          ></app-typeahead>
-        </div>
-        <!-- #endregion -->
-
-        <!-- #region INPUT AMOUNT -->
-        <div class="mb-2">
+        <div class="d-flex align-items-center justify-content-end py-2 gap-2 form-check form-switch">
           <input
-            type="text"
-            [placeholder]="amountPlaceholder()"
-            class="form-control"
-            [(ngModel)]="foodLogForm.amount"
-            onlyNumbers
+            class="form-check-input"
+            type="checkbox"
+            role="switch"
+            id="switchCheckDefault"
+            [(ngModel)]="foodLogForm.quickAdd"
+            switch
           />
+          <label
+            class="form-check-label"
+            for="switchCheckDefault"
+            >Quick Add</label
+          >
         </div>
-        <!-- #endregion -->
+
+        @if (foodLogForm.quickAdd()) {
+          <div class="mb-2">
+            <label class="form-label">Description</label>
+            <textarea
+              type="text"
+              placeholder="Description"
+              class="form-control"
+              [(ngModel)]="foodLogForm.description"
+            ></textarea>
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Calories</label>
+            <input
+              type="text"
+              inputmode="decimal"
+              placeholder="Calories"
+              class="form-control"
+              [(ngModel)]="foodLogForm.calories"
+              onlyNumbers
+            />
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Protein</label>
+            <input
+              type="text"
+              inputmode="decimal"
+              placeholder="Protein"
+              class="form-control"
+              [(ngModel)]="foodLogForm.protein"
+              onlyNumbers
+            />
+          </div>
+
+          <div class="mb-2">
+            <label class="form-label">Fat</label>
+            <input
+              type="text"
+              inputmode="decimal"
+              placeholder="Fat"
+              class="form-control"
+              [(ngModel)]="foodLogForm.fat"
+              onlyNumbers
+            />
+          </div>
+        } @else {
+          <!-- #region TYPEAHEAD FOOD -->
+          <div class="mb-2">
+            <app-typeahead
+              placeholder="Food"
+              [(value)]="foodLogForm.food"
+              [items]="foods.value()"
+              [itemSelector]="foodSelector"
+            ></app-typeahead>
+          </div>
+          <!-- #endregion -->
+
+          <!-- #region INPUT AMOUNT -->
+          <div class="mb-2">
+            <input
+              type="text"
+              inputmode="decimal"
+              [placeholder]="amountPlaceholder()"
+              class="form-control"
+              [(ngModel)]="foodLogForm.amount"
+              onlyNumbers
+            />
+          </div>
+          <!-- #endregion -->
+        }
       </div>
 
       <div class="row g-2 mb-3">

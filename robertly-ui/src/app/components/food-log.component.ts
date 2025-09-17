@@ -18,16 +18,16 @@ import { Paths } from 'src/main';
       >
         <div class="grid">
           <div class="d-flex flex-column align-self-center">
-            <div class="title">{{ log.food.name | titlecase }}</div>
+            <div class="title">{{ title() | titlecase }}</div>
             <div class="hint">{{ log.date | parseToDate }}</div>
-            <div class="hint">{{ log.user.name }}</div>
+            <div class="hint">{{ log.user?.name }}</div>
           </div>
           <div class="series">
             <div>
-              <div style="text-align: right">Calories:</div>
-              <div style="text-align: right">Protein:</div>
-              <div style="text-align: right">Fat:</div>
-              <div style="text-align: right">Amount:</div>
+              <div class="text-end">Calories:</div>
+              <div class="text-end">Protein:</div>
+              <div class="text-end">Fat:</div>
+              <div class="text-end">Amount:</div>
             </div>
             <div>
               <div>
@@ -36,21 +36,11 @@ import { Paths } from 'src/main';
               <div>
                {{ protein() | padStart: 2 }}g
               </div>
-              <div>{{ !!log.food.fat ? (log.food.fat | padStart: 2) + 'g' : '-' }}</div>
-              <div>{{ log.amount + log.food.unit }}</div>
+              <div>{{ !!log.food?.fat ? ((log.food?.fat ?? log.fat) | padStart: 2) + 'g' : '-' }}</div>
+              @if (log.amount && log.food) {
+                <div>{{ log.amount + (log.food.unit) }}</div>
+              }
             </div>
-            <!-- <div class="serie">
-              <span>Calories:</span><span style="text-align: left"> {{ calories() | padStart: 2 }}cal</span>
-            </div>
-            <div class="serie">
-              <span>Protein:</span><span style="text-align: left"> {{ protein() | padStart: 2 }}g</span>
-            </div>
-            <div class="serie">
-              <span>Fat:</span><span style="text-align: left">{{ !!log.food.fat ? (log.food.fat | padStart: 2) + 'g' : '-' }}</span>
-            </div>
-            <div class="serie">
-              <span>Amount:</span><span style="text-align: left">{{ log.amount + log.food.unit }}</span>
-            </div> -->
           </div>
         </div>
       </div>
@@ -102,11 +92,22 @@ export class FoodLogComponent {
   private readonly router = inject(Router);
   public readonly foodLog = input<FoodLog | null>();
 
+  public readonly title = computed(() => {
+    const foodLog = this.foodLog();
+
+    const name = foodLog?.food?.name ?? foodLog?.description ?? '';
+    const maxLength = 50
+
+    return name.length > maxLength
+      ? name.substring(0, maxLength) + '...'
+      : name;
+  });
+
   public readonly calories = computed(() => {
     const foodLog = this.foodLog();
 
-    if (!foodLog?.food.calories) {
-      return 0;
+    if (!foodLog?.food?.calories) {
+      return foodLog?.calories ?? 0;
     }
 
     return (foodLog.food.calories * foodLog.amount) / foodLog.food.amount;
@@ -115,8 +116,8 @@ export class FoodLogComponent {
   public readonly protein = computed(() => {
     const foodLog = this.foodLog();
 
-    if (!foodLog?.food.protein) {
-      return 0;
+    if (!foodLog?.food?.protein) {
+      return foodLog?.protein ?? 0;
     }
 
     return (foodLog.food.protein * foodLog.amount) / foodLog.food.amount;

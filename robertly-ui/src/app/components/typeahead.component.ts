@@ -43,6 +43,16 @@ import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, mer
     :host {
       display: block;
       width: 100%;
+
+      input {
+        border-right: none;
+      }
+
+      .btn.btn-outline-secondary {
+        border-left: none;
+        --bs-btn-border-color: var(--bs-border-color);
+        --bs-btn-bg: var(--bs-body-bg);
+      }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,

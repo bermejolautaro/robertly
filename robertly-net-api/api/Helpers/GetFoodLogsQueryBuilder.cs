@@ -25,6 +25,11 @@ public class GetFoodLogsQueryBuilder
       ,FL.CreatedByUserId
       ,FL.LastUpdatedAtUtc
       ,FL.LastUpdatedByUserId
+      ,FL.QuickAdd
+      ,FL.Description
+      ,FL.Calories
+      ,FL.Protein
+      ,FL.Fat
       ,F.FoodId
       ,F.Name
       ,F.Calories
@@ -37,7 +42,7 @@ public class GetFoodLogsQueryBuilder
       ,U.Email
       ,U.Name
     FROM FoodLogs FL
-    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    LEFT JOIN Foods F ON FL.FoodId = F.FoodId
     INNER JOIN Users U ON FL.UserId = U.UserId
     """;
 
@@ -45,7 +50,7 @@ public class GetFoodLogsQueryBuilder
     """
     SELECT COUNT(DISTINCT FL.FoodLogId)
     FROM FoodLogs FL
-    INNER JOIN Foods F ON FL.FoodId = F.FoodId
+    LEFT JOIN Foods F ON FL.FoodId = F.FoodId
     INNER JOIN Users U ON FL.UserId = U.UserId
     """;
 

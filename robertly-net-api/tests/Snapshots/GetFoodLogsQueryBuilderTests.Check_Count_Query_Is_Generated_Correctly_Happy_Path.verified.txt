@@ -2,7 +2,7 @@
 
 SELECT COUNT(DISTINCT FL.FoodLogId)
 FROM FoodLogs FL
-INNER JOIN Foods F ON FL.FoodId = F.FoodId
+LEFT JOIN Foods F ON FL.FoodId = F.FoodId
 INNER JOIN Users U ON FL.UserId = U.UserId;
 
 Parameters:

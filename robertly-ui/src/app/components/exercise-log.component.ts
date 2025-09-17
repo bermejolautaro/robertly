@@ -24,10 +24,8 @@ import { Paths } from 'src/main';
           </div>
           <div class="series">
             @for (serie of log.series; track $index) {
-              <div class="serie">
-                <div>{{ serie.reps | padStart: 2 }} reps</div>
-                <div>{{ serie.weightInKg | padStart: 2 }}kg</div>
-              </div>
+              <div class="text-end">{{ serie.reps | padStart: 2 }} reps</div>
+              <div>{{ serie.weightInKg | padStart: 2 }}kg</div>
             }
           </div>
         </div>
@@ -67,18 +65,14 @@ import { Paths } from 'src/main';
       }
 
       .series {
-        display: flex;
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        white-space: pre-wrap;
+        text-align: right;
+        column-gap: 5px;
+        align-self: center;
         font-size: 12px;
         opacity: 0.8;
-
-        .serie {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          white-space: pre-wrap;
-          text-align: right;
-          gap: 10px;
-        }
       }
     }
   `,

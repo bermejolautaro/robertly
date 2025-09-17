@@ -8,6 +8,7 @@ import {
   signal,
   effect,
   input,
+  model,
   untracked,
   linkedSignal,
 } from '@angular/core';
@@ -28,6 +29,7 @@ import { take, lastValueFrom, of } from 'rxjs';
 import { DAY_JS, Paths } from 'src/main';
 import { OnlyNumbersDirective } from '../directives/only-numbers.directive';
 import { DATE_FORMATS } from '@models/constants';
+import { parseNumber } from '@validators/parse-number';
 
 @Component({
   selector: 'edit-food-log-page',
@@ -88,16 +90,45 @@ export class EditFoodLogPageComponent {
 
   public readonly foodLogForm = {
     user: signal<User | null>(null),
-    food: signal<Food | null>(null),
     date: signal<string | null>(null),
+    food: signal<Food | null>(null),
     amount: signal<string | null>(null),
+    quickAdd: signal<boolean>(false),
+    description: signal<string | null>(null),
+    calories: signal<string | null>(null),
+    protein: signal<string | null>(null),
+    fat: signal<string | null>(null)
   };
 
   public readonly foodLogFormValue = computed(() => {
-    return this.foodLogForm;
+    if (!this.foodLogForm.user()) {
+      return null;
+    }
+
+    if (!this.foodLogForm.date()) {
+      return null;
+    }
+
+    if (this.foodLogForm.quickAdd()) {
+      if (!this.foodLogForm.description()) {
+        return null;
+      }
+
+      return this.foodLogForm;
+    } else {
+      if (!this.foodLogForm.food()) {
+        return null;
+      }
+
+      if (!this.foodLogForm.amount()) {
+        return null;
+      }
+
+      return this.foodLogForm;
+    }
   });
 
-  public readonly foodLogFormValid = computed(() => true);
+  public readonly foodLogFormValid = computed(() => !!this.foodLogFormValue());
 
   public readonly foodLogFormEnabled = signal(true);
 
@@ -124,7 +155,12 @@ export class EditFoodLogPageComponent {
         this.foodLogForm.date.set(this.dayjs(foodLog.date, [...DATE_FORMATS]).format('YYYY-MM-DD'));
         this.foodLogForm.food.set(foodLog.food);
         this.foodLogForm.user.set(foodLog.user);
-        this.foodLogForm.amount.set(foodLog.amount.toString());
+        this.foodLogForm.amount.set(foodLog.amount?.toString() ?? null);
+        this.foodLogForm.quickAdd.set(foodLog.quickAdd ?? false);
+        this.foodLogForm.description.set(foodLog.description);
+        this.foodLogForm.calories.set(foodLog.calories?.toString() ?? null);
+        this.foodLogForm.protein.set(foodLog.protein?.toString() ?? null);
+        this.foodLogForm.fat.set(foodLog.fat?.toString() ?? null);
       }
     });
   }
@@ -164,7 +200,7 @@ export class EditFoodLogPageComponent {
     const user = this.foodLogForm.user();
     const food = this.foodLogForm.food();
 
-    if (!this.foodLogFormValid() || !food || !user) {
+    if (!this.foodLogFormValid()) {
       return;
     }
 
@@ -176,7 +212,12 @@ export class EditFoodLogPageComponent {
       date: this.foodLogForm.date()!,
       user: user,
       food: food,
-      amount: Number(this.foodLogForm.amount())!,
+      amount: parseNumber(this.foodLogForm.amount())!,
+      quickAdd: this.foodLogForm.quickAdd(),
+      description: this.foodLogForm.description(),
+      calories: parseNumber(this.foodLogForm.calories()),
+      protein: parseNumber(this.foodLogForm.protein()),
+      fat: parseNumber(this.foodLogForm.fat())
     };
 
     try {

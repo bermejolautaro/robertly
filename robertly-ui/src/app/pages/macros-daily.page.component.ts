@@ -10,7 +10,8 @@ import { PaginatorComponent } from '@components/paginator.component';
 @Component({
   selector: 'app-series-per-muscle-page',
   template: `
-    @for (macro of macros.value()?.data; track $index) {
+    @let macrosData = macros.value()?.data;
+    @for (macro of macrosData; track $index) {
       <div class="pb-2">
         <div>{{ macro.date | parseToDate }}</div>
         <app-progress-bar
@@ -25,10 +26,13 @@ import { PaginatorComponent } from '@components/paginator.component';
         ></app-progress-bar>
       </div>
     }
-    <app-paginator
-      [(currentPage)]="currentPage"
-      [pageCount]="macros.value()?.pageCount ?? 0"
-    ></app-paginator>
+
+    @if (macrosData) {
+      <app-paginator
+        [(currentPage)]="currentPage"
+        [pageCount]="macros.value()?.pageCount ?? 0"
+      ></app-paginator>
+    }
   `,
   styles: `
     .badge.chip {
