@@ -8,7 +8,8 @@ import { ProgressBarComponent } from '@components/progress-bar.component';
 import { RingComponent } from '@components/ring.component';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 import { FoodLogsApiService } from '@services/food-logs-api.service';
-import { Paths } from 'src/main';
+import { getWeekOfMonth } from 'src/app/functions/date-utils';
+import { DAY_JS, Paths } from 'src/main';
 
 @Component({
   selector: 'app-home-page',
@@ -22,10 +23,23 @@ export class HomePageComponent implements OnInit {
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly foodLogsApiService = inject(FoodLogsApiService);
   private readonly router = inject(Router);
+  private readonly dayjs = inject(DAY_JS);
 
   public readonly Paths = Paths;
 
   public readonly daysPerWeekTarget = computed(() => 4);
+
+  public readonly goalPerWeek = computed(() => {
+    return Math.min(this.daysPerWeekTarget(), new Date().getDay() + 1);
+  });
+
+  public readonly goalPerMonth = computed(() => {
+    return Math.min(this.daysPerWeekTarget() * 4, this.daysPerWeekTarget() * getWeekOfMonth(new Date()));
+  });
+
+  public readonly goalPerYear = computed(() => {
+    return Math.min(this.daysPerWeekTarget() * 52, this.daysPerWeekTarget() * this.dayjs(new Date()).isoWeek());
+  });
 
   public readonly showMoreRecentlyUpdated = signal(false);
   public readonly recentlyUpdatedAmountToShow = computed(() =>

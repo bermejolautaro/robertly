@@ -348,13 +348,14 @@ public class ExerciseLogController : ControllerBase
 
     var exerciseLogToCreate = new DataModels.ExerciseLog
     {
+      ExerciseLogId = null,
       UserId = exerciseDoneByUserId,
       ExerciseId = exerciseId,
       Date = request.ExerciseLog.ExerciseLogDate!.Value,
       CreatedByUserId = triggerByUserId,
       CreatedAtUtc = nowUtc,
       LastUpdatedByUserId = triggerByUserId,
-      LastUpdatedAtUtc = nowUtc
+      LastUpdatedAtUtc = nowUtc,
     };
 
     var exerciseLogIdCreated = await _genericRepository.CreateAsync(exerciseLogToCreate);

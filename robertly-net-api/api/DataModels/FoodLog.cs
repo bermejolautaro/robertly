@@ -4,18 +4,18 @@ namespace robertly.DataModels;
 
 public record FoodLog : IDataModel
 {
-  public int? FoodLogId { get; init; }
-  public int? FoodId { get; init; }
-  public int? UserId { get; init; }
-  public decimal? Amount { get; init; }
-  public DateTime? Date { get; init; }
-  public DateTime? CreatedAtUtc { get; init; }
-  public int? CreatedByUserId { get; init; }
-  public DateTime? LastUpdatedAtUtc { get; init; }
-  public int? LastUpdatedByUserId { get; init; }
-  public bool? QuickAdd { get; init; }
-  public string? Description { get; init; }
-  public decimal? Calories { get; init; }
-  public decimal? Protein { get; init; }
-  public decimal? Fat { get; init; }
+  public required int? FoodLogId { get; init; }
+  public required int? FoodId { get; init; }
+  public required int? UserId { get; init; }
+  public required decimal? Amount { get; init; }
+  public required DateTime? Date { get; init; }
+  public required DateTime? CreatedAtUtc { get; init; }
+  public required int? CreatedByUserId { get; init; }
+  public required DateTime? LastUpdatedAtUtc { get; init; }
+  public required int? LastUpdatedByUserId { get; init; }
+  public required bool? QuickAdd { get; init; }
+  public required string? Description { get; init; }
+  public required decimal? Calories { get; init; }
+  public required decimal? Protein { get; init; }
+  public required decimal? Fat { get; init; }
 }

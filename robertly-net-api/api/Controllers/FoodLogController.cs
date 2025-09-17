@@ -218,12 +218,37 @@ public class FoodLogController : ControllerBase
       return TypedResults.Unauthorized();
     }
 
+    if (foodLog.User?.UserId is null)
+    {
+      return TypedResults.BadRequest();
+    }
+
+    DataModels.FoodLog foodLogDataModel;
+
     if (foodLog.QuickAdd ?? false)
     {
       if (string.IsNullOrWhiteSpace(foodLog.Description) || foodLog.Description.Length > 255)
       {
         return TypedResults.BadRequest();
       }
+
+      foodLogDataModel = new DataModels.FoodLog
+      {
+        FoodLogId = null,
+        Date = foodLog.Date,
+        UserId = foodLog.User.UserId,
+        CreatedByUserId = user.UserId,
+        CreatedAtUtc = DateTime.UtcNow,
+        LastUpdatedByUserId = user.UserId,
+        LastUpdatedAtUtc = DateTime.UtcNow,
+        QuickAdd = true,
+        FoodId = null,
+        Amount = null,
+        Description = foodLog.Description,
+        Calories = foodLog.Calories,
+        Protein = foodLog.Protein,
+        Fat = foodLog.Fat,
+      };
     }
     else
     {
@@ -231,37 +256,23 @@ public class FoodLogController : ControllerBase
       {
         return TypedResults.BadRequest();
       }
-    }
 
-    DataModels.FoodLog foodLogDataModel;
-
-    if (foodLog.QuickAdd ?? false)
-    {
-      foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
+      foodLogDataModel = new DataModels.FoodLog()
       {
-        FoodId = null,
-        UserId = user.UserId.Value,
+        FoodLogId = null,
+        Date = foodLog.Date,
+        UserId = foodLog.User.UserId,
         CreatedByUserId = user.UserId,
         CreatedAtUtc = DateTime.UtcNow,
         LastUpdatedByUserId = user.UserId,
         LastUpdatedAtUtc = DateTime.UtcNow,
-        Amount = null
-      };
-    }
-    else
-    {
-      foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
-      {
-        FoodId = foodLog.Food!.FoodId,
-        UserId = user.UserId.Value,
-        CreatedByUserId = user.UserId,
-        CreatedAtUtc = DateTime.UtcNow,
-        LastUpdatedByUserId = user.UserId,
-        LastUpdatedAtUtc = DateTime.UtcNow,
+        QuickAdd = false,
+        FoodId = foodLog.Food.FoodId,
+        Amount = foodLog.Amount,
         Description = null,
         Protein = null,
         Calories = null,
-        Fat = null
+        Fat = null,
       };
     }
 
@@ -285,6 +296,11 @@ public class FoodLogController : ControllerBase
       return TypedResults.BadRequest();
     }
 
+    if (foodLog.User?.UserId is null)
+    {
+      return TypedResults.BadRequest();
+    }
+
     var foodLogDb = await _genericRepository.GetByIdAsync<DataModels.FoodLog>(foodLog.FoodLogId.Value);
 
     if (foodLogDb is null)
@@ -292,16 +308,58 @@ public class FoodLogController : ControllerBase
       return TypedResults.BadRequest($"FoodLog with id '{foodLogId}' does not exist.");
     }
 
-    var foodLogDataModel = foodLog.Map<DataModels.FoodLog>() with
+    DataModels.FoodLog foodLogDataModel;
+
+    if (foodLog.QuickAdd ?? false)
     {
-      FoodLogId = foodLogDb.FoodLogId,
-      FoodId = foodLogDb.FoodId,
-      UserId = foodLogDb.UserId,
-      CreatedAtUtc = foodLogDb.CreatedAtUtc,
-      CreatedByUserId = foodLogDb.CreatedByUserId,
-      LastUpdatedAtUtc = DateTime.UtcNow,
-      LastUpdatedByUserId = user.UserId.Value
-    };
+      if (string.IsNullOrWhiteSpace(foodLog.Description) || foodLog.Description.Length > 255)
+      {
+        return TypedResults.BadRequest();
+      }
+
+      foodLogDataModel = new DataModels.FoodLog()
+      {
+        FoodLogId = foodLogDb.FoodLogId,
+        UserId = foodLog.User.UserId,
+        Date = foodLog.Date,
+        CreatedByUserId = user.UserId,
+        CreatedAtUtc = DateTime.UtcNow,
+        LastUpdatedByUserId = user.UserId,
+        LastUpdatedAtUtc = DateTime.UtcNow,
+        QuickAdd = true,
+        FoodId = null,
+        Amount = null,
+        Calories = foodLog.Calories,
+        Protein = foodLog.Protein,
+        Fat = foodLog.Fat,
+        Description = foodLog.Description,
+      };
+    }
+    else
+    {
+      if (foodLog.Food?.FoodId is null)
+      {
+        return TypedResults.BadRequest();
+      }
+
+      foodLogDataModel = new DataModels.FoodLog()
+      {
+        FoodLogId = foodLogDb.FoodLogId,
+        Date = foodLog.Date,
+        UserId = foodLog.User.UserId,
+        CreatedByUserId = user.UserId,
+        CreatedAtUtc = DateTime.UtcNow,
+        LastUpdatedByUserId = user.UserId,
+        LastUpdatedAtUtc = DateTime.UtcNow,
+        FoodId = foodLog.Food.FoodId,
+        Amount = foodLog.Amount,
+        QuickAdd = false,
+        Description = null,
+        Protein = null,
+        Calories = null,
+        Fat = null,
+      };
+    }
 
     await _genericRepository.UpdateAsync<DataModels.FoodLog>(foodLogDataModel);
 
