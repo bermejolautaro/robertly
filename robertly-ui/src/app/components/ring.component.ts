@@ -21,6 +21,7 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
     >
       {{ count() }}
     </text>
+
     <circle
       class="progress-ring__circle default"
       [attr.stroke-width]="strokeWidth()"
@@ -30,10 +31,11 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
       [attr.cy]="this.dimensions() / 2"
       stroke=""
     />
+
     <circle
       class="progress-ring__circle"
       [style.transition]="transition()"
-      [class]="percentClass()"
+      [class]="progressClass()"
       [attr.stroke-width]="strokeWidth()"
       [attr.stroke-dasharray]="strokeDashArray()"
       [attr.stroke-dashoffset]="strokeDashOffset()"
@@ -42,6 +44,20 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
       [attr.cx]="this.dimensions() / 2"
       [attr.cy]="this.dimensions() / 2"
     />
+
+    @if (showExcess()) {
+      <circle
+        class="progress-ring__circle excess"
+        [style.transition]="transition()"
+        [attr.stroke-width]="strokeWidth()"
+        [attr.stroke-dasharray]="excessStrokeDashArray()"
+        [attr.stroke-dashoffset]="excessStrokeDashOffset()"
+        fill="transparent"
+        [attr.r]="this.radius()"
+        [attr.cx]="this.dimensions() / 2"
+        [attr.cy]="this.dimensions() / 2"
+      />
+    }
   </svg>`,
   styles: `
     svg:focus {
@@ -62,6 +78,10 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
       stroke: var(--light-bg);
     }
 
+    .excess {
+      stroke: #00c3ff;
+    }
+
     .success {
       stroke: #27bb65;
     }
@@ -73,7 +93,11 @@ import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
     .danger {
       stroke: #c33e37;
     }
-      `,
+
+    .default {
+      stroke: var(--light-bg);
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgbTooltipModule],
 })
@@ -83,11 +107,13 @@ export class RingComponent {
   public readonly size = model<'l' | 'm' | 's'>('m');
 
   public readonly count = signal(0);
+  public readonly showExcess = signal(false);
 
-  public readonly percent = computed(() => Math.min(100, (this.value() * 100) / this.maxValue()));
-
-  public readonly percentClass = computed(() => {
+  public readonly percent = computed(() => (this.value() * 100) / this.maxValue());
+  
+  public readonly progressClass = computed(() => {
     const percent = this.percent();
+    if (percent > 100) return 'success'; // Always green when over 100%
     return percent >= 70 ? 'success' : percent >= 50 ? 'average' : 'danger';
   });
 
@@ -127,12 +153,17 @@ export class RingComponent {
   public readonly radius = computed(() => this.dimensions() / 2 - this.strokeWidth() * 2);
   public readonly circumference = computed(() => this.radius() * 2 * Math.PI);
   public readonly strokeDashOffset = signal(this.circumference());
+  public readonly excessStrokeDashOffset = signal(this.circumference());
 
   public readonly transition = signal('none');
 
   public readonly strokeDashArray = computed(() => {
     const circumference = this.circumference();
+    return `${circumference} ${circumference}`;
+  });
 
+  public readonly excessStrokeDashArray = computed(() => {
+    const circumference = this.circumference();
     return `${circumference} ${circumference}`;
   });
 
@@ -162,19 +193,36 @@ export class RingComponent {
   public ngOnInit() {
     this.transition.set('none');
     this.strokeDashOffset.set(this.circumference());
+    this.excessStrokeDashOffset.set(this.circumference());
+    this.showExcess.set(false);
   }
 
   #updateStrokeDashOffset = effect(() => {
     const percent = this.percent();
     const circumference = this.circumference();
-
-    const offset = circumference - (percent / 100) * circumference;
-
     const durationMs = 800;
 
     setTimeout(() => {
       this.transition.set(`stroke-dashoffset ${durationMs}ms`);
-      this.strokeDashOffset.set(offset);
+      
+      if (percent <= 100) {
+        const offset = circumference - (percent / 100) * circumference;
+        this.strokeDashOffset.set(offset);
+        this.showExcess.set(false);
+      } else {
+        const offset = 0; // Full circle
+        this.strokeDashOffset.set(offset);
+        
+        setTimeout(() => {
+          this.showExcess.set(true);
+          
+          setTimeout(() => {
+            const excessPercent = percent - 100;
+            const excessOffset = circumference - (excessPercent / 100) * circumference;
+            this.excessStrokeDashOffset.set(excessOffset);
+          }, 50);
+        }, durationMs / 2);
+      }
 
       this.animateCountUp(this.value(), durationMs);
     }, 1000);

@@ -18,4 +18,6 @@ public record FoodLog
   public decimal? Calories { get; init; }
   public decimal? Protein { get; init; }
   public decimal? Fat { get; init; }
+  public decimal? TotalCalories { get; init; }
+  public decimal? TotalProtein { get; init; }
 }

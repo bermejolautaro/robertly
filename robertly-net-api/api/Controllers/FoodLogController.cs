@@ -34,9 +34,18 @@ public class FoodLogController : ControllerBase
       (appLogsRepository, genericRepository, connection, schema, userHelper);
 
   [HttpGet]
-  public async Task<PaginatedList<Models.FoodLog>> GetFoodLogs(int page, int count)
+  public async Task<PaginatedList<Models.FoodLog>> GetFoodLogs(
+    [FromQuery] int page,
+    [FromQuery] int count,
+    [FromQuery] DateTime? fromDate,
+    [FromQuery] DateTime? toDate)
   {
-    return await GetFoodLogs(new GetFoodLogsQueryBuilder(), page, count);
+    var queryBuilder = new GetFoodLogsQueryBuilder()
+      .AndDate(fromDate, ">=")
+      .AndDate(toDate, "<=")
+      .Paginate(page, count);
+
+    return await GetFoodLogs(queryBuilder);
   }
 
   [HttpGet("{foodLogId}")]
@@ -45,7 +54,7 @@ public class FoodLogController : ControllerBase
     var queryBuilder = new GetFoodLogsQueryBuilder()
         .AndFoodLogId(foodLogId);
 
-    var foodLogs = await GetFoodLogs(queryBuilder, 0, 1);
+    var foodLogs = await GetFoodLogs(queryBuilder);
     return foodLogs.Data.FirstOrDefault();
   }
 
@@ -388,23 +397,23 @@ public class FoodLogController : ControllerBase
     return TypedResults.Ok();
   }
 
-  private async Task<PaginatedList<Models.FoodLog>> GetFoodLogs(GetFoodLogsQueryBuilder queryBuilder, int page, int count)
+  private async Task<PaginatedList<Models.FoodLog>> GetFoodLogs(GetFoodLogsQueryBuilder queryBuilder)
   {
     using var connection = _connection.Create();
 
-    var (query, parameters) = queryBuilder.Build(page, count);
+    var (query, parameters) = queryBuilder.Build();
     query = query.ReplaceSchema(_schema);
 
     var (queryCount, parametersCount) = queryBuilder.BuildCountQuery();
     queryCount = queryCount.ReplaceSchema(_schema);
 
-    IEnumerable<FoodLog> foodLogs = [];
+    IEnumerable<Models.FoodLog> foodLogs = [];
     int totalCount = 0;
 
     try
     {
       foodLogs = await connection.QueryAsync<
-         DataModels.FoodLog,
+         DataQueries.FoodLog,
          DataModels.Food?,
          DataModels.User,
          Models.FoodLog
@@ -438,6 +447,10 @@ public class FoodLogController : ControllerBase
       await _appLogsRepository.LogError(queryCount, e);
     }
 
-    return new PaginatedList<Models.FoodLog>() { Data = foodLogs, PageCount = totalCount / Math.Max(count, 1) };
+    return new PaginatedList<Models.FoodLog>()
+    {
+      Data = foodLogs,
+      PageCount = totalCount / Math.Max(queryBuilder.Pagination?.Count ?? 0, 1)
+    };
   }
 }

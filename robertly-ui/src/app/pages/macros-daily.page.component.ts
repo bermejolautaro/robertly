@@ -1,8 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FoodLogsApiService } from '@services/food-logs-api.service';
-import { GoalsApiService } from '@services/goals-api.service';
 import { ProgressBarComponent } from '@components/progress-bar.component';
 import { ParseToDatePipe } from '@pipes/parse-to-date.pipe';
 import { PaginatorComponent } from '@components/paginator.component';

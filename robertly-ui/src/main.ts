@@ -6,7 +6,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
-import { Routes, provideRouter, withComponentInputBinding } from '@angular/router';
+import { Routes, provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
@@ -39,6 +39,7 @@ export const Paths = {
   MACROS: 'macros',
   DAYS_TRAINED: 'days-trained',
   CONFIGURATION: 'configuration',
+  SUMMARY: 'summary',
 } as const;
 
 const routes = [
@@ -139,6 +140,11 @@ const routes = [
     loadComponent: () => import('@pages/configuration.page.component').then(x => x.ConfigurationPageComponent),
   } as const,
   {
+    path: `${Paths.SUMMARY}`,
+    pathMatch: 'full',
+    loadComponent: () => import('@pages/summary.page.component').then(x => x.SummaryPageComponent),
+  } as const,
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: Paths.HOME,
@@ -165,7 +171,7 @@ export class CustomErrorHandler extends ErrorHandler {
     do {
       errors.push(cause.message);
       cause = cause?.cause;
-    } while(cause?.cause);
+    } while (cause?.cause);
 
     errors.push(cause.message);
 
@@ -184,7 +190,7 @@ bootstrapApplication(AppComponent, {
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideHttpClient(withInterceptors([httpErrorResponseInterceptor])),
-    provideRouter(routes, withComponentInputBinding()),
+    provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
     provideFirebaseApp(() =>
       initializeApp({

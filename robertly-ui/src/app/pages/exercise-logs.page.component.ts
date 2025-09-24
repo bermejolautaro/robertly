@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal, DOCUMENT } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ExerciseLogComponent } from '@components/exercise-log.component';
@@ -36,8 +36,7 @@ import { ExerciseLogApiService } from '@services/exercise-log-api.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, ExerciseLogComponent, FiltersComponent, PaginatorComponent],
 })
-export class ExerciseLogsPageComponent implements OnInit {
-  private readonly document = inject(DOCUMENT);
+export class ExerciseLogsPageComponent {
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
 
   public readonly showFilters = signal(false);
@@ -84,11 +83,7 @@ export class ExerciseLogsPageComponent implements OnInit {
     });
   }
 
-  public ngOnInit(): void {
-    this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
-  }
-
-  public onFilterChange(filter: Filter) {
+  public onFilterChange(filter: Filter): void {
     this.currentPage.set(0);
     this.filter.set(filter);
     this.logsResource.reload();

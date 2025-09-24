@@ -85,22 +85,33 @@ public class ExerciseLogRepository
                             AND G2.UserId = @UserId)
     ORDER BY MYW.Year DESC, MYW.Week DESC, MYW.MuscleGroup ASC;
 
-    WITH MuscleGroups AS (
+    WITH RECURSIVE Months AS (
+      SELECT 1 AS MonthNumber
+      UNION ALL
+      SELECT MonthNumber + 1
+      FROM Months
+      WHERE MonthNumber < 12
+    ),
+    MuscleGroups AS (
       SELECT DISTINCT MuscleGroup FROM Exercises
     ),
     MuscleGroupsPerYearAndMonth AS (
       SELECT 
         MG.MuscleGroup,
         EXTRACT(YEAR FROM EL.Date) AS Year,
-        EXTRACT(MONTH FROM EL.Date) AS Month,
+        M.MonthNumber AS Month,
         COUNT(S.SerieId) AS TotalSeries,
         MIN(EL.Date) AS FirstDateInPeriod
       FROM MuscleGroups MG
+      CROSS JOIN Months M
       CROSS JOIN ExerciseLogs EL
       LEFT JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
-      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId AND MG.MuscleGroup = E.MuscleGroup
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId 
+           AND MG.MuscleGroup = E.MuscleGroup 
+           AND EXTRACT(MONTH FROM El.Date) = MonthNumber
       WHERE UserId = @UserId
-      GROUP BY MG.MuscleGroup, EXTRACT(YEAR FROM EL.Date), EXTRACT(MONTH FROM EL.Date)
+      GROUP BY MG.MuscleGroup, EXTRACT(YEAR FROM EL.Date), M.MonthNumber
+      HAVING(EXTRACT(MONTH FROM MAX(EL.Date)) >= M.MonthNumber)
     )
     SELECT 
       MYM.MuscleGroup,

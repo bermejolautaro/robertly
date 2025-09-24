@@ -9,6 +9,7 @@ import { CacheService } from '@services/cache.service';
 import { cacheResponse } from 'src/app/functions/cache-response';
 import { AuthService } from '@services/auth.service';
 import { PaginatedList } from '@models/pagination';
+import { buildHttpParams } from 'src/app/functions/build-params';
 
 @Injectable({
   providedIn: 'root',
@@ -21,13 +22,23 @@ export class FoodLogsApiService {
   private readonly endpoint = `${this.apiUrl}/food-logs`;
 
   public getFoodLogById(foodLogId: number): Observable<FoodLog> {
-    const cacheKey = `${this.authService.userUuid()}:getFoodLogById:${foodLogId}`;
+    const cacheKey = `${this.authService.userUuid()}:getFoodLogById`;
     return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
-  public getFoodLogs(page: number): Observable<PaginatedList<FoodLog>> {
-    const cacheKey = `${this.authService.userUuid()}:getFoodLogs`;
-    return this.http.get<PaginatedList<FoodLog>>(`${this.endpoint}?page=${page}&count=10`).pipe(cacheResponse(this.cacheService, cacheKey));
+  public getFoodLogs(page: number, count: number, fromDate?: string, toDate?: string): Observable<PaginatedList<FoodLog>> {
+    const cacheKey = `${this.authService.userUuid()}:getFoodLogs:${fromDate}:${toDate}`;
+
+    const params = buildHttpParams({
+      page,
+      count,
+      fromDate,
+      toDate,
+    });
+
+    return this.http
+      .get<PaginatedList<FoodLog>>(`${this.endpoint}`, { params })
+      .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getMacros(timezoneId: string): Observable<Macros> {
@@ -39,7 +50,9 @@ export class FoodLogsApiService {
 
   public getMacrosDaily(page: number): Observable<PaginatedList<Macro>> {
     const cacheKey = `${this.authService.userUuid()}:getMacrosDaily`;
-    return this.http.get<PaginatedList<Macro>>(`${this.endpoint}/macros-daily?page=${page}&count=10`).pipe(cacheResponse(this.cacheService, cacheKey));
+    return this.http
+      .get<PaginatedList<Macro>>(`${this.endpoint}/macros-daily?page=${page}&count=10`)
+      .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public createFoodLog(request: FoodLog): Observable<void> {

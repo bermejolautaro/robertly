@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal, DOCUMENT } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { NgbNavModule } from '@ng-bootstrap/ng-bootstrap';
 import { DropdownComponent } from '../components/dropdown.component';
 import { FormControl } from '@angular/forms';
@@ -46,7 +46,6 @@ const OPTIONS: Option[] = [
   imports: [NgbNavModule, DropdownComponent, RouterModule],
 })
 export class StatsPageComponent implements OnInit {
-  private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -78,10 +77,9 @@ export class StatsPageComponent implements OnInit {
 
   public ngOnInit(): void {
     this.navigateToSelectedOption();
-    this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
   }
 
-  private navigateToSelectedOption() {
+  private navigateToSelectedOption(): void {
     if (this.route.firstChild) {
       const path = this.route.snapshot.firstChild?.url?.[0]?.path;
       if (path) {

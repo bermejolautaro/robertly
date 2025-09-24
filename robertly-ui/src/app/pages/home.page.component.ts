@@ -1,5 +1,5 @@
 import { SlicePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal, DOCUMENT } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -18,8 +18,7 @@ import { DAY_JS, Paths } from 'src/main';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, ExerciseLogComponent, RingComponent, ProgressBarComponent, SlicePipe],
 })
-export class HomePageComponent implements OnInit {
-  private readonly document = inject(DOCUMENT);
+export class HomePageComponent {
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly foodLogsApiService = inject(FoodLogsApiService);
   private readonly router = inject(Router);
@@ -30,7 +29,7 @@ export class HomePageComponent implements OnInit {
   public readonly daysPerWeekTarget = computed(() => 4);
 
   public readonly goalPerWeek = computed(() => {
-    return Math.min(this.daysPerWeekTarget(), new Date().getDay() + 1);
+    return Math.min(this.daysPerWeekTarget(), new Date().getDay());
   });
 
   public readonly goalPerMonth = computed(() => {
@@ -84,10 +83,6 @@ export class HomePageComponent implements OnInit {
   public readonly latestWorkoutLogs = computed(() =>
     this.latestWorkoutLogsResource.isLoading() ? [null, null] : this.latestWorkoutLogsResource.value()
   );
-
-  public ngOnInit(): void {
-    this.document.defaultView?.scroll({ top: 0, left: 0, behavior: 'smooth' });
-  }
 
   public navigateTo(segments: string[]): void {
     this.router.navigate(segments);

@@ -117,14 +117,19 @@ input[type='date'] {
   --bs-btn-hover-bg: var(--primary);
 }
 
-.form-control::placeholder {
-  color: var(--font-color);
-  opacity: 0.6;
+.form-control {
+  font-size: 14px;
+  padding: 0.75rem;
+
+  &::placeholder {
+    color: var(--font-color);
+    opacity: 0.6;
+  }
 }
 
 .form-check-input:checked {
-    background-color: var(--primary);
-    border-color: var(--primary);
+  background-color: var(--primary);
+  border-color: var(--primary);
 }
 
 .modal-header {

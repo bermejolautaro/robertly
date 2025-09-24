@@ -12,6 +12,7 @@ public class GetFoodLogsQueryBuilder
   private readonly List<string> _filters = [];
   private readonly Dictionary<string, object> _params = [];
   private readonly List<string> _orderBy = [];
+  public (int Page, int Count)? Pagination { get; private set; }
 
   private readonly string _baseQuery =
     """
@@ -30,6 +31,8 @@ public class GetFoodLogsQueryBuilder
       ,FL.Calories
       ,FL.Protein
       ,FL.Fat
+      ,SUM(ROUND(COALESCE(FL.Calories, 0) + COALESCE(F.Calories, 0) * COALESCE(FL.Amount, 0) / COALESCE(F.Amount, 1), 2)) OVER () AS TotalCalories
+      ,SUM(ROUND(COALESCE(FL.Protein, 0) + COALESCE(F.Protein, 0) * COALESCE(FL.Amount, 0) / COALESCE(F.Amount, 1), 2)) OVER () AS TotalProtein
       ,F.FoodId
       ,F.Name
       ,F.Calories
@@ -122,12 +125,23 @@ public class GetFoodLogsQueryBuilder
     return this;
   }
 
-  public GetFoodLogsQueryBuilder AndDate(DateTime date, string comparisonOperator = "=")
+  public GetFoodLogsQueryBuilder AndDate(DateTime? date, string comparisonOperator = "=")
   {
+    if (date is null)
+    {
+      return this;
+    }
+
     var param = $"@Date_{UseIndex()}";
     _filters.Add($"FL.Date {comparisonOperator} {param}");
     _params.Add(param, date);
 
+    return this;
+  }
+
+  public GetFoodLogsQueryBuilder Paginate(int page, int count)
+  {
+    Pagination = (page, count);
     return this;
   }
 
@@ -143,7 +157,7 @@ public class GetFoodLogsQueryBuilder
     return this;
   }
 
-  public (string query, Dictionary<string, object> parameters) Build(int page, int count)
+  public (string query, Dictionary<string, object> parameters) Build()
   {
     var whereClause = _filters.Count switch
     {
@@ -156,7 +170,11 @@ public class GetFoodLogsQueryBuilder
       ? $"\nORDER BY FL.Date DESC, FL.FoodLogId DESC"
       : $"\nORDER BY {string.Join(", ", _orderBy)}";
 
-    var query = $"{_baseQuery}{whereClause}{orderByClause}\nOFFSET {page * count} LIMIT {count};";
+    var paginationClause = Pagination is null
+       ? ""
+       : $"\nOFFSET {Pagination.Value.Page * Pagination.Value.Count} LIMIT {Pagination.Value.Count}";
+
+    var query = $"{_baseQuery}{whereClause}{orderByClause}{paginationClause};";
 
     return (query, _params);
   }

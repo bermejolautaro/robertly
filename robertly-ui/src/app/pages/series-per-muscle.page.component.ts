@@ -135,7 +135,7 @@ export class SeriesPerMusclePageComponent {
 
     return R.pipe(
       seriesPerMuscle.seriesPerMuscleWeekly,
-      R.groupBy(x => `${x.year}-${x.week.toString().padStart(2, '0')}`),
+      R.groupBy(x => `${x.year}-${x.week?.toString().padStart(2, '0')}`),
       R.entries(),
       R.map(([date, groupedSeries]) => ({
         date: `Week ${date.split('-')[1]} of ${date.split('-')[0]}`,
@@ -153,7 +153,7 @@ export class SeriesPerMusclePageComponent {
 
     return R.pipe(
       seriesPerMuscle.seriesPerMuscleMonthly,
-      R.groupBy(x => `${x.year.toString()}-${x.month.toString().padStart(2, '0')}-01`),
+      R.groupBy(x => `${x.year?.toString()}-${x.month?.toString().padStart(2, '0')}-01`),
       R.entries(),
       R.map(([date, groupedSeries]) => ({
         date: this.titleCasePipe.transform(this.dayjs(date).format('MMMM[ - ]YYYY')),

@@ -81,7 +81,7 @@ export class FoodsPageComponent {
   public readonly currentPage = signal<number>(0);
 
   public readonly foodLogs = rxResource({
-    stream: () => this.foodLogsApiService.getFoodLogs(this.currentPage()),
+    stream: () => this.foodLogsApiService.getFoodLogs(this.currentPage(), 10),
   });
 
   public readonly foods = rxResource({

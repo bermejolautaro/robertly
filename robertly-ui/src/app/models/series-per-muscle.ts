@@ -1,11 +1,11 @@
 export interface SeriesPerMuscleRow {
-  muscleGroup: string;
-  year: number;
-  month: number;
-  week: number;
-  totalSeries: number;
-  firstDateInPeriod: string;
-  targetValue: number;
+  muscleGroup: string | null;
+  year: number | null;
+  month: number | null;
+  week: number | null;
+  totalSeries: number | null;
+  firstDateInPeriod: string | null;
+  targetValue: number | null;
 }
 
 export interface SeriesPerMuscle {
