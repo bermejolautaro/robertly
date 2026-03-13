@@ -17,11 +17,11 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
   private _onChange: (value: unknown) => void = () => {};
   private _onTouched: () => void = () => {};
 
-  public readonly value = signal<string>('');
+  public readonly value = signal<string | null>(null);
 
   @HostListener('input', ['$event'])
   public onInput(event: Event): void {
-    let inputValue = (event.target as HTMLInputElement).value;
+    let inputValue: string | null = (event.target as HTMLInputElement).value;
 
     inputValue = inputValue.replace(',', '.').replace(/[^0-9.]/g, '');
 
@@ -46,6 +46,10 @@ export class OnlyNumbersDirective implements ControlValueAccessor {
           inputValue = inputValue.replace(/^0+/, '');
         }
       }
+    }
+
+    if (!inputValue) {
+      inputValue = null;
     }
 
     this.element.nativeElement.value = inputValue;

@@ -67,7 +67,7 @@ export class EditExercisePageComponent {
     const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
     const instance: ConfirmModalComponent = modalRef.componentInstance;
 
-    instance.configurate({
+    instance.configure({
       title: 'Delete Record',
       subtitle: '<strong>Are you sure you want to delete this record?</strong>',
       body: 'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>',

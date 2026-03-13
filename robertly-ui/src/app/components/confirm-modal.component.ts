@@ -52,7 +52,7 @@ export class ConfirmModalComponent {
 
   public readonly modal = inject(NgbActiveModal);
 
-  public configurate(config: {
+  public configure(config: {
     title?: string;
     subtitle?: string;
     body?: string;

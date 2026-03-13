@@ -22,7 +22,11 @@ export const httpErrorResponseInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError(e => {
       if (e instanceof HttpErrorResponse) {
-        if (e.status === HttpStatusCode.Unauthorized && authChecksEnabled) {
+        if (e.status === HttpStatusCode.Unauthorized) {
+          if (!authChecksEnabled) {
+            return of();
+          }
+
           return from(authApiService.tryRefreshToken()).pipe(
             switchMap(isRefreshSuccessful => {
               const path = isRefreshSuccessful ? Paths.HOME : Paths.SIGN_IN;

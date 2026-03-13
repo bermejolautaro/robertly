@@ -1,6 +1,6 @@
 import { TitleCasePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, output, signal } from '@angular/core';
-import { FormControl, FormsModule } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgbDropdownModule, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
 import { TypeaheadComponent } from '@components/typeahead.component';
 import { Exercise } from '@models/exercise.model';
@@ -17,7 +17,7 @@ import { ExerciseApiService } from '@services/exercises-api.service';
   templateUrl: './filters.component.html',
   styles: ``,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgbTypeaheadModule, FormsModule, NgbDropdownModule, TypeaheadComponent, DropdownComponent],
+  imports: [NgbTypeaheadModule, FormsModule, ReactiveFormsModule, NgbDropdownModule, TypeaheadComponent, DropdownComponent],
 })
 export class FiltersComponent {
   public readonly filtersChanged = output<Filter>();

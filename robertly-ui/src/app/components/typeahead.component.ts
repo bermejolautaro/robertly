@@ -9,12 +9,19 @@ import {
   Signal,
   viewChild,
 } from '@angular/core';
-import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { NgbTypeahead, NgbTypeaheadModule, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, merge } from 'rxjs';
 
 @Component({
   selector: 'app-typeahead',
+  providers: [
+    {
+      provide: NG_VALUE_ACCESSOR,
+      useExisting: TypeaheadComponent,
+      multi: true
+    }
+  ],
   template: `<div class="input-group">
     <input
       #typeaheadInput
@@ -27,9 +34,8 @@ import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, mer
       [popupClass]="'typeahead'"
       [resultFormatter]="itemSelector()"
       [inputFormatter]="itemSelector()"
-      (focus)="focus$.next(control()?.value ?? null)"
-      (click)="click$.next(control()?.value ?? null)"
-      [disabled]="disabled() || control()?.disabled"
+      (focus)="focus$.next(controlValue ?? null)"
+      (click)="click$.next(controlValue ?? null)"
     />
     <button
       class="btn btn-outline-secondary"
@@ -58,15 +64,19 @@ import { Observable, Subject, bufferTime, distinctUntilChanged, filter, map, mer
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule, FormsModule, NgbTypeaheadModule],
 })
-export class TypeaheadComponent<T> implements OnInit {
+export class TypeaheadComponent<T> implements OnInit, ControlValueAccessor {
   private readonly typeaheadInputHtml = viewChild.required<ElementRef<HTMLInputElement>>('typeaheadInput');
   private readonly typeaheadInstance = viewChild.required<NgbTypeahead>('typeaheadInstance');
   public readonly disabled = input(false);
   public readonly items = input.required<T[]>();
-  public readonly control = model<FormControl<T | null>>();
   public readonly value = model<T | null>();
   public readonly itemSelector = input<(item: T | null) => string>(x => `${x ?? ''}`);
   public readonly placeholder = input<string>('Placeholder');
+
+  public controlValue: T | null = null;
+
+  private onChange: (value: T | null) => void = () => { };
+  private onTouched: () => void = () => { };
 
   public readonly focus$: Subject<T | null> = new Subject<T | null>();
   public readonly click$: Subject<T | null> = new Subject<T | null>();
@@ -77,14 +87,36 @@ export class TypeaheadComponent<T> implements OnInit {
     this.setup_effect_update_native_element_on_form_change();
   }
 
+  public writeValue(value: T | null): void {
+    this.controlValue = value;
+
+    const inputHtml = this.typeaheadInputHtml();
+
+    if (inputHtml) {
+      inputHtml.nativeElement.value = this.itemSelector()(value);
+    }
+  }
+
+  registerOnChange(fn: (value: T | null) => void): void {
+    this.onChange = fn;
+  }
+  registerOnTouched(fn: () => void): void {
+    this.onTouched = fn;
+  }
+  setDisabledState?(isDisabled: boolean): void {
+    const inputHtml = this.typeaheadInputHtml();
+    if (inputHtml) {
+      inputHtml.nativeElement.disabled = isDisabled;
+    }
+  }
+
   private setup_effect_update_native_element_on_form_change() {
     effect(() => {
-      const control = this.control();
       const value = this.value();
       const inputHtml = this.typeaheadInputHtml();
 
       if (inputHtml) {
-        inputHtml.nativeElement.value = this.itemSelector()(control?.value ?? value ?? null);
+        inputHtml.nativeElement.value = this.itemSelector()(this.controlValue ?? value ?? null);
       }
     });
   }
@@ -102,10 +134,8 @@ export class TypeaheadComponent<T> implements OnInit {
   public clear(): void {
     const inputHtml = this.typeaheadInputHtml();
 
-    this.control.update(x => {
-      x?.reset();
-      return x;
-    });
+    this.controlValue = null;
+    this.onChange(null);
 
     this.value.set(null);
 
@@ -115,10 +145,9 @@ export class TypeaheadComponent<T> implements OnInit {
   }
 
   public onSelectItem(evnt: NgbTypeaheadSelectItemEvent<T>) {
-    this.control.update(x => {
-      x?.patchValue(evnt.item);
-      return x;
-    });
+    this.controlValue = evnt.item;
+    this.onChange(this.controlValue);
+    this.onTouched();
 
     this.value.set(evnt.item);
   }

@@ -19,7 +19,7 @@
         <div class="mb-3">
           <app-typeahead
             placeholder="Muscle Group"
-            [control]="exerciseForm.controls.muscleGroup"
+            [formControl]="exerciseForm.controls.muscleGroup"
             [items]="exerciseApiService.muscleGroups()"
             [itemSelector]="titleCaseSelector"
           ></app-typeahead>
@@ -30,7 +30,7 @@
         <div class="mb-3">
           <app-typeahead
             placeholder="Type"
-            [control]="exerciseForm.controls.type"
+            [formControl]="exerciseForm.controls.type"
             [items]="exerciseApiService.types()"
             [itemSelector]="titleCaseSelector"
           ></app-typeahead>

@@ -97,12 +97,12 @@ const routes = [
   {
     path: `${Paths.EXERCISE_LOGS}/${Paths.EDIT}/:${Paths.ID}`,
     pathMatch: 'full',
-    loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
+    loadComponent: () => import('@pages/edit-exercise-log-2.page.component').then(x => x.EditExerciseLogPage2Component),
   } as const,
   {
     path: `${Paths.EXERCISE_LOGS}/${Paths.CREATE}`,
     pathMatch: 'full',
-    loadComponent: () => import('@pages/edit-exercise-log.page.component').then(x => x.EditExerciseLogPageComponent),
+    loadComponent: () => import('@pages/edit-exercise-log-2.page.component').then(x => x.EditExerciseLogPage2Component),
   } as const,
   {
     path: Paths.FOOD_LOGS,

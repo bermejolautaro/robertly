@@ -13,8 +13,7 @@
             type="date"
             placeholder="DD-MM-YYYY"
             class="form-control"
-            [(ngModel)]="formSignal.date"
-            [disabled]="!formEnabled()"
+            [formControl]="form.controls.date"
           />
         </div>
         <!-- #endregion -->
@@ -23,10 +22,9 @@
         <div class="col-12 mb-2">
           <app-typeahead
             placeholder="User"
-            [(value)]="formSignal.user"
+            [formControl]="form.controls.user"
             [items]="users()"
             [itemSelector]="userSelector"
-            [disabled]="!formEnabled()"
           ></app-typeahead>
         </div>
         <!-- #endregion -->
@@ -36,10 +34,9 @@
           <div class="input-group">
             <app-typeahead
               placeholder="Exercise"
-              [(value)]="formSignal.exercise"
+              [formControl]="form.controls.exercise"
               [items]="exerciseApiService.exercises()"
               [itemSelector]="exerciseSelector"
-              [disabled]="!formEnabled()"
             ></app-typeahead>
           </div>
         </div>
@@ -57,7 +54,7 @@
         }
 
         <!-- #region SERIES -->
-        @let series = formSignal.series();
+        @let series = form.controls.series.controls;
         <div class="mb-3">
           @for (serie of series; track $index) {
             <div class="pb-1">
@@ -68,8 +65,7 @@
                     inputmode="decimal"
                     class="form-control"
                     placeholder="Reps"
-                    [(ngModel)]="serie().reps"
-                    [disabled]="!formEnabled()"
+                    [formControl]="serie.controls.reps"
                     onlyNumbers
                     [allowDecimals]="false"
                   />
@@ -80,8 +76,7 @@
                     inputmode="decimal"
                     class="form-control"
                     placeholder="Weight (Kg)"
-                    [(ngModel)]="serie().weightInKg"
-                    [disabled]="!formEnabled()"
+                    [formControl]="serie.controls.weightInKg"
                     onlyNumbers
                   />
                 </div>
@@ -108,9 +103,9 @@
           <button
             type="button"
             class="btn w-100 d-flex justify-content-center align-items-center"
-            [class.btn-primary]="formValid()"
-            [class.btn-secondary]="!formValid() || !hasUnsavedChanges() || isSaveLoading()"
-            [disabled]="!formValid() || isSaveLoading() || (mode() === 'edit' && !hasUnsavedChanges())"
+            [class.btn-primary]="form.valid"
+            [class.btn-secondary]="!form.valid || isSaveLoading()"
+            [disabled]="!form.valid || isSaveLoading()"
             (click)="save()"
           >
             @if (!isSaveLoading()) {
@@ -135,7 +130,18 @@
         </div>
       </div>
 
-      @let original = originalValue.value();
+
+        <pre>{{ form.value | json }}</pre>
+        <pre>{{ form.errors | json }}</pre>
+        <pre>DATE: {{ form.controls.date.errors | json }}</pre>
+        <pre>EXERCISE: {{ form.controls.exercise.errors | json }}</pre>
+        <pre>{{ form.controls.exercise.value | json }}</pre>
+        <pre>{{ form.controls.exercise.status| json }}</pre>
+        <pre>{{ form.controls.user.errors | json }}</pre>
+        <pre>{{ form.controls.series.errors | json }}</pre>
+        <pre>{{ form.valid | json }}</pre>
+
+      <!-- @let original = originalValue.value();
       @if (mode() === 'edit') {
         @if (original) {
           <div class="card mb-3">
@@ -211,7 +217,7 @@
             </div>
           </div>
         }
-      }
+      } -->
 
       @if (mode() === 'edit') {
         <button

@@ -315,6 +315,7 @@ public class ExerciseLogRepository
         ,(S.WeightInKg * (36.0 / (37.0 - s.Reps))) AS Brzycki
       FROM Series S
       WHERE ExerciseLogId = ANY(@ExerciseLogIds)
+      ORDER BY S.SerieId ASC
       """),
         new { ExerciseLogIds = exerciseLogs.Select(x => x.ExerciseLogId).ToList() }
     );

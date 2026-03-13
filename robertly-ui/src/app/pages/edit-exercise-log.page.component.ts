@@ -41,7 +41,8 @@ import { OfflineQueueService } from '@services/offline-queue.service';
 
 @Component({
   selector: 'edit-exercise-log-page',
-  templateUrl: 'edit-exercise-log.page.component.html',
+  template: '',
+  // templateUrl: 'edit-exercise-log.page.component.html',
   styleUrl: 'edit-exercise-log.page.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -275,7 +276,7 @@ export class EditExerciseLogPageComponent {
     const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
     const instance: ConfirmModalComponent = modalRef.componentInstance;
 
-    instance.configurate({
+    instance.configure({
       title: 'Delete Record',
       subtitle: '<strong>Are you sure you want to delete this record?</strong>',
       body: 'This record will be permanently deleted. <span class="text-danger">This operation can not be undone.</span>',

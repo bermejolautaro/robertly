@@ -131,7 +131,7 @@ export class DaysTrainedPageComponent {
 
   public readonly period = signal<'date' | 'week' | 'month' | 'year'>('week');
 
-  public control = new FormControl<number>(2025);
+  public control = new FormControl<number>(new Date().getFullYear());
 
   public readonly daysTrained = rxResource({
     stream: () => this.exerciseLogApiService.getDaysTrained2(),

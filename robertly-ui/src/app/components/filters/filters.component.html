@@ -2,7 +2,7 @@
 <div class="col-12 mb-2">
   <app-typeahead
     placeholder="User"
-    [control]="userControl"
+    [formControl]="userControl"
     [items]="users()"
     [itemSelector]="userSelector"
   ></app-typeahead>
@@ -25,7 +25,7 @@
 <div class="col-12 mb-2">
   <app-typeahead
     placeholder="Exercise"
-    [control]="exerciseControl"
+    [formControl]="exerciseControl"
     [items]="exercises()"
     [itemSelector]="exerciseSelector"
   ></app-typeahead>
@@ -36,7 +36,7 @@
 <div class="col-12 mb-2">
   <app-typeahead
     placeholder="Weight (kg)"
-    [control]="weightControl"
+    [formControl]="weightControl"
     [items]="weights()"
     [itemSelector]="weightFormatter"
   ></app-typeahead>
