@@ -13,8 +13,7 @@ public class GetExerciseLogsQueryBuilder
   private readonly List<string> _filters = [];
   private readonly List<string> _orderBy = [];
 
-  private readonly string _baseQuery =
-    """
+  private readonly string _baseQuery = """
     SELECT DISTINCT
        EL.ExerciseLogId
       ,EL.UserId AS ExerciseLogUserId
@@ -70,8 +69,7 @@ public class GetExerciseLogsQueryBuilder
     ) S2 ON EL.ExerciseLogId = S2.ExerciseLogId
     """;
 
-  private readonly string _baseQueryCount =
-    """
+  private readonly string _baseQueryCount = """
     SELECT COUNT(DISTINCT EL.ExerciseLogId)
     FROM ExerciseLogs EL
     INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
@@ -90,7 +88,9 @@ public class GetExerciseLogsQueryBuilder
     return this;
   }
 
-  public GetExerciseLogsQueryBuilder AndUserFirebaseUuid(string userFirebaseUuid)
+  public GetExerciseLogsQueryBuilder AndUserFirebaseUuid(
+    string userFirebaseUuid
+  )
   {
     var param = $"@UserFirebaseUuid_{UseIndex()}";
     _filters.Add($"U.UserFirebaseUuid = {param}");
@@ -106,7 +106,9 @@ public class GetExerciseLogsQueryBuilder
       return this;
     }
 
-    List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"UserId_{UseIndex()}", x)).ToList();
+    List<(string Param, int Value)> paramsWithValue = userIds
+      .Select(x => ($"UserId_{UseIndex()}", x))
+      .ToList();
     var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
     _filters.Add($"U.UserId IN ({@params})");
 
@@ -125,7 +127,9 @@ public class GetExerciseLogsQueryBuilder
       return this;
     }
 
-    List<(string Param, int Value)> paramsWithValue = userIds.Select(x => ($"LastUpdatedByUserId_{UseIndex()}", x)).ToList();
+    List<(string Param, int Value)> paramsWithValue = userIds
+      .Select(x => ($"LastUpdatedByUserId_{UseIndex()}", x))
+      .ToList();
     var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
     _filters.Add($"EL.LastUpdatedByUserId IN ({@params})");
 
@@ -137,13 +141,27 @@ public class GetExerciseLogsQueryBuilder
     return this;
   }
 
+  public GetExerciseLogsQueryBuilder AndLastUpdatedAtUtc(
+    DateTime lastUpdatedAtUtc,
+    string comparisonOperator = "="
+  )
+  {
+    var param = $"@LastUpdatedAtUtc_{UseIndex()}";
+    _filters.Add($"EL.LastUpdatedAtUtc {comparisonOperator} {param}");
+    _params.Add(param, lastUpdatedAtUtc);
+
+    return this;
+  }
+
   public GetExerciseLogsQueryBuilder AndDate(List<DateTime> dates)
   {
     if (dates.IsNullOrEmpty())
     {
       return this;
     }
-    List<(string Param, DateTime Value)> paramsWithValue = dates.Select(x => ($"Date_{UseIndex()}", x)).ToList();
+    List<(string Param, DateTime Value)> paramsWithValue = dates
+      .Select(x => ($"Date_{UseIndex()}", x))
+      .ToList();
     var @params = string.Join(", ", paramsWithValue.Select(x => $"@{x.Param}"));
     _filters.Add($"EL.Date IN ({@params})");
 
@@ -155,7 +173,10 @@ public class GetExerciseLogsQueryBuilder
     return this;
   }
 
-  public GetExerciseLogsQueryBuilder AndDate(DateTime date, string comparisonOperator = "=")
+  public GetExerciseLogsQueryBuilder AndDate(
+    DateTime date,
+    string comparisonOperator = "="
+  )
   {
     var param = $"@Date_{UseIndex()}";
     _filters.Add($"EL.Date {comparisonOperator} {param}");
@@ -212,26 +233,34 @@ public class GetExerciseLogsQueryBuilder
     return this;
   }
 
-  public GetExerciseLogsQueryBuilder OrderByLastUpdatedAtUtc(Direction direction)
+  public GetExerciseLogsQueryBuilder OrderByLastUpdatedAtUtc(
+    Direction direction
+  )
   {
     _orderBy.Add($"EL.LastUpdatedAtUtc {ParseDirection(direction)}");
     return this;
   }
 
-  public (string query, Dictionary<string, object> parameters) Build(int page, int count)
+  public (string query, Dictionary<string, object> parameters) Build(
+    int page,
+    int count
+  )
   {
     var whereClause = _filters.Count switch
     {
       0 => "",
       1 => $"\nWHERE {_filters[0]}",
-      _ => $"\nWHERE {_filters[0]}\nAND {string.Join("\nAND ", _filters.Skip(1))}"
+      _ =>
+        $"\nWHERE {_filters[0]}\nAND {string.Join("\nAND ", _filters.Skip(1))}",
     };
 
-    var orderByClause = _orderBy.Count == 0
-      ? $"\nORDER BY EL.Date DESC, EL.ExerciseLogId DESC"
-      : $"\nORDER BY {string.Join(", ", _orderBy)}";
+    var orderByClause =
+      _orderBy.Count == 0
+        ? $"\nORDER BY EL.Date DESC, EL.ExerciseLogId DESC"
+        : $"\nORDER BY {string.Join(", ", _orderBy)}";
 
-    var query = $"{_baseQuery}{whereClause}{orderByClause}\nOFFSET {page * count} LIMIT {count};";
+    var query =
+      $"{_baseQuery}{whereClause}{orderByClause}\nOFFSET {page * count} LIMIT {count};";
 
     return (query, _params);
   }
@@ -242,7 +271,8 @@ public class GetExerciseLogsQueryBuilder
     {
       0 => "",
       1 => $"\nWHERE {_filters[0]}",
-      _ => $"\nWHERE {_filters[0]}\nAND {string.Join("\nAND ", _filters.Skip(1))}"
+      _ =>
+        $"\nWHERE {_filters[0]}\nAND {string.Join("\nAND ", _filters.Skip(1))}",
     };
 
     var query = $"{_baseQueryCount}{whereClause};";

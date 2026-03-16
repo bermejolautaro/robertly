@@ -1,9 +1,20 @@
-import { Component, OnInit, TemplateRef, inject, signal, DOCUMENT } from '@angular/core';
-import { NavigationEnd, Router, RouterLinkWithHref, RouterOutlet } from '@angular/router';
+import {
+  Component,
+  OnInit,
+  TemplateRef,
+  inject,
+  signal,
+  DOCUMENT,
+} from '@angular/core';
+import {
+  NavigationEnd,
+  Router,
+  RouterOutlet,
+} from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { filter, take } from 'rxjs';
-import { AUTH_CHECKS_ENABLED, Paths } from 'src/main';
+import { filter, firstValueFrom, lastValueFrom, map, take } from 'rxjs';
+import { Paths } from 'src/main';
 
 import {
   NgbAlertModule,
@@ -23,6 +34,10 @@ import { AuthService } from '@services/auth.service';
 import { ConfirmModalComponent } from '@components/confirm-modal.component';
 import { CacheService } from '@services/cache.service';
 import { OfflineQueueService } from '@services/offline-queue.service';
+import { Auth } from '@angular/fire/auth';
+import { DatabaseService } from '@services/database.service';
+import { UsersService } from '@services/users.service';
+import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 
 @Component({
   selector: 'app-root',
@@ -31,7 +46,6 @@ import { OfflineQueueService } from '@services/offline-queue.service';
   imports: [
     HeaderComponent,
     FooterComponent,
-    RouterLinkWithHref,
     RouterOutlet,
     NgbDropdownModule,
     NgbOffcanvasModule,
@@ -40,27 +54,34 @@ import { OfflineQueueService } from '@services/offline-queue.service';
   ],
 })
 export class AppComponent implements OnInit {
+  public readonly auth = inject(Auth);
+
   public readonly toastService = inject(ToastService);
   public readonly authApiService = inject(AuthApiService);
-  public readonly authService = inject(AuthService);
 
   private readonly offlineQueueService = inject(OfflineQueueService);
   private readonly cacheService = inject(CacheService);
   private readonly exerciseApiService = inject(ExerciseApiService);
+  private readonly exerciseLogApiService = inject(ExerciseLogApiService);
+  private readonly usersService = inject(UsersService);
+  private readonly dbService = inject(DatabaseService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly document = inject(DOCUMENT);
   private readonly router = inject(Router);
   private readonly offcanvasService = inject(NgbOffcanvas);
   private readonly modalService = inject(NgbModal);
-  private readonly authChecksEnabled = inject(AUTH_CHECKS_ENABLED);
 
   public readonly Paths = Paths;
-  public readonly currentRoute = toSignal(this.router.events.pipe(filter(x => x instanceof NavigationEnd)));
+  public readonly currentRoute = toSignal(
+    this.router.events.pipe(filter(x => x instanceof NavigationEnd))
+  );
   public readonly isLoading = signal(false);
   public readonly preloaderProgress = signal(25);
 
   public constructor() {
-    this.serviceWorkerUpdates.unrecoverable.pipe(takeUntilDestroyed()).subscribe(x => console.error(x));
+    this.serviceWorkerUpdates.unrecoverable
+      .pipe(takeUntilDestroyed())
+      .subscribe(x => console.error(x));
 
     this.serviceWorkerUpdates.versionUpdates.subscribe({
       next: evnt => {
@@ -69,14 +90,18 @@ export class AppComponent implements OnInit {
         } else if (evnt.type === 'NO_NEW_VERSION_DETECTED') {
           this.toastService.ok('Everything up to date.');
         } else if (evnt.type === 'VERSION_READY') {
-          const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
+          const modalRef = this.modalService.open(ConfirmModalComponent, {
+            centered: true,
+          });
           const instance: ConfirmModalComponent = modalRef.componentInstance;
 
-          instance.title.set('Version Update');
-          instance.subtitle.set('<strong>New version found</strong>');
-          instance.body.set('Do you want to install it now?');
-          instance.cancelText.set('Later');
-          instance.okText.set('Update');
+          instance.configure({
+            title: 'Update Available',
+            subtitle: '<strong>New version found</strong>',
+            body: 'Do you want to install it now?',
+            cancelText: 'Later',
+            okText: 'Update',
+          });
 
           modalRef.closed.pipe(take(1)).subscribe(() => {
             this.document.location.reload();
@@ -88,27 +113,56 @@ export class AppComponent implements OnInit {
         }
       },
     });
+
+    this.auth.onAuthStateChanged(async user => {
+      this.preloaderProgress.set(75);
+
+      if (!user) {
+        throw new Error('No user from firebase');
+      }
+
+      const userFromDb = await firstValueFrom(
+        this.usersService.getUserByFirebaseUuid(user?.uid).pipe(
+          map(userFromDb => ({
+            email: userFromDb.email,
+            userId: userFromDb.userId,
+            name: userFromDb.name,
+            userFirebaseUuid: userFromDb.userFirebaseUuid,
+            assignedUsers: userFromDb.assignedUsers,
+          }))
+        )
+      );
+
+      if (!userFromDb) {
+        throw new Error('No user from API');
+      }
+
+      try {
+        this.exerciseApiService.fetchExercises();
+      } catch (error) {}
+
+      this.dbService.init(user.uid);
+      
+      const DAYS_AGO_90 = new Date(); 
+      DAYS_AGO_90.setDate(DAYS_AGO_90.getDate() - 90);
+
+      await this.exerciseLogApiService.syncPull(DAYS_AGO_90.toISOString());
+
+      this.offlineQueueService.processQueue();
+
+      this.preloaderProgress.set(100);
+      this.isLoading.set(false);
+    });
+
+    window.addEventListener('online', () => {
+      this.offlineQueueService.processQueue();
+    });
   }
 
   public async ngOnInit(): Promise<void> {
     this.isLoading.set(true);
     this.cacheService.load();
     this.cacheService.cleanupExpired();
-
-    if (this.authChecksEnabled && this.offlineQueueService.isOnline()) {
-      await this.authApiService.tryRefreshToken();
-    }
-
-    this.preloaderProgress.set(75);
-
-    this.offlineQueueService.processQueue();
-
-    try {
-      await this.exerciseApiService.fetchExercises();
-    } catch (error) {}
-
-    this.preloaderProgress.set(100);
-    this.isLoading.set(false);
   }
 
   public async signOut(): Promise<void> {

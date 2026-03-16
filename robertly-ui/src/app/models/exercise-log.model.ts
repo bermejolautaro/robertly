@@ -18,6 +18,8 @@ export interface ExerciseLog {
   createdAtUtc: string | null;
   lastUpdatedByUserId: number | null;
   lastUpdatedAtUtc: string | null;
+  deleted: boolean | null;
+  syncStatus: 'pending' | 'synced' | null;
   totalReps: number | null;
   tonnage: number | null;
   averageReps: number | null;

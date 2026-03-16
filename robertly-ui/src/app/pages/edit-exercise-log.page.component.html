@@ -130,18 +130,7 @@
         </div>
       </div>
 
-
-        <pre>{{ form.value | json }}</pre>
-        <pre>{{ form.errors | json }}</pre>
-        <pre>DATE: {{ form.controls.date.errors | json }}</pre>
-        <pre>EXERCISE: {{ form.controls.exercise.errors | json }}</pre>
-        <pre>{{ form.controls.exercise.value | json }}</pre>
-        <pre>{{ form.controls.exercise.status| json }}</pre>
-        <pre>{{ form.controls.user.errors | json }}</pre>
-        <pre>{{ form.controls.series.errors | json }}</pre>
-        <pre>{{ form.valid | json }}</pre>
-
-      <!-- @let original = originalValue.value();
+      @let original = this.initialValue();
       @if (mode() === 'edit') {
         @if (original) {
           <div class="card mb-3">
@@ -157,11 +146,11 @@
           </div>
         }
 
-        @if (recentlyUpdated.value()?.length) {
+        @if (recentlyUpdated().length) {
           <div class="card mb-3">
             <div class="card-body">
               <div class="card-title">Recently Updated</div>
-              @for (log of recentlyUpdated.value() | slice: 0 : 3; track $index) {
+              @for (log of recentlyUpdated() | slice: 0 : 3; track $index) {
                 <app-exercise-log
                   class="w-100"
                   [exerciseLog]="log"
@@ -217,7 +206,7 @@
             </div>
           </div>
         }
-      } -->
+      }
 
       @if (mode() === 'edit') {
         <button

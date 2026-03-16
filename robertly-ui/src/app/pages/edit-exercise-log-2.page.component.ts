@@ -1,4 +1,10 @@
-import { DecimalPipe, JsonPipe, Location, SlicePipe, TitleCasePipe } from '@angular/common';
+import {
+  DecimalPipe,
+  JsonPipe,
+  Location,
+  SlicePipe,
+  TitleCasePipe,
+} from '@angular/common';
 import {
   Component,
   ChangeDetectionStrategy,
@@ -8,7 +14,14 @@ import {
 } from '@angular/core';
 import { Exercise } from '@models/exercise.model';
 import { NgbModal, NgbTypeaheadModule } from '@ng-bootstrap/ng-bootstrap';
-import { ReactiveFormsModule, FormsModule, FormGroup, Validators, FormArray, FormControl } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormsModule,
+  FormGroup,
+  Validators,
+  FormArray,
+  FormControl,
+} from '@angular/forms';
 import { TypeaheadComponent } from '@components/typeahead.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DAY_JS, Paths } from 'src/main';
@@ -30,6 +43,9 @@ import { parseNumber } from '@validators/parse-number';
 import { OfflineQueueService } from '@services/offline-queue.service';
 import { isNullOrUndefined } from '../functions/is-null-or-undefined';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { ExerciseLog } from '@models/exercise-log.model';
+import { DatabaseService } from '@services/database.service';
+import { tempId } from '../functions/temp-id';
 
 @Component({
   selector: 'edit-exercise-log-page',
@@ -56,6 +72,7 @@ export class EditExerciseLogPage2Component {
   private readonly titleCasePipe = inject(TitleCasePipe);
 
   public readonly exerciseApiService = inject(ExerciseApiService);
+  private readonly dbService = inject(DatabaseService);
   private readonly authService = inject(AuthService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
   private readonly offlineQueueService = inject(OfflineQueueService);
@@ -66,7 +83,7 @@ export class EditExerciseLogPage2Component {
     user: new FormControl<User | null>(null, Validators.required),
     exercise: new FormControl<Exercise | null>(null, Validators.required),
     date: new FormControl<string | null>(null, Validators.required),
-    series: new FormArray(createEmptySeriesArray())
+    series: new FormArray(createEmptySeriesArray()),
   });
 
   public readonly mode = signal<'create' | 'edit'>('create');
@@ -77,12 +94,15 @@ export class EditExerciseLogPage2Component {
 
   public readonly userSelector = (x: User | null) => x?.name ?? '';
 
-  public readonly exerciseSelector = (x: Exercise | null) => this.titleCasePipe.transform(x?.name) ?? '';
+  public readonly exerciseSelector = (x: Exercise | null) =>
+    this.titleCasePipe.transform(x?.name) ?? '';
 
-  private initialValue = structuredClone(this.form.getRawValue());
+  public recentlyUpdated = signal<ExerciseLog[]>([]);
+
+  public initialValue = signal<ExerciseLog | null>(null);
+  public initialFormValue = structuredClone(this.form.getRawValue());
 
   private formChanges = toSignal(this.form.valueChanges);
-
 
   public readonly hasUnsavedChanges = computed(() => {
     this.formChanges();
@@ -92,12 +112,8 @@ export class EditExerciseLogPage2Component {
       return false;
     }
 
-    return JSON.stringify(current) !== JSON.stringify(this.initialValue);
+    return JSON.stringify(current) !== JSON.stringify(this.initialFormValue);
   });
-
-  public markSaved(): void {
-    this.initialValue = structuredClone(this.form.getRawValue());
-  }
 
   public ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -117,50 +133,66 @@ export class EditExerciseLogPage2Component {
     } else {
       this.form.patchValue({
         user: this.authService.user.value(),
-        date: this.dayjs().format('YYYY-MM-DD')
+        date: this.dayjs().format('YYYY-MM-DD'),
       });
 
       this.isLoading.set(false);
     }
   }
 
-  private loadExerciseLog(): void {
+  private async loadExerciseLog(): Promise<void> {
     const exerciseLogId = this.exerciseLogId();
 
     if (!exerciseLogId) {
       return;
     }
 
-    this.exerciseLogApiService.getExerciseLogById(exerciseLogId)
-      .subscribe({
-        next: log => {
-          this.form.patchValue({
-            user: log.user,
-            exercise: log.exercise,
-            date: this.dayjs(log.exerciseLogDate).format('YYYY-MM-DD')
-          })
+    try {
+      // const logs = await this.exerciseLogApiService.getRecentlyUpdated();
+      // this.recentlyUpdated.set(logs);
+    } catch (e) {
+      this.router.navigate([Paths.HOME]);
+    }
 
-          log.series?.forEach((serie, i) => {
-            const emptySerie = this.form.controls.series.at(i);
+    try {
+      const log =
+        await this.exerciseLogApiService.getExerciseLogById(exerciseLogId);
 
-            if (emptySerie) {
-              emptySerie.patchValue({
-                serieId: serie.serieId,
-                reps: serie.reps?.toString(),
-                weightInKg: serie.weightInKg?.toString()
-              })
-            }
+      if (!log || typeof log === 'string') {
+        this.router.navigate([Paths.HOME]);
+        return;
+      }
+
+      this.form.patchValue({
+        user: log.user,
+        exercise: log.exercise,
+        date: this.dayjs(log.exerciseLogDate).format('YYYY-MM-DD'),
+      });
+
+      this.form.controls.series.controls.forEach((serieFormGroup, i) => {
+        const serieFromDb = log.series?.at(i);
+
+        if (serieFromDb) {
+          serieFormGroup.patchValue({
+            serieId: serieFromDb.serieId,
+            reps: serieFromDb.reps?.toString(),
+            weightInKg: serieFromDb.weightInKg?.toString(),
           });
+        } else {
+          serieFormGroup.reset();
+        }
+      });
 
-          this.markSaved();
+      this.initialValue.set(log);
+      this.initialFormValue = structuredClone(this.form.getRawValue());
 
-          this.isLoading.set(false);
-        },
-        error: () => this.router.navigate([Paths.HOME])
-      })
+      this.isLoading.set(false);
+    } catch (e) {
+      this.router.navigate([Paths.HOME]);
+    }
   }
 
-  public save(): void {
+  public async save(): Promise<void> {
     if (this.form.invalid) return;
 
     this.isSaveLoading.set(true);
@@ -168,26 +200,64 @@ export class EditExerciseLogPage2Component {
     const formValue = this.form.value;
     const date = this.dayjs(formValue.date).format('YYYY-MM-DD');
 
-    const series = formValue.series?.map((s: any) => ({
-      exerciseLogId: this.exerciseLogId(),
-      serieId: s.serieId,
-      reps: parseNumber(s.reps),
-      weightInKg: parseNumber(s.weightInKg),
-      brzycki: 0,
-    })) ?? [];
+    const series =
+      formValue.series?.map(s => ({
+        exerciseLogId: this.exerciseLogId(),
+        serieId: s.serieId ?? tempId(),
+        reps: parseNumber(s.reps),
+        weightInKg: parseNumber(s.weightInKg),
+        brzycki: 0,
+      })) ?? [];
 
     const seriesIdsToDelete = series
-      .filter(x => (!x.reps || isNullOrUndefined(x.weightInKg)) && x.serieId)
+      .filter(
+        x =>
+          (!x.reps || isNullOrUndefined(x.weightInKg)) &&
+          x.serieId &&
+          x.serieId > 0
+      )
       .map(x => x.serieId);
 
+    const sanitizedSeries =
+      series.filter(
+        x => !isNullOrUndefined(x.reps) || !isNullOrUndefined(x.weightInKg)
+      ) ?? [];
+
+    this.form.controls.series.controls.forEach((serieFormGroup, i) => {
+      const sanitizedSerie = sanitizedSeries?.at(i);
+
+      if (sanitizedSerie) {
+        serieFormGroup.patchValue({
+          serieId: sanitizedSerie.serieId,
+          reps: sanitizedSerie.reps?.toString(),
+          weightInKg: sanitizedSerie.weightInKg?.toString(),
+        });
+      } else {
+        serieFormGroup.reset();
+      }
+    });
+
+    setTimeout(() => {
+      this.isSaveLoading.set(false);
+    }, 100);
+
     if (this.mode() === 'create') {
+      const exercise =
+        this.exerciseApiService
+          .exercises()
+          .find(x => x.exerciseId === formValue.exercise!.exerciseId) ?? null;
+
+      const user =
+        this.users().find(x => x.userId === formValue.user!.userId) ?? null;
+
       const request: CreateExerciseLogRequest = {
         seriesIdsToDelete,
         exerciseLog: {
+          exerciseLogId: tempId(),
           exerciseLogUserId: formValue.user!.userId,
           exerciseLogExerciseId: formValue.exercise!.exerciseId,
           exerciseLogDate: date,
-          series: series,
+          series: sanitizedSeries,
           averageBrzycki: null,
           averageEpley: null,
           averageLander: null,
@@ -200,24 +270,41 @@ export class EditExerciseLogPage2Component {
           averageReps: null,
           recentLogs: null,
           createdAtUtc: null,
-          lastUpdatedAtUtc: null,
+          lastUpdatedAtUtc: new Date().toISOString(),
+          deleted: false,
+          syncStatus: 'pending',
           createdByUserId: null,
-          exercise: null,
-          exerciseLogId: null,
+          exercise: exercise,
           lastUpdatedByUserId: null,
-          user: null,
-        }
+          user: user,
+        },
       };
-      this.enqueueCreate(request);
+
+      await this.enqueueCreate(request);
     } else {
+      const exerciseLogId = this.exerciseLogId();
+
+      if (!exerciseLogId) {
+        return;
+      }
+
+      const exercise =
+        this.exerciseApiService
+          .exercises()
+          .find(x => x.exerciseId === formValue.exercise!.exerciseId) ?? null;
+
+      const user =
+        this.users().find(x => x.userId === formValue.user!.userId) ?? null;
+
       const request: UpdateExerciseLogRequest = {
-        id: this.exerciseLogId()!,
+        id: exerciseLogId,
         seriesIdsToDelete,
         exerciseLog: {
+          exerciseLogId: exerciseLogId,
           exerciseLogUserId: formValue.user!.userId,
           exerciseLogExerciseId: formValue.exercise!.exerciseId,
           exerciseLogDate: date,
-          series,
+          series: sanitizedSeries,
           averageBrzycki: null,
           averageEpley: null,
           averageLander: null,
@@ -230,19 +317,35 @@ export class EditExerciseLogPage2Component {
           averageReps: null,
           recentLogs: null,
           createdAtUtc: null,
-          lastUpdatedAtUtc: null,
+          lastUpdatedAtUtc: new Date().toISOString(),
+          deleted: false,
+          syncStatus: 'pending',
           createdByUserId: null,
-          exercise: null,
-          exerciseLogId: null,
+          exercise: exercise,
           lastUpdatedByUserId: null,
-          user: null,
-        }
+          user: user,
+        },
       };
-      this.enqueueUpdate(request);
+
+      await this.enqueueUpdate(request);
     }
+
+    this.offlineQueueService.processQueue();
   }
 
-  private enqueueCreate(request: CreateExerciseLogRequest) {
+  private async enqueueCreate(
+    request: CreateExerciseLogRequest
+  ): Promise<void> {
+    await this.dbService.db?.exerciseLogs.put(request.exerciseLog);
+
+    request.exerciseLog.exerciseLogId = null;
+
+    request.exerciseLog.series?.forEach(serie => {
+      if ((serie.serieId ?? -1) < 0) {
+        serie.serieId = null;
+      }
+    });
+
     this.offlineQueueService.enqueue({
       id: crypto.randomUUID(),
       method: 'POST',
@@ -252,16 +355,22 @@ export class EditExerciseLogPage2Component {
       maxRetries: 3,
       optimisticType: 'exercise-log',
       userUuid: this.authService.userUuid()!,
-      onActionDone: (id) => {
-        this.isSaveLoading.set(false);
-        this.router.navigate([Paths.EXERCISE_LOGS, Paths.EDIT, id]);
-      },
     });
 
     this.toastService.ok('Log enqueued for creation successfully!');
   }
 
-  private enqueueUpdate(request: UpdateExerciseLogRequest) {
+  private async enqueueUpdate(
+    request: UpdateExerciseLogRequest
+  ): Promise<void> {
+    await this.dbService.db?.exerciseLogs.put(request.exerciseLog);
+
+    request.exerciseLog.series?.forEach(serie => {
+      if ((serie.serieId ?? -1) < 0) {
+        serie.serieId = null;
+      }
+    });
+
     this.offlineQueueService.enqueue({
       id: crypto.randomUUID(),
       method: 'PUT',
@@ -271,10 +380,6 @@ export class EditExerciseLogPage2Component {
       maxRetries: 3,
       optimisticType: 'exercise-log',
       userUuid: this.authService.userUuid()!,
-      onActionDone: () => {
-        this.isSaveLoading.set(false);
-        this.loadExerciseLog();
-      },
     });
 
     this.toastService.ok('Log enqueued for update successfully!');
@@ -283,7 +388,9 @@ export class EditExerciseLogPage2Component {
   public openDeleteModal(): void {
     if (!this.exerciseLogId) return;
 
-    const modalRef = this.modalService.open(ConfirmModalComponent, { centered: true });
+    const modalRef = this.modalService.open(ConfirmModalComponent, {
+      centered: true,
+    });
 
     const instance: ConfirmModalComponent = modalRef.componentInstance;
 
@@ -295,31 +402,40 @@ export class EditExerciseLogPage2Component {
     });
 
     modalRef.closed.pipe(take(1)).subscribe(() => {
-      this.exerciseLogApiService
-        .deleteExerciseLog(this.exerciseLogId()!)
-        .pipe(take(1))
-        .subscribe({
-          next: () => {
-            this.toastService.ok('Log deleted successfully!');
-            this.router.navigate([Paths.HOME]);
-          },
-          error: err => this.toastService.error(err.message)
+      const exerciseLogId = this.exerciseLogId() ?? -1;
+
+      if (exerciseLogId > 0) {
+        this.offlineQueueService.enqueue({
+          id: crypto.randomUUID(),
+          method: 'DELETE',
+          endpoint: `exercise-logs/${this.exerciseLogId()}`,
+          payload: exerciseLogId,
+          retries: 0,
+          maxRetries: 3,
+          optimisticType: 'exercise-log',
+          userUuid: this.authService.userUuid()!,
         });
+      }
+
+      this.dbService.db?.exerciseLogs.delete(exerciseLogId);
+
+      this.toastService.ok('Log deleted successfully!');
+      this.router.navigate([Paths.HOME]);
     });
   }
 
   public cancel(): void {
     this.location.back();
   }
-
 }
 
 function createEmptySeriesArray() {
-  return Array.from({ length: 5 }).map(() =>
-    new FormGroup({
-      serieId: new FormControl<number | null>(null),
-      reps: new FormControl<string | null>(null),
-      weightInKg: new FormControl<string | null>(null)
-    })
+  return Array.from({ length: 5 }).map(
+    () =>
+      new FormGroup({
+        serieId: new FormControl<number | null>(null),
+        reps: new FormControl<string | null>(null),
+        weightInKg: new FormControl<string | null>(null),
+      })
   );
 }

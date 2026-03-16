@@ -10,7 +10,6 @@ import { Routes, provideRouter, withComponentInputBinding, withInMemoryScrolling
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
-import { JsonPipe, TitleCasePipe } from '@angular/common';
 import { environment } from './environments/environment';
 import { httpErrorResponseInterceptor } from './app/interceptors/httpErrorResponse.interceptor';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
@@ -22,6 +21,7 @@ import weekOfYear from 'dayjs/plugin/weekOfYear';
 import isoWeek from 'dayjs/plugin/isoWeek';
 import 'dayjs/locale/es-mx';
 import { LogLevel, setLogLevel } from '@angular/fire';
+import { JsonPipe, TitleCasePipe } from '@angular/common';
 
 export const Paths = {
   EDIT: 'edit',
@@ -175,7 +175,11 @@ export class CustomErrorHandler extends ErrorHandler {
 
     errors.push(cause.message);
 
-    alert(JSON.stringify(errors.join('\n\n')));
+    if (isDevMode()) {
+      console.error(error);
+    } else {
+      alert(JSON.stringify(errors.join('\n\n')));
+    }
   }
 }
 

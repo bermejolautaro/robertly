@@ -4,14 +4,20 @@ import { ExerciseLog } from '@models/exercise-log.model';
 import { Filter } from '@models/filter';
 import { SeriesPerMuscle } from '@models/series-per-muscle';
 import { Stats } from '@models/stats';
+import { DaysTrained } from '@models/days-trained';
 import { PaginatedList } from '@models/pagination';
 import { AuthService } from '@services/auth.service';
 import { CacheService } from '@services/cache.service';
-import { Observable, map } from 'rxjs';
+import { DatabaseService } from '@services/database.service';
+import { Observable, firstValueFrom, from, map, tap } from 'rxjs';
 import { cacheResponse } from 'src/app/functions/cache-response';
 import { nameof } from 'src/app/functions/name-of';
 import { API_URL } from 'src/main';
-import { DaysTrained } from '@models/days-trained';
+import { liveQuery } from 'dexie';
+import {
+  ExerciseLogsSyncPullResponse,
+  ExerciseLogsSyncPushRequest,
+} from '@models/sync';
 
 export type CreateExerciseLogRequest = {
   exerciseLog: ExerciseLog;
@@ -31,18 +37,43 @@ export class ExerciseLogApiService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly cacheService = inject(CacheService);
+  private readonly dbService = inject(DatabaseService);
   private readonly apiUrl = inject(API_URL);
 
   private readonly endpoint = `${this.apiUrl}/exercise-logs`;
 
-  public getExerciseLogById(exerciseLogId: number): Observable<ExerciseLog> {
-    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
-    const methodName = nameof<ExerciseLogApiService>('getExerciseLogById');
-    const cacheKey = `${userFirebaseUuid}:${methodName}:${exerciseLogId}`;
+  public async syncPush(req: ExerciseLogsSyncPushRequest): Promise<void> {
+    await firstValueFrom(
+      this.http.post<void>(`${this.endpoint}/sync/push`, req)
+    );
+  }
 
-    return this.http
-      .get<ExerciseLog>(`${this.endpoint}/${exerciseLogId}`)
-      .pipe(cacheResponse(this.cacheService, cacheKey));
+  public async syncPull(sinceDate: string): Promise<void> {
+    const logs = await firstValueFrom(
+      this.http.get<ExerciseLogsSyncPullResponse>(
+        `${this.endpoint}/sync/pull?since=${sinceDate}`
+      )
+    );
+
+    await this.dbService.db?.exerciseLogs.bulkPut(logs.exerciseLogs);
+  }
+
+  public async getExerciseLogById(
+    exerciseLogId: number
+  ): Promise<ExerciseLog | string> {
+    const cached = await this.dbService.db?.exerciseLogs.get(exerciseLogId);
+
+    if (cached) {
+      return cached;
+    }
+
+    const logFromApi = await firstValueFrom(
+      this.http.get<ExerciseLog>(`${this.endpoint}/${exerciseLogId}`)
+    );
+
+    if (logFromApi) await this.dbService.db?.exerciseLogs.put(logFromApi);
+
+    return logFromApi;
   }
 
   public getExerciseLogs(
@@ -72,7 +103,9 @@ export class ExerciseLogApiService {
     const cacheKey = `${userFirebaseUuid}:${methodName}:${page}:${userId}:${exerciseType}:${exerciseId}:${weightInKg}`;
 
     return this.http
-      .get<PaginatedList<ExerciseLog>>(`${this.endpoint}?page=${page}&count=10`, { params: queryParams })
+      .get<
+        PaginatedList<ExerciseLog>
+      >(`${this.endpoint}?page=${page}&count=10`, { params: queryParams })
       .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
@@ -101,23 +134,22 @@ export class ExerciseLogApiService {
   }
 
   public getRecentlyUpdated(): Observable<ExerciseLog[]> {
-    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
-    const methodName = nameof<ExerciseLogApiService>('getRecentlyUpdated');
-    const cacheKey = `${userFirebaseUuid}:${methodName}`;
-    return this.http.get<PaginatedList<ExerciseLog>>(`${this.endpoint}/recently-updated`).pipe(
-      map(x => x.data),
-      cacheResponse(this.cacheService, cacheKey)
+    return from(
+      liveQuery(
+        () =>
+          this.dbService.db?.exerciseLogs
+            .orderBy('lastUpdatedAtUtc')
+            .reverse()
+            .limit(10)
+            .toArray() ?? []
+      )
     );
   }
 
   public getExerciseLogsLatestWorkout(): Observable<ExerciseLog[]> {
-    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
-    const methodName = nameof<ExerciseLogApiService>('getExerciseLogsLatestWorkout');
-    const cacheKey = `${userFirebaseUuid}:${methodName}`;
-    return this.http.get<PaginatedList<ExerciseLog>>(`${this.endpoint}/latest-workout`).pipe(
-      map(x => x.data),
-      cacheResponse(this.cacheService, cacheKey)
-    );
+    return this.http
+      .get<PaginatedList<ExerciseLog>>(`${this.endpoint}/latest-workout`)
+      .pipe(map(x => x.data));
   }
 
   public getFilters(
@@ -144,14 +176,20 @@ export class ExerciseLogApiService {
       queryParams = queryParams.append('weightInKg', weightInKg);
     }
 
-    return this.http.get<Filter>(`${this.endpoint}/filters`, { params: queryParams });
+    return this.http.get<Filter>(`${this.endpoint}/filters`, {
+      params: queryParams,
+    });
   }
 
-  public createExerciseLog(request: CreateExerciseLogRequest): Observable<number> {
+  public createExerciseLog(
+    request: CreateExerciseLogRequest
+  ): Observable<number> {
     return this.http.post<number>(`${this.endpoint}`, request);
   }
 
-  public updateExerciseLog(request: UpdateExerciseLogRequest): Observable<void> {
+  public updateExerciseLog(
+    request: UpdateExerciseLogRequest
+  ): Observable<void> {
     return this.http.put<void>(`${this.endpoint}/${request.id}`, request);
   }
 

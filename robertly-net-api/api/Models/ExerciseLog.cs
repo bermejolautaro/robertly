@@ -6,7 +6,7 @@ namespace robertly.Models;
 public record Serie()
 {
   public int? SerieId { get; init; }
-  public int? ExerciseLogId { get; init; }
+  public int? ExerciseLogId { get; set; }
   public int? Reps { get; init; }
   public decimal? WeightInKg { get; init; }
   public decimal? Brzycki { get; init; }
@@ -32,7 +32,7 @@ public record ExerciseLog
   public int? Tonnage { get; set; }
   public decimal? AverageReps { get; set; }
   public decimal? AverageBrzycki { get; set; }
-  public decimal? AverageEpley {get; set; }
+  public decimal? AverageEpley { get; set; }
   public decimal? AverageLander { get; set; }
   public decimal? AverageLombardi { get; set; }
   public decimal? AverageMayhew { get; set; }
@@ -50,4 +50,3 @@ public record ExerciseLog
 
   public IEnumerable<Models.ExerciseLog>? RecentLogs { get; init; }
 }
-

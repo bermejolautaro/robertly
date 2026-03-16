@@ -1,4 +1,4 @@
 export const environment = {
-  apiUrl: 'https://localhost:7100/api',
-  authChecksEnabled: false
+  apiUrl: 'http://localhost:7101/api',
+  authChecksEnabled: true
 };

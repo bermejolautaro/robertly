@@ -94,7 +94,7 @@ export class AuthApiService {
       this.isRefreshingToken.set(true);
       await this.auth.authStateReady();
       const currentUser = this.auth.currentUser;
-      const newToken = (await currentUser?.getIdToken(true)) ?? null;
+      const newToken = (await currentUser?.getIdToken(false)) ?? null;
       this.isRefreshingToken.set(false);
 
       if (newToken) {
