@@ -9,11 +9,12 @@ import {
 import {
   NavigationEnd,
   Router,
+  RouterLinkWithHref,
   RouterOutlet,
 } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { filter, firstValueFrom, lastValueFrom, map, take } from 'rxjs';
+import { filter, firstValueFrom, map, take } from 'rxjs';
 import { Paths } from 'src/main';
 
 import {
@@ -47,6 +48,7 @@ import { ExerciseLogApiService } from '@services/exercise-log-api.service';
     HeaderComponent,
     FooterComponent,
     RouterOutlet,
+    RouterLinkWithHref,
     NgbDropdownModule,
     NgbOffcanvasModule,
     NgbToastModule,
@@ -55,9 +57,10 @@ import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 })
 export class AppComponent implements OnInit {
   public readonly auth = inject(Auth);
-
+  
   public readonly toastService = inject(ToastService);
   public readonly authApiService = inject(AuthApiService);
+  public readonly authService = inject(AuthService);
 
   private readonly offlineQueueService = inject(OfflineQueueService);
   private readonly cacheService = inject(CacheService);

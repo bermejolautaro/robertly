@@ -17,11 +17,15 @@ public class LoggerExceptionHandler : IExceptionHandler
   }
 
   public async ValueTask<bool> TryHandleAsync(
-      HttpContext httpContext,
-      Exception exception,
-      CancellationToken cancellationToken)
+    HttpContext httpContext,
+    Exception exception,
+    CancellationToken cancellationToken
+  )
   {
-    await _appLogsRepository.LogError($"{exception.GetType().Name} on Global Error Handler", exception);
+    await _appLogsRepository.LogError(
+      $"{exception.GetType().Name} on Global Error Handler",
+      exception
+    );
 
     return false;
   }

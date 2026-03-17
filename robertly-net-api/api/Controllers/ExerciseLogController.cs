@@ -53,7 +53,12 @@ public class ExerciseLogController : ControllerBase
 
     foreach (var log in request.Creates)
     {
-      if (log?.ExerciseLogId is null)
+      if (log is null)
+      {
+        continue;
+      }
+
+      if (log.ExerciseLogId is not null)
       {
         continue;
       }
@@ -74,7 +79,7 @@ public class ExerciseLogController : ControllerBase
 
       foreach (var serie in log.Series ?? [])
       {
-        serie.ExerciseLogId = log.ExerciseLogId;
+        serie.ExerciseLogId = newLogId;
       }
 
       await UpsertSeries(log.Series ?? []);
@@ -647,11 +652,16 @@ public class ExerciseLogController : ControllerBase
         continue;
       }
 
+      if (serie.ExerciseLogId is null)
+      {
+        continue;
+      }
+
       if (serie.SerieId is null)
       {
         var serieToCreate = new DataModels.Serie
         {
-          ExerciseLogId = serie.ExerciseLogId!.Value,
+          ExerciseLogId = serie.ExerciseLogId.Value,
           Reps = serie.Reps.Value,
           WeightInKg = serie.WeightInKg.Value,
         };
