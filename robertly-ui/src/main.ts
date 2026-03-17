@@ -178,7 +178,7 @@ export class CustomErrorHandler extends ErrorHandler {
     if (isDevMode()) {
       console.error(error);
     } else {
-      alert(JSON.stringify(errors.join('\n\n')));
+      // alert(JSON.stringify(errors.join('\n\n')));
     }
   }
 }

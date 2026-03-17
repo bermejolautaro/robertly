@@ -338,8 +338,6 @@ export class EditExerciseLogPage2Component {
   ): Promise<void> {
     await this.dbService.db?.exerciseLogs.put(request.exerciseLog);
 
-    request.exerciseLog.exerciseLogId = null;
-
     request.exerciseLog.series?.forEach(serie => {
       if ((serie.serieId ?? -1) < 0) {
         serie.serieId = null;

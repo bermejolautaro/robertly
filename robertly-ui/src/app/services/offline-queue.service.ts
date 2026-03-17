@@ -49,15 +49,28 @@ export class OfflineQueueService {
 
     const deletes = items
       .filter(x => x.method === 'DELETE')
-      .map(x => (x.payload as number));
+      .map(x => x.payload as number);
 
     try {
-      this.exerciseLogApiService.syncPush({
+      await this.dbService.db!.exerciseLogs.bulkDelete(
+        creates.map(x => x.exerciseLogId ?? -1)
+      );
+
+      for (const create of creates) {
+        create.exerciseLogId = null;
+      }
+
+      await this.exerciseLogApiService.syncPush({
         creates,
         updates,
         deletes,
-        seriesIdsToDelete
+        seriesIdsToDelete,
       });
+
+      const DAYS_AGO_90 = new Date();
+      DAYS_AGO_90.setDate(DAYS_AGO_90.getDate() - 90);
+
+      await this.exerciseLogApiService.syncPull(DAYS_AGO_90.toISOString());
 
       await this.dbService.db!.queue.clear();
     } catch (e) {
