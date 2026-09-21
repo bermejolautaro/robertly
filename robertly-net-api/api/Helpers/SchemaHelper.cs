@@ -45,6 +45,7 @@ public class SchemaHelper
     catch (Exception e)
     {
       _logger.LogError(e, "Error loading table names");
+      throw;
     }
   }
 
