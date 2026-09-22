@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "prettier": "prettier --write \"**/*.{js,json,css,scss,less,md,ts,html,component.html}\"",
-    "start": "ng serve",
+    "start": "ng serve --port 4201",
     "start:pwa": "ng build --configuration=production --source-map=true && http-server -p 8080 -c-1 dist/gym-angular-excel",
     "build": "ng build",
     "ngsw-config": ".\"/node_modules/.bin/ngsw-config\" \"dist/gym-angular-excel\" ngsw-config.json [/base/href] && echo \"nsgw-config done!\"",

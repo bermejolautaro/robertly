@@ -15,6 +15,8 @@ SELECT DISTINCT
   ,FL.Calories
   ,FL.Protein
   ,FL.Fat
+  ,SUM(ROUND(COALESCE(FL.Calories, 0) + COALESCE(F.Calories, 0) * COALESCE(FL.Amount, 0) / COALESCE(F.Amount, 1), 2)) OVER () AS TotalCalories
+  ,SUM(ROUND(COALESCE(FL.Protein, 0) + COALESCE(F.Protein, 0) * COALESCE(FL.Amount, 0) / COALESCE(F.Amount, 1), 2)) OVER () AS TotalProtein
   ,F.FoodId
   ,F.Name
   ,F.Calories
@@ -29,8 +31,7 @@ SELECT DISTINCT
 FROM FoodLogs FL
 LEFT JOIN Foods F ON FL.FoodId = F.FoodId
 INNER JOIN Users U ON FL.UserId = U.UserId
-ORDER BY FL.Date DESC, FL.FoodLogId DESC
-OFFSET 0 LIMIT 10;
+ORDER BY FL.Date DESC, FL.FoodLogId DESC;
 
 Parameters:
 

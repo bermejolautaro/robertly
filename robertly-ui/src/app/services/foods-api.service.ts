@@ -18,12 +18,12 @@ export class FoodsApiService {
   private readonly endpoint = `${this.apiUrl}/foods`;
 
   public getFoodById(foodId: number): Observable<Food> {
-    const cacheKey = `${this.authService.userUuid()}:getFoodById:${foodId}`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:getFoodById:${foodId}`;
     return this.http.get<Food>(`${this.endpoint}/${foodId}`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getFoods(): Observable<Food[]> {
-    const cacheKey = `${this.authService.userUuid()}:getFoods`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:getFoods`;
     return this.http.get<Food[]>(`${this.endpoint}`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 

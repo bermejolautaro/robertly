@@ -135,29 +135,21 @@ public class ExerciseLogController : ControllerBase
   [HttpGet("sync/pull")]
   public async Task<
     Results<Ok<ExerciselogsSyncPullResponse>, UnauthorizedHttpResult>
-  > Pull([FromQuery] DateTime since)
+  > Pull([FromQuery] DateTime? since)
   {
     var user = await _user.GetUser(Request);
 
     if (user?.UserId is null)
       return TypedResults.Unauthorized();
 
-    var allowedUserIds = user.GetAllowedUserIds().ToList();
-
-    using var connection = _connection.Create();
-
     var queryBuilder = new GetExerciseLogsQueryBuilder();
 
-    if (user.UserId is null)
-    {
-      queryBuilder.AndUserIds(user.GetAllowedUserIds().ToList());
-    }
-    else
-    {
-      queryBuilder.AndUserIds([user.UserId.Value]);
-    }
+    queryBuilder.AndUserIds([user.UserId.Value]);
 
-    queryBuilder.AndLastUpdatedAtUtc(since, ">=");
+    if (since is not null)
+    {
+      queryBuilder.AndLastUpdatedAtUtc(since.Value, ">=");
+    }
 
     var (exerciseLogs, totalCount) =
       await _exerciseLogRepository.GetExerciseLogsAsync(0, 1000, queryBuilder);

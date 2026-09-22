@@ -48,10 +48,10 @@ export class ExerciseLogApiService {
     );
   }
 
-  public async syncPull(sinceDate: string): Promise<void> {
+  public async syncPull(sinceDate?: string): Promise<void> {
     const logs = await firstValueFrom(
       this.http.get<ExerciseLogsSyncPullResponse>(
-        `${this.endpoint}/sync/pull?since=${sinceDate}`
+        `${this.endpoint}/sync/pull?since=${sinceDate ?? ''}`
       )
     );
 
@@ -98,7 +98,7 @@ export class ExerciseLogApiService {
       queryParams = queryParams.append('weightInKg', weightInKg);
     }
 
-    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
+    const userFirebaseUuid = this.authService.userFirebaseUuid();
     const methodName = nameof<ExerciseLogApiService>('getExerciseLogs');
     const cacheKey = `${userFirebaseUuid}:${methodName}:${page}:${userId}:${exerciseType}:${exerciseId}:${weightInKg}`;
 
@@ -110,7 +110,7 @@ export class ExerciseLogApiService {
   }
 
   public getSeriesPerMuscle(): Observable<SeriesPerMuscle> {
-    const userFirebaseUuid = this.authService.user.value()?.userFirebaseUuid;
+    const userFirebaseUuid = this.authService.userFirebaseUuid();
     const methodName = nameof<ExerciseLogApiService>('getSeriesPerMuscle');
     const cacheKey = `${userFirebaseUuid}:${methodName}`;
 
@@ -120,14 +120,14 @@ export class ExerciseLogApiService {
   }
 
   public getDaysTrained(): Observable<Stats> {
-    const cacheKey = `${this.authService.userUuid()}:${nameof<ExerciseLogApiService>('getDaysTrained')}`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:${nameof<ExerciseLogApiService>('getDaysTrained')}`;
     return this.http
       .get<Stats>(`${this.endpoint}/days-trained`)
       .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getDaysTrained2(): Observable<DaysTrained> {
-    const cacheKey = `${this.authService.userUuid()}:${nameof<ExerciseLogApiService>('getDaysTrained2')}`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:${nameof<ExerciseLogApiService>('getDaysTrained2')}`;
     return this.http
       .get<DaysTrained>(`${this.endpoint}/days-trained-2`)
       .pipe(cacheResponse(this.cacheService, cacheKey));

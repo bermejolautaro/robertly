@@ -60,7 +60,6 @@ import { tempId } from '../functions/temp-id';
     ExerciseLogComponent,
     DecimalPipe,
     SlicePipe,
-    JsonPipe,
     OnlyNumbersDirective,
   ],
 })
@@ -352,7 +351,7 @@ export class EditExerciseLogPage2Component {
       retries: 0,
       maxRetries: 3,
       optimisticType: 'exercise-log',
-      userUuid: this.authService.userUuid()!,
+      userUuid: this.authService.userFirebaseUuid()!,
     });
 
     this.toastService.ok('Log enqueued for creation successfully!');
@@ -377,7 +376,7 @@ export class EditExerciseLogPage2Component {
       retries: 0,
       maxRetries: 3,
       optimisticType: 'exercise-log',
-      userUuid: this.authService.userUuid()!,
+      userUuid: this.authService.userFirebaseUuid()!,
     });
 
     this.toastService.ok('Log enqueued for update successfully!');
@@ -411,7 +410,7 @@ export class EditExerciseLogPage2Component {
           retries: 0,
           maxRetries: 3,
           optimisticType: 'exercise-log',
-          userUuid: this.authService.userUuid()!,
+          userUuid: this.authService.userFirebaseUuid()!,
         });
       }
 

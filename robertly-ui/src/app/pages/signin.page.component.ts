@@ -1,5 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { Auth } from '@angular/fire/auth';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthApiService } from '@services/auth-api.service';
@@ -27,6 +28,7 @@ export class SignInComponent implements OnInit {
   private readonly authApiService = inject(AuthApiService);
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
+  private readonly auth = inject(Auth);
 
   public readonly isLoading = signal(false);
 
@@ -34,11 +36,11 @@ export class SignInComponent implements OnInit {
   public password: string = '';
 
   public async ngOnInit(): Promise<void> {
-    await this.authApiService.tryRefreshToken().then(success => {
-      if (success) {
-        this.router.navigate([Paths.HOME]);
-      }
-    });
+    await this.auth.authStateReady();
+
+    if (this.auth.currentUser) {
+      this.router.navigate([Paths.HOME]);
+    }
   }
 
   public async onClickSignIn(): Promise<void> {

@@ -14,7 +14,7 @@ import {
 } from '@angular/router';
 import { SwUpdate } from '@angular/service-worker';
 
-import { filter, firstValueFrom, map, take } from 'rxjs';
+import { filter, take } from 'rxjs';
 import { Paths } from 'src/main';
 
 import {
@@ -37,7 +37,6 @@ import { CacheService } from '@services/cache.service';
 import { OfflineQueueService } from '@services/offline-queue.service';
 import { Auth } from '@angular/fire/auth';
 import { DatabaseService } from '@services/database.service';
-import { UsersService } from '@services/users.service';
 import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 
 @Component({
@@ -57,7 +56,7 @@ import { ExerciseLogApiService } from '@services/exercise-log-api.service';
 })
 export class AppComponent implements OnInit {
   public readonly auth = inject(Auth);
-  
+
   public readonly toastService = inject(ToastService);
   public readonly authApiService = inject(AuthApiService);
   public readonly authService = inject(AuthService);
@@ -66,7 +65,6 @@ export class AppComponent implements OnInit {
   private readonly cacheService = inject(CacheService);
   private readonly exerciseApiService = inject(ExerciseApiService);
   private readonly exerciseLogApiService = inject(ExerciseLogApiService);
-  private readonly usersService = inject(UsersService);
   private readonly dbService = inject(DatabaseService);
   private readonly serviceWorkerUpdates = inject(SwUpdate);
   private readonly document = inject(DOCUMENT);
@@ -78,8 +76,7 @@ export class AppComponent implements OnInit {
   public readonly currentRoute = toSignal(
     this.router.events.pipe(filter(x => x instanceof NavigationEnd))
   );
-  public readonly isLoading = signal(false);
-  public readonly preloaderProgress = signal(25);
+  public readonly isLoading = signal(true);
 
   public constructor() {
     this.serviceWorkerUpdates.unrecoverable
@@ -117,53 +114,25 @@ export class AppComponent implements OnInit {
       },
     });
 
-    this.auth.onAuthStateChanged(async user => {
-      this.preloaderProgress.set(75);
-
-      if (!user) {
-        throw new Error('No user from firebase');
-      }
-
-      const userFromDb = await firstValueFrom(
-        this.usersService.getUserByFirebaseUuid(user?.uid).pipe(
-          map(userFromDb => ({
-            email: userFromDb.email,
-            userId: userFromDb.userId,
-            name: userFromDb.name,
-            userFirebaseUuid: userFromDb.userFirebaseUuid,
-            assignedUsers: userFromDb.assignedUsers,
-          }))
-        )
-      );
-
-      if (!userFromDb) {
-        throw new Error('No user from API');
-      }
-
+    this.auth.onAuthStateChanged(user => {
       try {
-        this.exerciseApiService.fetchExercises();
-      } catch (error) {}
-
-      this.dbService.init(user.uid);
-      
-      const DAYS_AGO_90 = new Date(); 
-      DAYS_AGO_90.setDate(DAYS_AGO_90.getDate() - 90);
-
-      await this.exerciseLogApiService.syncPull(DAYS_AGO_90.toISOString());
-
-      this.offlineQueueService.processQueue();
-
-      this.preloaderProgress.set(100);
-      this.isLoading.set(false);
+        if (!user) return;
+        this.dbService.init(user.uid);
+        this.exerciseApiService.fetchExercises().catch(console.error);
+        this.offlineQueueService.processQueue()
+          .then(() => this.exerciseLogApiService.syncPull())
+          .catch(console.error);
+      } finally {
+        this.isLoading.set(false);
+      }
     });
 
     window.addEventListener('online', () => {
-      this.offlineQueueService.processQueue();
+      this.offlineQueueService.processQueue().catch(console.error);
     });
   }
 
   public async ngOnInit(): Promise<void> {
-    this.isLoading.set(true);
     this.cacheService.load();
     this.cacheService.cleanupExpired();
   }

@@ -22,12 +22,12 @@ export class FoodLogsApiService {
   private readonly endpoint = `${this.apiUrl}/food-logs`;
 
   public getFoodLogById(foodLogId: number): Observable<FoodLog> {
-    const cacheKey = `${this.authService.userUuid()}:getFoodLogById`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:getFoodLogById`;
     return this.http.get<FoodLog>(`${this.endpoint}/${foodLogId}`).pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getFoodLogs(page: number, count: number, fromDate?: string, toDate?: string): Observable<PaginatedList<FoodLog>> {
-    const cacheKey = `${this.authService.userUuid()}:getFoodLogs:${fromDate}:${toDate}`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:getFoodLogs:${fromDate}:${toDate}`;
 
     const params = buildHttpParams({
       page,
@@ -42,14 +42,14 @@ export class FoodLogsApiService {
   }
 
   public getMacros(timezoneId: string): Observable<Macros> {
-    const cacheKey = `${this.authService.userUuid()}:getMacros:${timezoneId}`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:getMacros:${timezoneId}`;
     return this.http
       .get<Macros>(`${this.endpoint}/macros`, { params: { timezoneId } })
       .pipe(cacheResponse(this.cacheService, cacheKey));
   }
 
   public getMacrosDaily(page: number): Observable<PaginatedList<Macro>> {
-    const cacheKey = `${this.authService.userUuid()}:getMacrosDaily`;
+    const cacheKey = `${this.authService.userFirebaseUuid()}:getMacrosDaily`;
     return this.http
       .get<PaginatedList<Macro>>(`${this.endpoint}/macros-daily?page=${page}&count=10`)
       .pipe(cacheResponse(this.cacheService, cacheKey));

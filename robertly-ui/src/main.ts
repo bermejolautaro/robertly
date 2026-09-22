@@ -11,7 +11,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { bootstrapApplication } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
 import { environment } from './environments/environment';
-import { httpErrorResponseInterceptor } from './app/interceptors/httpErrorResponse.interceptor';
+import { authTokenInterceptor } from './app/interceptors/auth-token.interceptor';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
 import { getAuth, provideAuth } from '@angular/fire/auth';
 
@@ -22,6 +22,7 @@ import isoWeek from 'dayjs/plugin/isoWeek';
 import 'dayjs/locale/es-mx';
 import { LogLevel, setLogLevel } from '@angular/fire';
 import { JsonPipe, TitleCasePipe } from '@angular/common';
+import { authGuard } from './app/guards/auth.guard';
 
 export const Paths = {
   EDIT: 'edit',
@@ -45,22 +46,27 @@ export const Paths = {
 const routes = [
   {
     path: Paths.EXERCISES,
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/exercises.page.component').then(x => x.ExercisesPageComponent),
   } as const,
   {
     path: `${Paths.EXERCISES}/${Paths.EDIT}/:${Paths.ID}`,
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-exercise.page.component').then(x => x.EditExercisePageComponent),
   } as const,
   {
     path: `${Paths.EXERCISES}/${Paths.CREATE}`,
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-exercise.page.component').then(x => x.EditExercisePageComponent),
   } as const,
   {
     path: Paths.EXERCISES,
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/exercises.page.component').then(x => x.ExercisesPageComponent),
   } as const,
   {
     path: Paths.STATS,
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/stats.page.component').then(x => x.StatsPageComponent),
     loadChildren: () => {
       return [
@@ -87,61 +93,73 @@ const routes = [
   {
     path: Paths.HOME,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/home.page.component').then(x => x.HomePageComponent),
   } as const,
   {
     path: Paths.EXERCISE_LOGS,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/exercise-logs.page.component').then(x => x.ExerciseLogsPageComponent),
   } as const,
   {
     path: `${Paths.EXERCISE_LOGS}/${Paths.EDIT}/:${Paths.ID}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-exercise-log-2.page.component').then(x => x.EditExerciseLogPage2Component),
   } as const,
   {
     path: `${Paths.EXERCISE_LOGS}/${Paths.CREATE}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-exercise-log-2.page.component').then(x => x.EditExerciseLogPage2Component),
   } as const,
   {
     path: Paths.FOOD_LOGS,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/food-logs.page.component').then(x => x.FoodsPageComponent),
   } as const,
   {
     path: `${Paths.FOOD_LOGS}/${Paths.EDIT}/:${Paths.ID}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-food-log.page.component').then(x => x.EditFoodLogPageComponent),
   } as const,
   {
     path: `${Paths.FOOD_LOGS}/${Paths.CREATE}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-food-log.page.component').then(x => x.EditFoodLogPageComponent),
   } as const,
   {
     path: Paths.FOODS,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/foods.page.component').then(x => x.FoodsPageComponent),
   } as const,
   {
     path: `${Paths.FOODS}/${Paths.EDIT}/:${Paths.ID}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-food.page.component').then(x => x.EditFoodPageComponent),
   } as const,
   {
     path: `${Paths.FOODS}/${Paths.CREATE}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/edit-food.page.component').then(x => x.EditFoodPageComponent),
   } as const,
   {
     path: `${Paths.CONFIGURATION}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/configuration.page.component').then(x => x.ConfigurationPageComponent),
   } as const,
   {
     path: `${Paths.SUMMARY}`,
     pathMatch: 'full',
+    canActivate: [authGuard],
     loadComponent: () => import('@pages/summary.page.component').then(x => x.SummaryPageComponent),
   } as const,
   {
@@ -159,7 +177,6 @@ export type RoutePath = (typeof routes)[number]['path'];
 
 export const API_URL = new InjectionToken<string>('API_URL');
 export const DAY_JS = new InjectionToken<typeof dayjs>('DAY_JS');
-export const AUTH_CHECKS_ENABLED = new InjectionToken<boolean>('AUTH_CHECKS_ENABLED');
 
 export class CustomErrorHandler extends ErrorHandler {
   public override handleError(error: any): void {
@@ -193,7 +210,7 @@ bootstrapApplication(AppComponent, {
     JsonPipe,
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
-    provideHttpClient(withInterceptors([httpErrorResponseInterceptor])),
+    provideHttpClient(withInterceptors([authTokenInterceptor])),
     provideRouter(routes, withComponentInputBinding(), withInMemoryScrolling({ scrollPositionRestoration: 'enabled' })),
     provideServiceWorker('ngsw-worker.js', { enabled: !isDevMode() }),
     provideFirebaseApp(() =>
@@ -208,7 +225,6 @@ bootstrapApplication(AppComponent, {
     ),
     provideAuth(() => getAuth()),
     { provide: API_URL, useValue: environment.apiUrl },
-    { provide: AUTH_CHECKS_ENABLED, useValue: environment.authChecksEnabled },
     {
       provide: DAY_JS,
       useFactory: () => {

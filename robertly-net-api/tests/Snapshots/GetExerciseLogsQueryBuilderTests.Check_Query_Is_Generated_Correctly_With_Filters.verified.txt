@@ -34,22 +34,22 @@ INNER JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
 INNER JOIN Users U ON EL.UserId = U.UserId
 LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
 LEFT JOIN (
-  SELECT 
+  SELECT
      A.ExerciseLogId
-    ,MAX(A.Reps)                                                        AS MaxReps
-    ,MIN(A.Reps)                                                        AS MinReps
-    ,SUM(A.Reps)                                                        AS TotalReps
-    ,ROUND(AVG(A.Reps), 0)                                              AS AverageReps
-    ,SUM(A.Reps * A.WeightInKg)                                         AS Tonnage
-    ,ROUND(AVG(A.WeightInKg * (36.0 / (37.0 - A.Reps))), 2)             AS AverageBrzycki
-    ,AVG(A.WeightInKg * (1 + 0.0333 * A.Reps))                          AS AverageEpley
-    ,AVG((100 * A.WeightInKg) / (101.3 - 2.67123 * A.Reps))             AS AverageLander
-    ,AVG(A.WeightInKg * POWER(ABS(A.Reps), 0.1))                        AS AverageLombardi
-    ,AVG((100 * A.WeightInKg) / (52.2 + (41.9 * EXP(-0.055 * A.Reps)))) AS AverageMayhew
-    ,AVG(A.WeightInKg * (1 + 0.025 * A.Reps))                           AS AverageOConner
-    ,AVG((100 * A.WeightInKg) / (48.8 + (53.8 * EXP(-0.075 * A.Reps)))) AS AverageWathan
-    ,STRING_AGG(CAST(A.Reps AS VARCHAR), '-')                           AS RepsString
-    ,STRING_AGG(CAST(A.WeightInKg AS VARCHAR), '-')                     AS WeightsString
+    ,MAX(A.Reps)                                                                  AS MaxReps
+    ,MIN(A.Reps)                                                                  AS MinReps
+    ,SUM(A.Reps)                                                                  AS TotalReps
+    ,ROUND(AVG(A.Reps), 0)                                                        AS AverageReps
+    ,SUM(A.Reps * A.WeightInKg)                                                   AS Tonnage
+    ,ROUND(AVG(A.WeightInKg * (36.0 / (37.0 - A.Reps))), 2)                       AS AverageBrzycki
+    ,ROUND(AVG(A.WeightInKg * (1 + 0.0333 * A.Reps)), 2)                          AS AverageEpley
+    ,ROUND(AVG((100 * A.WeightInKg) / (101.3 - 2.67123 * A.Reps)), 2)             AS AverageLander
+    ,ROUND(AVG(A.WeightInKg * POWER(ABS(A.Reps), 0.1)), 2)                        AS AverageLombardi
+    ,ROUND(AVG((100 * A.WeightInKg) / (52.2 + (41.9 * EXP(-0.055 * A.Reps)))), 2) AS AverageMayhew
+    ,ROUND(AVG(A.WeightInKg * (1 + 0.025 * A.Reps)), 2)                           AS AverageOConner
+    ,ROUND(AVG((100 * A.WeightInKg) / (48.8 + (53.8 * EXP(-0.075 * A.Reps)))), 2) AS AverageWathan
+    ,STRING_AGG(CAST(A.Reps AS VARCHAR), '-')                                     AS RepsString
+    ,STRING_AGG(CAST(A.WeightInKg AS VARCHAR), '-')                               AS WeightsString
   FROM Series A
   GROUP BY A.ExerciseLogId
 ) S2 ON EL.ExerciseLogId = S2.ExerciseLogId
