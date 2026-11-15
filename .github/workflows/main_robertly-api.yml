@@ -25,35 +25,18 @@ jobs:
           dotnet-version: "10.x"
           include-prerelease: true
 
-      - name: App Settings Variable Substitution
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: "./robertly-net-api/api/appsettings.json"
-        env:
-          ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
-          GoogleCredential.ClientEmail: ${{ secrets.GOOGLE_CREDENTIAL_CLIENT_EMAIL }}
-          GoogleCredential.PrivateKey: |
-            ${{ vars.GOOGLE_CREDENTIAL_PRIVATE_KEY }}
-          GoogleCredential.ProjectId: ${{ secrets.GOOGLE_CREDENTIAL_PROJECT_ID }}
-          GoogleCredential.DatabaseUrl: ${{ secrets.GOOGLE_CREDENTIAL_DATABASE_URL }}
-          GoogleCredential.ApiKey: ${{ secrets.GOOGLE_CREDENTIAL_API_KEY }}
-          GoogleCredential.AuthDomain: ${{ secrets.GOOGLE_CREDENTIAL_AUTH_DOMAIN }}
-          PostgresConnectionString: ${{ secrets.POSTGRESQL_CONNECTION_STRING }}
-
       - name: Build with dotnet
         run: dotnet build ./robertly-net-api/robertly-net-api.sln --configuration Release
 
       - name: dotnet publish
         run: dotnet publish ./robertly-net-api/robertly-net-api.sln -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
-      - name: List uploaded files
-        run: ls -R
-
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
           path: ${{env.DOTNET_ROOT}}/myapp
+          retention-days: 1
 
   deploy:
     runs-on: ubuntu-latest
@@ -68,9 +51,6 @@ jobs:
         with:
           name: .net-app
 
-      - name: List downloaded files
-        run: ls -R
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
@@ -78,7 +58,4 @@ jobs:
           app-name: "robertly"
           slot-name: "Production"
           package: .
-          publish-profile: ${{ vars.AZURE_PUBLISH_PROFILE }}
-
-      - name: Debug Deployment Path
-        run: ls -R .
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}

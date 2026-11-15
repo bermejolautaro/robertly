@@ -1,14 +1,16 @@
 import { provideServiceWorker } from '@angular/service-worker';
 import {
   ErrorHandler,
+  inject,
   InjectionToken,
   isDevMode,
+  provideAppInitializer,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { Routes, provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { bootstrapApplication } from '@angular/platform-browser';
+import { bootstrapApplication, Title } from '@angular/platform-browser';
 import { AppComponent } from 'src/app/app.component';
 import { environment } from './environments/environment';
 import { authTokenInterceptor } from './app/interceptors/auth-token.interceptor';
@@ -208,6 +210,11 @@ bootstrapApplication(AppComponent, {
   providers: [
     TitleCasePipe,
     JsonPipe,
+    provideAppInitializer(() => {
+      if (isDevMode()) {
+        inject(Title).setTitle('Robertly - DEVELOPMENT')
+      }
+    }),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideHttpClient(withInterceptors([authTokenInterceptor])),

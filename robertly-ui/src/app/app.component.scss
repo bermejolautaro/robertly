@@ -60,17 +60,6 @@ button:has(.fa.fa-plus) {
       font-size: 36px;
     }
 
-    .progress {
-      width: 180px;
-      height: 5px;
-      border-radius: 0;
-      background-color: rgba(255, 255, 255, 0.3);
-
-      .progress-bar {
-        background-color: white;
-      }
-    }
-
     .preloader-message {
       padding-top: 0.3rem;
       font-size: 14px;
