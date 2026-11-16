@@ -60,6 +60,8 @@ public class MigrationHelper
         .OrderBy(Path.GetFileName)
         .ToList();
 
+      connection.Open();
+
       foreach (var script in scripts)
       {
         var slug = Path.GetFileNameWithoutExtension(script);
@@ -69,6 +71,8 @@ public class MigrationHelper
           continue;
         }
 
+        using var transaction = connection.BeginTransaction();
+
         await _schema.LoadTableNamesAsync();
 
         var sql = await File.ReadAllTextAsync(script);
@@ -76,16 +80,31 @@ public class MigrationHelper
 
         _logger.LogInformation("Applying migration \"{Slug}\"...", slug);
 
-        await connection.ExecuteAsync(sql);
+        await connection.ExecuteAsync(sql, transaction: transaction);
 
-        await _genericRepository.CreateAsync<DataModels.Migration>(new DataModels.Migration { Slug = slug, AppliedAtUtc = DateTime.UtcNow });
+        var query =
+          $"""
+          INSERT INTO Migrations
+          (Slug, AppliedAtUtc)
+          VALUES
+          (@Slug, @AppliedAtUtc);
+          """;
+
+        query = _schema.AddSchemaToQuery(query);
+
+        await connection.ExecuteAsync(
+          query,
+          new { Slug = slug, AppliedAtUtc = DateTime.UtcNow },
+          transaction);
+
+        transaction.Commit();
 
         _logger.LogInformation("Applied migration \"{Slug}\" successfully!", slug);
       }
     }
     catch (Exception e)
     {
-      _logger.LogError(e, "Error applying migrations");
+      _logger.LogError(e, "Error applying migrations.");
       throw;
     }
   }
