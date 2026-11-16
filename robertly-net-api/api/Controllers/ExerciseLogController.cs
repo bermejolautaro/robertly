@@ -66,6 +66,7 @@ public class ExerciseLogController : ControllerBase
       var logDataModel = new DataModels.ExerciseLog
       {
         ExerciseLogId = null,
+        ExerciseLogUuid = Guid.NewGuid(),
         UserId = log.ExerciseLogUserId!.Value,
         ExerciseId = log.ExerciseLogExerciseId!.Value,
         Date = log.ExerciseLogDate!.Value,
@@ -536,6 +537,7 @@ public class ExerciseLogController : ControllerBase
     var exerciseLogToCreate = new DataModels.ExerciseLog
     {
       ExerciseLogId = null,
+      ExerciseLogUuid = Guid.NewGuid(),
       UserId = exerciseDoneByUserId,
       ExerciseId = exerciseId,
       Date = request.ExerciseLog.ExerciseLogDate!.Value,

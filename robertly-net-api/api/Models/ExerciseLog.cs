@@ -21,6 +21,7 @@ public record ExerciseLogRequest
 public record ExerciseLog
 {
   public int? ExerciseLogId { get; set; }
+  public Guid ExerciseLogUuid { get; set; }
   public int? ExerciseLogUserId { get; set; }
   public int? ExerciseLogExerciseId { get; set; }
   public DateTime? ExerciseLogDate { get; set; }

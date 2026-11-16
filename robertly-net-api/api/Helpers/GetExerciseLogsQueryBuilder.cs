@@ -16,6 +16,7 @@ public class GetExerciseLogsQueryBuilder
   private readonly string _baseQuery = """
     SELECT DISTINCT
        EL.ExerciseLogId
+      ,EL.ExerciseLogUuid
       ,EL.UserId AS ExerciseLogUserId
       ,EL.ExerciseId AS ExerciseLogExerciseId
       ,EL.Date AS ExerciseLogDate

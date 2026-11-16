@@ -38,7 +38,7 @@ public class ExerciseLogRepository
       SELECT DISTINCT MuscleGroup FROM Exercises
     ),
     MuscleGroupsPerYearAndWeek AS (
-      SELECT 
+      SELECT
         MG.MuscleGroup,
         EXTRACT(ISOYEAR FROM EL.Date) AS Year,
         EXTRACT(WEEK FROM EL.Date) AS Week,
@@ -51,15 +51,15 @@ public class ExerciseLogRepository
       WHERE UserId = @UserId
       GROUP BY MG.MuscleGroup, EXTRACT(ISOYEAR FROM EL.Date), EXTRACT(WEEK FROM EL.Date)
     )
-    SELECT 
+    SELECT
       MYW.MuscleGroup,
       MYW.Year,
       MYW.Week,
       MYW.TotalSeries,
       CAST(
-        CASE 
+        CASE
           WHEN G.TargetValue IS NULL
-          THEN 
+          THEN
             CASE
               WHEN MYW.MuscleGroup = 'biceps' THEN 6
               WHEN MYW.MuscleGroup = 'triceps' THEN 6
@@ -76,7 +76,7 @@ public class ExerciseLogRepository
         END AS INT
       ) AS TargetValue
     FROM MuscleGroupsPerYearAndWeek MYW
-    LEFT JOIN Goals G ON MYW.MuscleGroup = G.MuscleGroup 
+    LEFT JOIN Goals G ON MYW.MuscleGroup = G.MuscleGroup
       AND G.UserId = @UserId
       AND G.CreatedAtUtc = (SELECT MAX(G2.CreatedAtUtc)
                             FROM Goals G2
@@ -96,7 +96,7 @@ public class ExerciseLogRepository
       SELECT DISTINCT MuscleGroup FROM Exercises
     ),
     MuscleGroupsPerYearAndMonth AS (
-      SELECT 
+      SELECT
         MG.MuscleGroup,
         EXTRACT(YEAR FROM EL.Date) AS Year,
         M.MonthNumber AS Month,
@@ -106,22 +106,22 @@ public class ExerciseLogRepository
       CROSS JOIN Months M
       CROSS JOIN ExerciseLogs EL
       LEFT JOIN Exercises E ON EL.ExerciseId = E.ExerciseId
-      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId 
-           AND MG.MuscleGroup = E.MuscleGroup 
+      LEFT JOIN Series S ON EL.ExerciseLogId = S.ExerciseLogId
+           AND MG.MuscleGroup = E.MuscleGroup
            AND EXTRACT(MONTH FROM El.Date) = MonthNumber
       WHERE UserId = @UserId
       GROUP BY MG.MuscleGroup, EXTRACT(YEAR FROM EL.Date), M.MonthNumber
       HAVING(EXTRACT(MONTH FROM MAX(EL.Date)) >= M.MonthNumber)
     )
-    SELECT 
+    SELECT
       MYM.MuscleGroup,
       MYM.Year,
       MYM.Month,
       MYM.TotalSeries,
       CAST(
-        CASE 
+        CASE
           WHEN G.TargetValue IS NULL
-          THEN 
+          THEN
             CASE
               WHEN MYM.MuscleGroup = 'biceps' THEN 6 * 4
               WHEN MYM.MuscleGroup = 'triceps' THEN 6 * 4
@@ -138,7 +138,7 @@ public class ExerciseLogRepository
           END
       AS INT) AS TargetValue
     FROM MuscleGroupsPerYearAndMonth MYM
-    LEFT JOIN Goals G ON MYM.MuscleGroup = G.MuscleGroup 
+    LEFT JOIN Goals G ON MYM.MuscleGroup = G.MuscleGroup
       AND G.UserId = @UserId
       AND G.CreatedAtUtc = (SELECT MAX(G2.CreatedAtUtc)
                             FROM Goals G2
@@ -151,7 +151,7 @@ public class ExerciseLogRepository
       SELECT DISTINCT MuscleGroup FROM Exercises
     ),
     MuscleGroupsPerYear AS (
-      SELECT 
+      SELECT
         MG.MuscleGroup,
         EXTRACT(YEAR FROM EL.Date) AS Year,
         COUNT(S.SerieId) AS TotalSeries,
@@ -163,14 +163,14 @@ public class ExerciseLogRepository
       WHERE UserId = @UserId
       GROUP BY MG.MuscleGroup, EXTRACT(YEAR FROM EL.Date)
     )
-    SELECT 
+    SELECT
       MY.MuscleGroup,
       MY.Year,
       MY.TotalSeries,
       CAST(
-      CASE 
+      CASE
         WHEN G.TargetValue IS NULL
-        THEN 
+        THEN
         CASE
           WHEN MY.MuscleGroup = 'biceps' THEN 6 * 52
           WHEN MY.MuscleGroup = 'triceps' THEN 6 * 52
@@ -187,7 +187,7 @@ public class ExerciseLogRepository
         END
       AS INT) AS TargetValue
     FROM MuscleGroupsPerYear MY
-    LEFT JOIN Goals G ON MY.MuscleGroup = G.MuscleGroup 
+    LEFT JOIN Goals G ON MY.MuscleGroup = G.MuscleGroup
       AND G.UserId = @UserId
       AND G.CreatedAtUtc = (SELECT MAX(G2.CreatedAtUtc)
                             FROM Goals G2
@@ -314,8 +314,8 @@ public class ExerciseLogRepository
         ,S.WeightInKg
         ,(S.WeightInKg * (36.0 / (37.0 - s.Reps))) AS Brzycki
       FROM Series S
-      WHERE ExerciseLogId = ANY(@ExerciseLogIds)
-      ORDER BY S.SerieId ASC
+      WHERE ExerciseLogId IN @ExerciseLogIds
+      ORDER BY CASE WHEN S.Position IS NULL THEN 1 ELSE 0 END ASC, S.Position ASC, S.SerieId ASC
       """),
         new { ExerciseLogIds = exerciseLogs.Select(x => x.ExerciseLogId).ToList() }
     );

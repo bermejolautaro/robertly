@@ -5,6 +5,7 @@ namespace robertly.DataModels;
 public record ExerciseLog : IDataModel
 {
   public required int? ExerciseLogId { get; init; }
+  public required Guid ExerciseLogUuid { get; init; }
   public required int UserId { get; init; }
   public required int ExerciseId { get; init; }
   public required DateTime Date { get; init; }
